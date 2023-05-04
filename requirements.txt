@@ -1,0 +1,9 @@
+# Program
+pillow==9.5.0
+requests==2.30.0
+
+# Testing
+pytest==7.3.1
+
+# Formatting
+black==23.3.0
