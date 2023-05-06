@@ -20,7 +20,18 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  "tqdm~=4.65.0",
+  "requests~=2.30.0",
+]
+
 
 [project.urls]
 "Homepage" = "https://github.com/NyckelAI/python-sdk"
 
+[tool.ruff]
+line-length = 120
+select = [
+    "F401",
+    "F403",
+]

@@ -31,5 +31,8 @@ jobs:
           # default set of ruff rules with GitHub Annotations
           ruff --format=github --target-version=py37 .
       - name: Test with pytest
+        env: 
+            NYCKEL_CLIENT_ID: ${{ secrets.NYCKEL_CLIENT_ID }}
+            NYCKEL_CLIENT_SECRET: ${{ secrets.NYCKEL_CLIENT_SECRET }}
         run: |
           pytest
