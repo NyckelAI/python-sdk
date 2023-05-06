@@ -1,4 +1,4 @@
-name: Test all python versions
+name: test
 
 on: [push]
 
