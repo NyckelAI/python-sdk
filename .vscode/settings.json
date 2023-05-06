@@ -1,16 +1,14 @@
 {
+    "python.formatting.provider": "none",
     "python.formatting.blackArgs": [
         "--line-length",
         "120"
     ],
-    "[python]": {
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.fixAll": true
-        }
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true
     },
-    "python.formatting.provider": "black",
-    "cSpell.words": [
+    "editor.defaultFormatter": "ms-python.black-formatter""cSpell.words": [
         "nyckel"
     ]
 }
