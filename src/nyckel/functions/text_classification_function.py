@@ -127,3 +127,9 @@ class TextClassificationFunction:
         self._refresh_auth_token()
         samples_return = repeated_get(self._session, self.api_endpoint("samples"))
         return samples_return
+
+    def get_labels(self) -> List[str]:
+        self._refresh_auth_token()
+        labels_dict_list = repeated_get(self._session, self.api_endpoint("labels"))
+        label_names = [entry["name"] for entry in labels_dict_list]
+        return label_names
