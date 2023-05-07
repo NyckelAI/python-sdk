@@ -46,6 +46,6 @@ def test_end_to_end():
 
     returned_samples = rate_my_greeting_function.get_samples()
     assert len(samples) == len(returned_samples)
-    assert isinstance(returned_samples, TextClassificationSample)
+    assert isinstance(returned_samples[0], TextClassificationSample)
 
     rate_my_greeting_function.delete()
