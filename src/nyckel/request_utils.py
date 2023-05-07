@@ -42,7 +42,7 @@ def repeated_get(session: requests.Session, endpoint: str):
     while "next" in resp.links:
         slug = resp.links["next"]["url"]
         resp = session.get(base_url + slug)
-        assert resp.status_code == 200, f"GET from {base_url+slug} failed with {response.status_code}, {response.text}."
+        assert resp.status_code == 200, f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}."
         resource_list.extend(resp.json())
 
     return resource_list
