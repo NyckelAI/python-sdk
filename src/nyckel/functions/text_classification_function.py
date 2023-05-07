@@ -46,15 +46,28 @@ class TextClassificationFunction:
         print(f"Created function {name} with id: {function_id}")
         return TextClassificationFunction(function_id, auth)
 
+    @property
+    def train_page(self):
+        return f"{self._auth.server_url}/console/functions/{self._function_id}/train"
+
     def __str__(self):
         return self.train_page
 
     def __repr__(self):
         return self.train_page
 
-    @property
-    def train_page(self):
-        return f"{self._auth.server_url}/console/functions/{self._function_id}/train"
+    def __call__(self, sample_data: str) -> ClassificationPrediction:
+        self._refresh_auth_token()
+        body = {"data": sample_data}
+        endpoint = self.api_endpoint("invoke")
+        response = self._session.post(endpoint, json=body)
+        if "No model available" in response.text:
+            raise ValueError(f"No model trained yet for this function. Go to {self.train_page} to see function status.")
+
+        assert response.status_code == 200, f"Invoke failed with {response.status_code=}, {response.text=}"
+        return ClassificationPrediction(
+            label_name=response.json()["labelName"], confidence=response.json()["confidence"]
+        )
 
     def has_trained_model(self) -> bool:
         self._refresh_auth_token()
@@ -75,20 +88,6 @@ class TextClassificationFunction:
 
     def _refresh_auth_token(self):
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
-
-    def __call__(self, sample_data: str) -> ClassificationPrediction:
-        self._refresh_auth_token()
-        body = {"data": sample_data}
-        endpoint = self.api_endpoint("invoke")
-        response = self._session.post(endpoint, json=body)
-        if "No model available" in response.text:
-            print(f"No model trained yet for this function. Go to {self.train_page} to see function status.")
-            return None
-
-        assert response.status_code == 200, f"Invoke failed with {response.status_code=}, {response.text=}"
-        return ClassificationPrediction(
-            label_name=response.json()["labelName"], confidence=response.json()["confidence"]
-        )
 
     def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
         self._refresh_auth_token()
@@ -125,8 +124,26 @@ class TextClassificationFunction:
 
     def get_samples(self) -> List[TextClassificationSample]:
         self._refresh_auth_token()
-        samples_return = repeated_get(self._session, self.api_endpoint("samples"))
-        return samples_return
+        samples_dict_list = repeated_get(self._session, self.api_endpoint("samples"))
+        labels_dict_list = repeated_get(self._session, self.api_endpoint("labels"))
+        labelname_by_labelid = {l["id"]: l["name"] for l in labels_dict_list}
+        samples_typed = []
+        for sample_dict in samples_dict_list:
+            if "annotation" in sample_dict:
+                annotation = labelname_by_labelid[sample_dict["annotation"]["labelId"]]
+            else:
+                annotation = None
+            if "prediction" in sample_dict:
+                prediction = ClassificationPrediction(
+                    label_name=labelname_by_labelid[sample_dict["prediction"]["labelId"]],
+                    confidence=sample_dict["prediction"]["confidence"],
+                )
+            else:
+                prediction = None
+            samples_typed.append(
+                TextClassificationSample(data=sample_dict["data"], annotation=annotation, prediction=prediction)
+            )
+        return samples_typed
 
     def get_labels(self) -> List[str]:
         self._refresh_auth_token()

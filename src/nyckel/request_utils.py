@@ -16,8 +16,8 @@ class ParallelPoster:
         response = self._session.post(self._endpoint, json=data)
         return response
 
-    def __call__(self, bodies: List[Dict]) -> Dict[Dict, requests.Response]:
-        responses = [None] * len(bodies)
+    def __call__(self, bodies: List[Dict]) -> List[requests.Response]:
+        responses = [requests.Response()] * len(bodies)
         n_workers = min(len(bodies), NBR_CONCURRENT_REQUESTS)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:

@@ -27,6 +27,7 @@ def test_end_to_end():
     rate_my_greeting_function.add_labels(["Nice", "Boo"])
     label_names_post_complete = False
     while not label_names_post_complete:
+        print("Labels not posted yet. Sleeping 1 sec...")
         time.sleep(1)
         label_names = rate_my_greeting_function.get_labels()
         label_names_post_complete = set(label_names) == set(["Nice", "Boo"])
@@ -35,12 +36,16 @@ def test_end_to_end():
 
     has_trained_model = False
     while not has_trained_model:
+        print("No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
         has_trained_model = rate_my_greeting_function.has_trained_model()
-        print("No trained model yet. Sleeping 1 sec.")
 
     assert isinstance(rate_my_greeting_function("Howdy"), ClassificationPrediction)
 
     assert len(rate_my_greeting_function.invoke(["Hej", "Hola", "Gruezi"])) == 3
+
+    returned_samples = rate_my_greeting_function.get_samples()
+    assert len(samples) == len(returned_samples)
+    assert isinstance(returned_samples, TextClassificationSample)
 
     rate_my_greeting_function.delete()

@@ -35,3 +35,10 @@ select = [
     "F401",
     "F403",
 ]
+
+[tool.mypy]
+python_version = "3.9"
+
+[[tool.mypy.overrides]]
+module = "src"
+disallow_untyped_defs = true
