@@ -25,6 +25,12 @@ def test_end_to_end():
     rate_my_greeting_function = TextClassificationFunction.new("RateMyGreeting", auth)
 
     rate_my_greeting_function.add_labels(["Nice", "Boo"])
+    label_names_post_complete = False
+    while not label_names_post_complete:
+        time.sleep(1)
+        label_names = rate_my_greeting_function.get_labels()
+        label_names_post_complete = set(label_names) == set(["Nice", "Boo"])
+
     rate_my_greeting_function.add_samples(samples)
 
     has_trained_model = False
