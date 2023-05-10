@@ -104,7 +104,7 @@ class ClassificationFunction(abc.ABC):
         pass
 
 
-class ClassificationFunctionCreator:
+class ClassificationFunctionManager:
     @staticmethod
     def create_function(name: str, function_input: str, auth: OAuth2Renewer) -> str:
         session = get_session_that_retries()
@@ -118,16 +118,25 @@ class ClassificationFunctionCreator:
         print(f"Created function {name} with id: {function_id}")
         return function_id
 
-    @staticmethod
-    def check_function(function_id, auth: OAuth2Renewer) -> None:
+    def __init__(self, function_id: str, auth: OAuth2Renewer):
+        self._function_id = function_id
+        self._auth = auth
+        self._session = get_session_that_retries()
+        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+
+    def validate_function(self) -> None:
+        self._refresh_auth_token()
+
         def _check_response(response):
             if response.status_code == 401:
-                raise ValueError(f"Invalid access tokens. Can't access {function_id}.")
+                raise ValueError(f"Invalid access tokens. Can't access {self._function_id}.")
             if response.status_code == 403:
-                raise ValueError(f"Can't access {function_id} using credentials with CLIENT_ID: {auth.client_id}.")
+                raise ValueError(
+                    f"Can't access {self._function_id} using credentials with CLIENT_ID: {self._auth.client_id}."
+                )
             elif not response.status_code == 200:
                 raise ValueError(
-                    f"Failed to load function with id = {function_id}. Status code: {response.status_code}"
+                    f"Failed to load function with id = {self._function_id}. Status code: {response.status_code}"
                 )
 
         def _assert_function_type(response):
@@ -135,37 +144,67 @@ class ClassificationFunctionCreator:
             for key, expected_type in expected_type_by_key.items():
                 if not response.json()[key] == expected_type:
                     raise ValueError(
-                        f"Function {function_id} {key} mismatch. Expected: {expected_type}. Actual: {response.json()[key]}"
+                        f"Function {self._function_id} {key} mismatch. Expected: {expected_type}. Actual: {response.json()[key]}"
                     )
 
-        session = get_session_that_retries()
-        session.headers.update({"authorization": "Bearer " + auth.token})
-        url = f"{auth.server_url}/v1/functions/{function_id}"
-        response = session.get(url)
+        url = f"{self._auth.server_url}/v1/functions/{self._function_id}"
+        response = self._session.get(url)
         _check_response(response)
         _assert_function_type(response)
         return None
 
+    def get_metrics(self) -> Dict:
+        self._refresh_auth_token()
+        url = self._url_handler.api_endpoint("metrics", api_version="v0.9")
+        resp = self._session.get(url)
+        if not resp.status_code == 200:
+            raise RuntimeError(f"Can't get {url=}. {resp.status_code=} {resp.text=}")
+        return resp.json()
+
+    def get_v09_function_meta(self) -> Dict:
+        self._refresh_auth_token()
+        url = self._url_handler.api_endpoint("", api_version="v0.9")
+        resp = self._session.get(url)
+        if not resp.status_code == 200:
+            raise RuntimeError(f"Can't get {url=}. {resp.status_code=} {resp.text=}")
+        return resp.json()
+
+    @property
+    def is_trained(self) -> bool:
+        metrics = self.get_metrics()
+        meta = self.get_v09_function_meta()
+        return (
+            not metrics["isTraining"]
+            and metrics["sampleCount"] == metrics["predictionCount"]
+            and meta["state"] in ["Browsing", "Tuning"]
+        )
+
+    def _refresh_auth_token(self):
+        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+
 
 class TextClassificationFunction(ClassificationFunction):
     def __init__(self, function_id: str, auth: OAuth2Renewer):
-        ClassificationFunctionCreator.check_function(function_id, auth)
+        self._function_manager = ClassificationFunctionManager(function_id, auth)
+        self._function_manager.validate_function()
         self._function_id = function_id
         self._auth = auth
+        self._session = get_session_that_retries()
         self._label_handler = ClassificationLabelHandler(function_id, auth)
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
-        self._session = get_session_that_retries()
         self._label_name_by_label_id = None
 
     @classmethod
     def create_function(cls, name: str, auth: OAuth2Renewer):
-        return TextClassificationFunction(ClassificationFunctionCreator.create_function(name, "Text", auth), auth)
+        return TextClassificationFunction(ClassificationFunctionManager.create_function(name, "Text", auth), auth)
 
     def __str__(self):
-        return self._url_handler.train_page
+        return self.__repr__
 
     def __repr__(self):
-        return self._url_handler.train_page
+        metrics = self.metrics
+        status_string = f"[{self._url_handler.train_page}] sampleCount: {metrics['sampleCount']}, annotatedSampleCount: {metrics['annotatedSampleCount']}, predictionCount: {metrics['predictionCount']}, labelCount: {len(metrics['annotatedLabelCounts'])},"
+        return status_string
 
     def __call__(self, sample_data: str) -> ClassificationPrediction:
         self._refresh_auth_token()
@@ -194,14 +233,12 @@ class TextClassificationFunction(ClassificationFunction):
             self._label_name_by_label_id = {label["id"]: label["name"] for label in labels_dict_list}
         return self._label_name_by_label_id
 
-    def has_trained_model(self) -> bool:
-        self._refresh_auth_token()
-        body = {"data": "dummy data"}
-        endpoint = self._url_handler.api_endpoint("invoke")
-        response = self._session.post(endpoint, json=body)
-        if "No model available" in response.text or not response.status_code == 200:
-            return False
-        return True
+    @property
+    def metrics(self):
+        return self._function_manager.get_metrics()
+
+    def is_trained(self) -> bool:
+        return self._function_manager.is_trained
 
     def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
         self._refresh_auth_token()

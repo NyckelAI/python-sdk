@@ -53,6 +53,26 @@ def test_labels():
 
 @pytest.mark.skipif("NYCKEL_CLIENT_ID" not in os.environ, reason="Env. var NYCKEL_CLIENT_ID not set")
 @pytest.mark.skipif("NYCKEL_CLIENT_SECRET" not in os.environ, reason="Env. var NYCKEL_CLIENT_SECRET not set")
+def test_labels_optional_params():
+    auth = OAuth2Renewer(
+        client_id=os.environ["NYCKEL_CLIENT_ID"],
+        client_secret=os.environ["NYCKEL_CLIENT_SECRET"],
+        server_url="https://www.nyckel.com",
+    )
+
+    # Try creating a simple label
+    func = TextClassificationFunction.create_function("[TEST] optional fields", auth)
+
+    label = ClassificationLabel(name="Nicer", description="Very nice")
+    label_id = func.create_labels([label])[0]
+    label_returned = func.read_label(label_id)
+    assert label_returned == label
+
+    func.delete()
+
+
+@pytest.mark.skipif("NYCKEL_CLIENT_ID" not in os.environ, reason="Env. var NYCKEL_CLIENT_ID not set")
+@pytest.mark.skipif("NYCKEL_CLIENT_SECRET" not in os.environ, reason="Env. var NYCKEL_CLIENT_SECRET not set")
 def test_samples():
     auth = OAuth2Renewer(
         client_id=os.environ["NYCKEL_CLIENT_ID"],
