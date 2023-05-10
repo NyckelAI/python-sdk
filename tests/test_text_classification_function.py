@@ -65,8 +65,10 @@ def test_labels_optional_params():
 
     label = ClassificationLabel(name="Nicer", description="Very nice")
     label_id = func.create_labels([label])[0]
-    label_returned = func.read_label(label_id)
-    assert label_returned == label
+    label_back = func.read_label(label_id)
+    assert label_back.name == label.name
+    assert label_back.description == label.description
+    assert label_back.metadata == label.metadata
 
     func.delete()
 

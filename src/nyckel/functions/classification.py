@@ -237,7 +237,7 @@ class TextClassificationFunction(ClassificationFunction):
     def metrics(self):
         return self._function_manager.get_metrics()
 
-    def is_trained(self) -> bool:
+    def has_trained_model(self) -> bool:
         return self._function_manager.is_trained
 
     def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
