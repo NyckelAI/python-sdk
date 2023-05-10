@@ -1,7 +1,7 @@
 import abc
+import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-import time
 
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.utils import strip_nyckel_prefix
@@ -277,7 +277,7 @@ class TextClassificationFunction(ClassificationFunction):
     def list_samples(self) -> List[ClassificationSample]:
         self._refresh_auth_token()
         samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
-        samples_typed = [self._cast_to_sample(entry) for entry in samples_dict_list]
+        samples_typed = [ServerResponseDecoder.sample_from_dict(entry) for entry in samples_dict_list]
         return samples_typed
 
     def read_sample(self, sample_id: str) -> ClassificationSample:
@@ -285,7 +285,7 @@ class TextClassificationFunction(ClassificationFunction):
         response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
         if not response.status_code == 200:
             raise RuntimeError(f"Unable to fetch sample {sample_id} from {self._url_handler.train_page}")
-        return self._cast_to_sample(response.json())
+        return ServerResponseDecoder.sample_from_dict(response.json())
 
     def update_sample(self, sample: ClassificationSample):
         raise NotImplementedError
@@ -307,27 +307,6 @@ class TextClassificationFunction(ClassificationFunction):
 
     def _refresh_auth_token(self):
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
-
-    def _cast_to_sample(self, sample_dict: Dict):
-        if "annotation" in sample_dict:
-            annotation = ClassificationAnnotation(label_id=sample_dict["annotation"]["labelId"])
-        else:
-            annotation = None
-        if "prediction" in sample_dict:
-            prediction = ClassificationPrediction(
-                label_id=sample_dict["prediction"]["labelId"],
-                confidence=sample_dict["prediction"]["confidence"],
-                label_name=self.label_name_by_label_id[sample_dict["prediction"]["labelId"]],
-            )
-        else:
-            prediction = None
-        return ClassificationSample(
-            id=sample_dict["id"],
-            data=sample_dict["data"],
-            external_id=sample_dict["externalId"] if "externalId" in sample_dict else None,
-            annotation=annotation,
-            prediction=prediction,
-        )
 
 
 class ClassificationLabelHandler:
@@ -379,12 +358,7 @@ class ClassificationLabelHandler:
                 f"Unable to fetch label {label_id} from {self._url_handler.train_page} {response.text=} {response.status_code=}"
             )
         label_dict = response.json()
-        return ClassificationLabel(
-            name=label_dict["name"],
-            id=label_dict["id"],
-            description=label_dict["description"] if "description" in label_dict else None,
-            metadata=label_dict["metadata"] if "description" in label_dict else None,
-        )
+        return ServerResponseDecoder.label_from_dict(label_dict)
 
     def update_label(self, label: ClassificationLabel):
         raise NotImplementedError
@@ -404,3 +378,36 @@ class ClassificationFunctionURLHandler:
             return f"{self._server_url}/{api_version}/functions/{self._function_id}"
         else:
             return f"{self._server_url}/{api_version}/functions/{self._function_id}/{path}"
+
+
+class ServerResponseDecoder:
+    @staticmethod
+    def sample_from_dict(sample_dict: Dict) -> ClassificationSample:
+        if "annotation" in sample_dict:
+            annotation = ClassificationAnnotation(label_id=sample_dict["annotation"]["labelId"])
+        else:
+            annotation = None
+        if "prediction" in sample_dict:
+            prediction = ClassificationPrediction(
+                label_id=sample_dict["prediction"]["labelId"],
+                confidence=sample_dict["prediction"]["confidence"],
+                label_name=self.label_name_by_label_id[sample_dict["prediction"]["labelId"]],
+            )
+        else:
+            prediction = None
+        return ClassificationSample(
+            id=sample_dict["id"],
+            data=sample_dict["data"],
+            external_id=sample_dict["externalId"] if "externalId" in sample_dict else None,
+            annotation=annotation,
+            prediction=prediction,
+        )
+
+    @staticmethod
+    def label_from_dict(label_dict: Dict) -> ClassificationLabel:
+        return ClassificationLabel(
+            name=label_dict["name"],
+            id=label_dict["id"],
+            description=label_dict["description"] if "description" in label_dict else None,
+            metadata=label_dict["metadata"] if "metadata" in label_dict else None,
+        )
