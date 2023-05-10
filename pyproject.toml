@@ -8,7 +8,7 @@ packages = ["src/nyckel"]
 
 [project]
 name = "nyckel"
-version = "0.0.15"
+version = "0.0.16"
 authors = [
   { name="Oscar Beijbom", email="oscar@nyckel.com" },
 ]

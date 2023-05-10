@@ -386,7 +386,10 @@ class ServerResponseDecoder:
     @staticmethod
     def sample_from_dict(sample_dict: Dict, label_name_by_label_id: Dict) -> ClassificationSample:
         if "annotation" in sample_dict:
-            annotation = ClassificationAnnotation(label_id=sample_dict["annotation"]["labelId"])
+            annotation = ClassificationAnnotation(
+                label_id=sample_dict["annotation"]["labelId"],
+                label_name=label_name_by_label_id[sample_dict["annotation"]["labelId"]],
+            )
         else:
             annotation = None
         if "prediction" in sample_dict:

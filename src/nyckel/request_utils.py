@@ -18,6 +18,8 @@ class ParallelPoster:
         return response
 
     def __call__(self, bodies: List[Dict]) -> List[requests.Response]:
+        if len(bodies) == 0:
+            return []
         responses = [requests.Response()] * len(bodies)
         n_workers = min(len(bodies), NBR_CONCURRENT_REQUESTS)
 
