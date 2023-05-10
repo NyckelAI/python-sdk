@@ -2,6 +2,7 @@ import concurrent.futures
 from typing import Dict, List
 
 import requests
+from requests.adapters import HTTPAdapter, Retry
 from tqdm import tqdm
 
 from nyckel.config import NBR_CONCURRENT_REQUESTS
@@ -26,10 +27,12 @@ class ParallelPoster:
                 index = index_by_future[future]
                 body = bodies[index]
                 response = future.result()
-                if response.status_code not in [200, 409]:
-                    print(f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}")
-                else:
+                if response.status_code == 200:
                     pass  # It worked.
+                else:
+                    raise ValueError(
+                        f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}"
+                    )
                 responses[index] = response
         return responses
 
@@ -38,11 +41,21 @@ def repeated_get(session: requests.Session, endpoint: str):
     base_url, slug = endpoint.split(".com")
     base_url += ".com"
     resp = session.get(base_url + slug)
+    if not resp.status_code == 200:
+        raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
     resource_list = resp.json()
     while "next" in resp.links:
         slug = resp.links["next"]["url"]
         resp = session.get(base_url + slug)
-        assert resp.status_code == 200, f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}."
+        if not resp.status_code == 200:
+            raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
         resource_list.extend(resp.json())
 
     return resource_list
+
+
+def get_session_that_retries() -> requests.Session:
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+    session.mount("https://", HTTPAdapter(max_retries=retries))
+    return session

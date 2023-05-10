@@ -11,14 +11,18 @@ class OAuth2Renewer:
         self._bearer_token: str = ""
 
     @property
-    def token(self):
-        if time.time() > self._renew_at:
-            self._renew_token()
-        return self._bearer_token
+    def client_id(self):
+        return self._client_id
 
     @property
     def server_url(self):
         return self._server_url
+
+    @property
+    def token(self):
+        if time.time() > self._renew_at:
+            self._renew_token()
+        return self._bearer_token
 
     def _renew_token(self):
         RENEW_MARGIN_SECONDS = 10 * 60
@@ -31,6 +35,8 @@ class OAuth2Renewer:
         }
 
         response = requests.post(token_url, data=data)
+        if not response.status_code == 200:
+            raise ValueError(f"Failed to get Bearer token for CLIENT_ID: {self._client_id}. {response.status_code=}")
 
         self._bearer_token = response.json()["access_token"]
         self._renew_at = time.time() + response.json()["expires_in"] - RENEW_MARGIN_SECONDS
