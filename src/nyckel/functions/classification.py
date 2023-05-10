@@ -272,7 +272,7 @@ class TextClassificationFunction(ClassificationFunction):
         endpoint = self._url_handler.api_endpoint("samples")
         responses = ParallelPoster(self._session, endpoint)(bodies)
         time.sleep(0.5)
-        return [resp.json()["id"] for resp in responses]
+        return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
     def list_samples(self) -> List[ClassificationSample]:
         self._refresh_auth_token()
@@ -348,7 +348,7 @@ class ClassificationLabelHandler:
         ]
         responses = ParallelPoster(self._session, self._url_handler.api_endpoint("labels"))(bodies)
         time.sleep(0.5)
-        return [resp.json()["id"] for resp in responses]
+        return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
     def list_labels(self) -> List[ClassificationLabel]:
         self._refresh_auth_token()
