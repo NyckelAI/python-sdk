@@ -277,7 +277,9 @@ class TextClassificationFunction(ClassificationFunction):
     def list_samples(self) -> List[ClassificationSample]:
         self._refresh_auth_token()
         samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
-        samples_typed = [ServerResponseDecoder.sample_from_dict(entry) for entry in samples_dict_list]
+        samples_typed = [
+            ServerResponseDecoder.sample_from_dict(entry, self.label_name_by_label_id) for entry in samples_dict_list
+        ]
         return samples_typed
 
     def read_sample(self, sample_id: str) -> ClassificationSample:
@@ -285,7 +287,7 @@ class TextClassificationFunction(ClassificationFunction):
         response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
         if not response.status_code == 200:
             raise RuntimeError(f"Unable to fetch sample {sample_id} from {self._url_handler.train_page}")
-        return ServerResponseDecoder.sample_from_dict(response.json())
+        return ServerResponseDecoder.sample_from_dict(response.json(), self.label_name_by_label_id)
 
     def update_sample(self, sample: ClassificationSample):
         raise NotImplementedError
@@ -382,7 +384,7 @@ class ClassificationFunctionURLHandler:
 
 class ServerResponseDecoder:
     @staticmethod
-    def sample_from_dict(sample_dict: Dict) -> ClassificationSample:
+    def sample_from_dict(sample_dict: Dict, label_name_by_label_id: Dict) -> ClassificationSample:
         if "annotation" in sample_dict:
             annotation = ClassificationAnnotation(label_id=sample_dict["annotation"]["labelId"])
         else:
@@ -391,7 +393,7 @@ class ServerResponseDecoder:
             prediction = ClassificationPrediction(
                 label_id=sample_dict["prediction"]["labelId"],
                 confidence=sample_dict["prediction"]["confidence"],
-                label_name=self.label_name_by_label_id[sample_dict["prediction"]["labelId"]],
+                label_name=label_name_by_label_id[sample_dict["prediction"]["labelId"]],
             )
         else:
             prediction = None

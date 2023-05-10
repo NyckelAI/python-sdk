@@ -121,11 +121,9 @@ def test_end_to_end():
 
     rate_my_greeting_function.create_samples(samples)
 
-    has_trained_model = False
-    while not has_trained_model:
+    while not rate_my_greeting_function.has_trained_model():
         print("No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
-        has_trained_model = rate_my_greeting_function.has_trained_model()
 
     assert isinstance(rate_my_greeting_function("Howdy"), ClassificationPrediction)
 
