@@ -44,6 +44,7 @@ def test_labels():
 
     # And delete label
     func.delete_label(nicer_label_id)
+    time.sleep(1)
     labels = func.list_labels()
     assert len(labels) == 1
     assert labels[0].name == "Nice"
@@ -105,6 +106,7 @@ def test_samples():
 
     # Check delete
     func.delete_sample(sample_ids[0])
+    time.sleep(1)
     samples_back = func.list_samples()
     assert len(samples_back) == 1
     assert samples_back[0].data == "hello"
