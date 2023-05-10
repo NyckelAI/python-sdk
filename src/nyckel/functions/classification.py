@@ -253,7 +253,7 @@ class TextClassificationFunction(ClassificationFunction):
         response_list = ParallelPoster(self._session, endpoint)(bodies)
         return [
             ClassificationPrediction(
-                label_id=response.json()["labelName"],
+                label_id=response.json()["labelId"],
                 label_name=response.json()["labelName"],
                 confidence=response.json()["confidence"],
             )
