@@ -308,7 +308,6 @@ class TextClassificationFunction(ClassificationFunction):
         )
         endpoint = self._url_handler.api_endpoint("samples")
         responses = ParallelPoster(self._session, endpoint)(bodies)
-        time.sleep(0.5)
         return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
     def list_samples(self) -> List[ClassificationSample]:
@@ -322,6 +321,10 @@ class TextClassificationFunction(ClassificationFunction):
     def read_sample(self, sample_id: str) -> ClassificationSample:
         self._refresh_auth_token()
         response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
+        if response.status_code == 404:
+            # If calling read right after create, the resource is not available yet. Sleep and retry once.
+            time.sleep(1)
+            response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
         if not response.status_code == 200:
             raise RuntimeError(f"Unable to fetch sample {sample_id} from {self._url_handler.train_page}")
         return ServerResponseDecoder.sample_from_dict(response.json(), self.label_name_by_label_id)
@@ -334,7 +337,6 @@ class TextClassificationFunction(ClassificationFunction):
         endpoint = self._url_handler.api_endpoint(f"samples/{sample_id}")
         response = self._session.delete(endpoint)
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        time.sleep(0.5)
         print(f"Sample {sample_id} deleted.")
 
     def delete(self) -> None:
@@ -365,7 +367,6 @@ class ClassificationLabelHandler:
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels
         ]
         responses = ParallelPoster(self._session, self._url_handler.api_endpoint("labels"))(bodies)
-        time.sleep(0.5)
         return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
     def list_labels(self) -> List[ClassificationLabel]:
@@ -386,12 +387,15 @@ class ClassificationLabelHandler:
         self._refresh_auth_token()
         response = self._session.delete(self._url_handler.api_endpoint(f"labels/{label_id}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        time.sleep(0.5)
         print(f"Label {label_id} deleted.")
 
     def read_label(self, label_id: str):
         self._refresh_auth_token()
         response = self._session.get(self._url_handler.api_endpoint(f"labels/{label_id}"))
+        if response.status_code == 404:
+            # If calling read right after create, the resource is not available yet. Sleep and retry once.
+            time.sleep(1)
+            response = self._session.get(self._url_handler.api_endpoint(f"labels/{label_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
                 f"Unable to fetch label {label_id} from {self._url_handler.train_page} {response.text=} {response.status_code=}"
