@@ -40,8 +40,19 @@ class ParallelPoster:
 
 
 def repeated_get(session: requests.Session, endpoint: str):
-    base_url, slug = endpoint.split(".com")
-    base_url += ".com"
+    def get_base_url(endpoint):
+        parts = endpoint.split(".com")
+        if len(parts) == 1:
+            # Running locally
+            parts = endpoint.split(":5000")
+            base_url, slug = parts
+            base_url += ":5000"
+        else:
+            base_url, slug = parts
+            base_url += ".com"
+        return base_url, slug
+
+    base_url, slug = get_base_url(endpoint)
     resp = session.get(base_url + slug)
     if not resp.status_code == 200:
         raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
@@ -60,4 +71,5 @@ def get_session_that_retries() -> requests.Session:
     session = requests.Session()
     retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
     session.mount("https://", HTTPAdapter(max_retries=retries))
+    session.mount("http://", HTTPAdapter(max_retries=retries))
     return session

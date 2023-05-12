@@ -120,7 +120,7 @@ class ClassificationFunctionHandler:
     def create_function(name: str, function_input: str, auth: OAuth2Renewer) -> str:
         session = get_session_that_retries()
         session.headers.update({"authorization": "Bearer " + auth.token})
-        url = f"{auth.server_url}/v1/functions/"
+        url = f"{auth.server_url}/v1/functions"
         response = session.post(url, json={"input": function_input, "output": "Classification", "name": name})
 
         assert response.status_code == 200, f"Something went wrong when creating function: {response.text}"
