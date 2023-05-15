@@ -131,7 +131,9 @@ class TextClassificationFunction(ClassificationFunction):
             time.sleep(1)
             response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
         if not response.status_code == 200:
-            raise RuntimeError(f"Unable to fetch sample {sample_id} from {self._url_handler.train_page}")
+            raise RuntimeError(
+                f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} from {self._url_handler.train_page}"
+            )
         return self._sample_from_dict(response.json())
 
     def update_sample(self, sample: TextClassificationSample):
