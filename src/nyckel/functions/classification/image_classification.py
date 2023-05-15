@@ -167,7 +167,7 @@ class ImageClassificationFunction(ClassificationFunction):
         buffered = BytesIO()
         if not img.mode == "RGB":
             img = img.convert("RGB")
-        img.save(buffered, format=format)
+        img.save(buffered, format=format, quality=95)
         encoded_string = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return "data:image/jpg;base64," + encoded_string
 
@@ -212,14 +212,9 @@ class ImageClassificationFunction(ClassificationFunction):
 
 class ImageDecoder:
     def __call__(self, sample_data: str) -> Image.Image:
-        img = self._sample_data_to_PIL(sample_data)
-        img = self._convert_to_rgb(img)
-        return img
-
-    def _sample_data_to_PIL(self, sample_data: str) -> Image.Image:
         if self._looks_like_url(sample_data):
             return self._load_from_url(sample_data)
-        if os.path.exists(sample_data):
+        if self._looks_like_local_filepath(sample_data):
             return Image.open(sample_data)
         return self._load_from_data_uri(sample_data)
 
@@ -230,6 +225,9 @@ class ImageDecoder:
         response = requests.get(url)
         img = Image.open(BytesIO(response.content))
         return img
+
+    def _looks_like_local_filepath(self, local_path: str) -> bool:
+        return os.path.exists(local_path)
 
     def _load_from_data_uri(self, data_uri: str) -> Image.Image:
         self._validate_image_data_uri(data_uri)
@@ -255,8 +253,3 @@ class ImageDecoder:
 
     def strip_base64_prefix(self, inline_data: str) -> str:
         return inline_data.split(";base64,")[1]
-
-    def _convert_to_rgb(self, img: Image.Image) -> Image.Image:
-        if not img.mode == "RGB":
-            img = img.convert("RGB")
-        return img
