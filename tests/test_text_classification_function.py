@@ -10,7 +10,7 @@ from nyckel import (
 
 
 def test_samples(auth_test_user):
-    func = TextClassificationFunction.create_function("[TEST] labels", auth_test_user)
+    func = TextClassificationFunction.create_function("[TEST TEXT CLASSIFICATION SAMPLES]", auth_test_user)
     label = ClassificationLabel(name="Nice")
     func.create_labels([label])
 
@@ -44,7 +44,7 @@ def test_samples(auth_test_user):
 
 
 def test_end_to_end(auth_test_user):
-    func = TextClassificationFunction.create_function("[TEST] RateMyGreeting", auth_test_user)
+    func = TextClassificationFunction.create_function("[TEST TEXT CLASSIFICATION END TO END]", auth_test_user)
 
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)

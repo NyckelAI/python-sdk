@@ -11,7 +11,7 @@ def auth_test_user():
     assert_user_has_access(user)
     create_project_for_user(user)
     yield user
-    clean_up_functions(user)
+    # clean_up_functions(user)
 
 
 def clean_up_functions(user: OAuth2Renewer):

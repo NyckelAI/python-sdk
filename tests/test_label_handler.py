@@ -47,7 +47,7 @@ def test_labels(auth_test_user):
 
 def test_labels_optional_params(auth_test_user):
     # Try creating a simple label
-    func = TextClassificationFunction.create_function("[TEST OPTIONAL FIELDS]", auth_test_user)
+    func = TextClassificationFunction.create_function("[TEST LABELS OPTIONAL FIELDS]", auth_test_user)
 
     label = ClassificationLabel(name="Nicer", description="Very nice")
     label_id = func.create_labels([label])[0]
