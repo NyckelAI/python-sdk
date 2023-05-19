@@ -2,13 +2,12 @@ import time
 
 from nyckel import (
     ClassificationLabel,
-    TextClassificationFunction,
 )
 
 
-def test_labels(auth_test_user):
+def test_labels(text_classification_function):
     # Try creating a simple label
-    func = TextClassificationFunction.create_function("[TEST LABELS]", auth_test_user)
+    func = text_classification_function
     label = ClassificationLabel(name="Nice")
     label_ids = func.create_labels([label])
     label_back = func.read_label(label_ids[0])
@@ -42,12 +41,10 @@ def test_labels(auth_test_user):
     assert len(labels) == 1
     assert labels[0].name == "Nice"
 
-    func.delete()
 
-
-def test_labels_optional_params(auth_test_user):
+def test_labels_optional_params(text_classification_function):
     # Try creating a simple label
-    func = TextClassificationFunction.create_function("[TEST LABELS OPTIONAL FIELDS]", auth_test_user)
+    func = text_classification_function
 
     label = ClassificationLabel(name="Nicer", description="Very nice")
     label_id = func.create_labels([label])[0]
@@ -55,5 +52,3 @@ def test_labels_optional_params(auth_test_user):
     assert label_back.name == label.name
     assert label_back.description == label.description
     assert label_back.metadata == label.metadata
-
-    func.delete()

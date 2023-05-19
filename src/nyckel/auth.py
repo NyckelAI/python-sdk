@@ -11,20 +11,20 @@ class OAuth2Renewer:
         self._bearer_token: str = ""
 
     @property
-    def client_id(self):
+    def client_id(self) -> str:
         return self._client_id
 
     @property
-    def server_url(self):
+    def server_url(self) -> str:
         return self._server_url
 
     @property
-    def token(self):
+    def token(self) -> str:
         if time.time() > self._renew_at:
             self._renew_token()
         return self._bearer_token
 
-    def _renew_token(self):
+    def _renew_token(self) -> None:
         RENEW_MARGIN_SECONDS = 10 * 60
 
         token_url = f"{self._server_url}/connect/token"

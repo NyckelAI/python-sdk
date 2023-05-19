@@ -4,13 +4,13 @@ from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
     ClassificationPrediction,
-    TextClassificationFunction,
     TextClassificationSample,
 )
 
 
-def test_samples(auth_test_user):
-    func = TextClassificationFunction.create_function("[TEST TEXT CLASSIFICATION SAMPLES]", auth_test_user)
+def test_samples(text_classification_function):
+    func = text_classification_function
+    # func = TextClassificationFunction.create_function("[TEST TEXT CLASSIFICATION SAMPLES]", auth_test_user)
     label = ClassificationLabel(name="Nice")
     func.create_labels([label])
 
@@ -40,11 +40,9 @@ def test_samples(auth_test_user):
     assert len(samples_back) == 1
     assert samples_back[0].data == "hello"
 
-    func.delete()
 
-
-def test_end_to_end(auth_test_user):
-    func = TextClassificationFunction.create_function("[TEST TEXT CLASSIFICATION END TO END]", auth_test_user)
+def test_end_to_end(text_classification_function):
+    func = text_classification_function
 
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
@@ -77,5 +75,3 @@ def test_end_to_end(auth_test_user):
     returned_samples = func.list_samples()
     assert len(samples) == len(returned_samples)
     assert isinstance(returned_samples[0], TextClassificationSample)
-
-    func.delete()
