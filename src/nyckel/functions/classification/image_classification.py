@@ -20,12 +20,12 @@ from nyckel.functions.classification.classification import (
 )
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelPoster, get_session_that_retries, repeated_get
+from nyckel.utils import chunkify_list
 
 
 class ImageClassificationFunction(ClassificationFunction):
     # TODO: allow users to toggle recoding and resizing.
     # TODO: enable sending the original bytes of no resizing desired.
-    # TODO: enable chunking of create and list samples endpoints.
 
     def __init__(self, function_id: str, auth: OAuth2Renewer, target_largest_side: int = 1024) -> None:
         self._function_id = function_id
@@ -77,8 +77,6 @@ class ImageClassificationFunction(ClassificationFunction):
         return self._function_handler.is_trained
 
     def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
-        if len(sample_data_list) > 500:
-            raise ValueError("Too many images. Please chunk up the list.")
         self._refresh_auth_token()
         if not self.has_trained_model():
             raise ValueError(
@@ -87,16 +85,25 @@ class ImageClassificationFunction(ClassificationFunction):
 
         print(f"Invoking {len(sample_data_list)} samples to {self._url_handler.train_page} ...")
 
-        bodies = [{"data": self._to_inline_data(ImageDecoder()(sample_data))} for sample_data in sample_data_list]
-        endpoint = self._url_handler.api_endpoint("invoke")
-        response_list = ParallelPoster(self._session, endpoint)(bodies)
-        return [
-            ClassificationPrediction(
-                label_name=response.json()["labelName"],
-                confidence=response.json()["confidence"],
-            )
-            for response in response_list
-        ]
+        def _invoke_chunk(sample_data_list_chunk: List[str]) -> List[ClassificationPrediction]:
+            bodies = [
+                {"data": self._to_inline_data(ImageDecoder()(sample_data))} for sample_data in sample_data_list_chunk
+            ]
+            endpoint = self._url_handler.api_endpoint("invoke")
+            response_list = ParallelPoster(self._session, endpoint)(bodies)
+            return [
+                ClassificationPrediction(
+                    label_name=response.json()["labelName"],
+                    confidence=response.json()["confidence"],
+                )
+                for response in response_list
+            ]
+
+        predictions: List[ClassificationPrediction] = list()
+        for chunk in chunkify_list(sample_data_list, 500):
+            predictions.extend(_invoke_chunk(chunk))
+
+        return predictions
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
         return self._label_handler.create_labels(labels)
@@ -117,20 +124,30 @@ class ImageClassificationFunction(ClassificationFunction):
         self._refresh_auth_token()
         print(f"Posting {len(samples)} samples to {self._url_handler.train_page} ...")
 
-        bodies = []
         decoder = ImageDecoder()
-        for sample in samples:
-            body: Dict[str, Union[str, Dict, None]] = {
-                "data": self._to_inline_data(decoder(sample.data)),
-                "externalId": sample.external_id,
-            }
-            if sample.annotation:
-                body["annotation"] = {"labelName": sample.annotation.label_name}
-            bodies.append(body)
 
-        endpoint = self._url_handler.api_endpoint("samples")
-        responses = ParallelPoster(self._session, endpoint)(bodies)
-        return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
+        def _post_chunk(samples_chunk: List[ImageClassificationSample]) -> List[str]:
+            # Chunking up the processing since we fetch & resize images before posting.
+            bodies = []
+            for sample in samples_chunk:
+                body: Dict[str, Union[str, Dict, None]] = {
+                    "data": self._to_inline_data(decoder(sample.data)),
+                    "externalId": sample.external_id,
+                }
+                if sample.annotation:
+                    body["annotation"] = {"labelName": sample.annotation.label_name}
+                bodies.append(body)
+
+            endpoint = self._url_handler.api_endpoint("samples")
+            responses = ParallelPoster(self._session, endpoint)(bodies)
+            sample_ids_chunk = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
+            return sample_ids_chunk
+
+        sample_ids: List[str] = list()
+        for samples_chunk in chunkify_list(samples, 500):
+            sample_ids.extend(_post_chunk(samples_chunk))
+
+        return sample_ids
 
     def list_samples(self) -> List[ImageClassificationSample]:  # type: ignore
         self._refresh_auth_token()
