@@ -2,9 +2,11 @@ import base64
 import os
 import time
 from io import BytesIO
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 import requests
+from PIL import Image
+
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
@@ -18,7 +20,6 @@ from nyckel.functions.classification.classification import (
 )
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelPoster, get_session_that_retries, repeated_get
-from PIL import Image
 
 
 class ImageClassificationFunction(ClassificationFunction):
@@ -172,7 +173,7 @@ class ImageClassificationFunction(ClassificationFunction):
         return ImageEncoder().to_base64(self._resize_image(img))
 
     def _resize_image(self, img: Image.Image) -> Image.Image:
-        def get_new_width_height(width: int, height: int) -> tuple[int, int]:
+        def get_new_width_height(width: int, height: int) -> Tuple[int, int]:
             if width < self.target_largest_side and height < self.target_largest_side:
                 return width, height
             if width > height:

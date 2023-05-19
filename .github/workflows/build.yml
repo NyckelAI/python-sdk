@@ -26,8 +26,7 @@ jobs:
           echo "PYTHONPATH=src" >> $GITHUB_ENV
       - name: Test with pytest
         env: 
-          NYCKEL_CLIENT_ID: ${{ secrets.NYCKEL_CLIENT_ID }}
-          NYCKEL_CLIENT_SECRET: ${{ secrets.NYCKEL_CLIENT_SECRET }}
+          NYCKEL_PYTHON_SDK_CLIENT_SECRET: ${{ secrets.NYCKEL_PYTHON_SDK_CLIENT_SECRET }}
         run: |
           pytest -s
       - name: Install build dependencies
