@@ -2,27 +2,30 @@ import os
 
 import pytest
 import requests
-from nyckel import OAuth2Renewer
+from nyckel import ImageClassificationFunction, OAuth2Renewer, TextClassificationFunction
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture
 def auth_test_user():
     user = get_test_user()
     assert_user_has_access(user)
-    create_project_for_user(user)
+    if not user_has_project(user):
+        create_project_for_user(user)
     yield user
-    # clean_up_functions(user)
 
 
-def clean_up_functions(user: OAuth2Renewer):
-    session = requests.Session()
-    session.headers.update({"authorization": "Bearer " + user.token})
-    response = session.get(f"{user.server_url}/v0.9/projects")
-    assert response.status_code == 200
-    for function_id in response.json()[0]["functionIds"]:
-        response = session.delete(f"{user.server_url}/v0.9/functions/{function_id}")
-        print(f"{response.status_code=}")
-        print(f"Cleaned up {function_id}")
+@pytest.fixture
+def text_classification_function(auth_test_user):
+    func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def image_classification_function(auth_test_user):
+    func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+    yield func
+    func.delete()
 
 
 def get_test_user() -> OAuth2Renewer:
@@ -48,14 +51,17 @@ def assert_user_has_access(user: OAuth2Renewer):
         raise RuntimeError(f"Test client can not connect to {user.server_url}")
 
 
-def create_project_for_user(user: OAuth2Renewer):
+def user_has_project(user: OAuth2Renewer):
     session = requests.Session()
     session.headers.update({"authorization": "Bearer " + user.token})
     response = session.get(f"{user.server_url}/v0.9/projects")
     assert response.status_code == 200
-    if len(response.json()) == 0:
-        print("Creating project for user")
-        response = session.post(f"{user.server_url}/v0.9/projects", json={"name": "my_project"})
-        assert response.status_code == 200
-    else:
-        pass
+    return len(response.json()) > 0
+
+
+def create_project_for_user(user: OAuth2Renewer):
+    session = requests.Session()
+    session.headers.update({"authorization": "Bearer " + user.token})
+    print("Creating project for user")
+    response = session.post(f"{user.server_url}/v0.9/projects", json={"name": "my_project"})
+    assert response.status_code == 200

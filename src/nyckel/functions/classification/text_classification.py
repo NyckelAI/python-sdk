@@ -28,13 +28,13 @@ class TextClassificationFunction(ClassificationFunction):
         self._function_handler.validate_function()
 
     @classmethod
-    def create_function(cls, name: str, auth: OAuth2Renewer):
+    def create_function(cls, name: str, auth: OAuth2Renewer) -> "TextClassificationFunction":
         return TextClassificationFunction(ClassificationFunctionHandler.create_function(name, "Text", auth), auth)
 
-    def __str__(self):
-        return self.__repr__
+    def __str__(self) -> str:
+        return self.__repr__()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         metrics = self.metrics
         status_string = f"[{self._url_handler.train_page}] sampleCount: {metrics['sampleCount']}, annotatedSampleCount: {metrics['annotatedSampleCount']}, predictionCount: {metrics['predictionCount']}, labelCount: {len(metrics['annotatedLabelCounts'])},"
         return status_string
@@ -59,7 +59,7 @@ class TextClassificationFunction(ClassificationFunction):
         )
 
     @property
-    def metrics(self):
+    def metrics(self) -> Dict:
         return self._function_handler.get_metrics()
 
     def has_trained_model(self) -> bool:
@@ -84,22 +84,22 @@ class TextClassificationFunction(ClassificationFunction):
             for response in response_list
         ]
 
-    def create_labels(self, labels=List[ClassificationLabel]):
+    def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
         return self._label_handler.create_labels(labels)
 
-    def list_labels(self):
+    def list_labels(self) -> List[ClassificationLabel]:
         return self._label_handler.list_labels()
 
-    def read_label(self, label_id: str):
+    def read_label(self, label_id: str) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
 
-    def update_label(self, label: ClassificationLabel):
+    def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         return self._label_handler.update_label(label)
 
-    def delete_label(self, label_id: str):
+    def delete_label(self, label_id: str) -> None:
         return self._label_handler.delete_label(label_id)
 
-    def create_samples(self, samples: List[TextClassificationSample]):
+    def create_samples(self, samples: List[TextClassificationSample]) -> List[str]:  # type: ignore
         self._refresh_auth_token()
         print(f"Posting {len(samples)} samples to {self._url_handler.train_page} ...")
 
@@ -117,7 +117,7 @@ class TextClassificationFunction(ClassificationFunction):
         responses = ParallelPoster(self._session, endpoint)(bodies)
         return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
-    def list_samples(self) -> List[TextClassificationSample]:
+    def list_samples(self) -> List[TextClassificationSample]:  # type: ignore
         self._refresh_auth_token()
         samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
         samples_typed = [self._sample_from_dict(entry) for entry in samples_dict_list]
@@ -136,10 +136,10 @@ class TextClassificationFunction(ClassificationFunction):
             )
         return self._sample_from_dict(response.json())
 
-    def update_sample(self, sample: TextClassificationSample):
+    def update_sample(self, sample: TextClassificationSample) -> TextClassificationSample:  # type: ignore
         raise NotImplementedError
 
-    def delete_sample(self, sample_id: str):
+    def delete_sample(self, sample_id: str) -> None:
         self._refresh_auth_token()
         endpoint = self._url_handler.api_endpoint(f"samples/{sample_id}")
         response = self._session.delete(endpoint)
@@ -153,7 +153,7 @@ class TextClassificationFunction(ClassificationFunction):
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
         print(f"Function {self._url_handler.train_page} deleted.")
 
-    def _refresh_auth_token(self):
+    def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
     def _sample_from_dict(self, sample_dict: Dict) -> TextClassificationSample:

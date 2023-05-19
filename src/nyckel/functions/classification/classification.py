@@ -2,11 +2,11 @@ import abc
 import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
+import requests
 
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelPoster, get_session_that_retries, repeated_get
-from PIL import Image
 
 
 @dataclass
@@ -30,7 +30,7 @@ class ClassificationAnnotation:
 
 @dataclass
 class ImageClassificationSample:
-    data: Image.Image
+    data: str  # DataUri, Url, or local filepath.
     id: Optional[str] = None
     external_id: Optional[str] = None
     annotation: Optional[ClassificationAnnotation] = None
@@ -52,16 +52,16 @@ ClassificationSample = Union[TextClassificationSample, ImageClassificationSample
 class ClassificationFunction(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def create_function(cls, name: str, auth: OAuth2Renewer):
+    def create_function(cls, name: str, auth: OAuth2Renewer) -> "ClassificationFunction":
         pass
 
     @abc.abstractmethod
-    def __call__(self, sample_data) -> ClassificationPrediction:
+    def __call__(self, sample_data: str) -> ClassificationPrediction:
         """Invokes the trained function. Raises ValueError if function is not trained"""
         pass
 
     @abc.abstractmethod
-    def invoke(self, sample_data_list) -> List[ClassificationPrediction]:
+    def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
         """Invokes the trained function. Raises ValueError if function is not trained"""
         pass
 
@@ -78,39 +78,39 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def read_label(self, label_id: str):
+    def read_label(self, label_id: str) -> ClassificationLabel:
         pass
 
     @abc.abstractmethod
-    def update_label(self, label: ClassificationLabel):
+    def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         pass
 
     @abc.abstractmethod
-    def delete_label(self, label_id: str):
+    def delete_label(self, label_id: str) -> None:
         pass
 
     @abc.abstractmethod
-    def create_samples(self, samples) -> List[str]:
+    def create_samples(self, samples: ClassificationSample) -> List[str]:
         pass
 
     @abc.abstractmethod
-    def list_samples(self):
+    def list_samples(self) -> List[ClassificationSample]:
         pass
 
     @abc.abstractmethod
-    def read_sample(self, sample_id: str):
+    def read_sample(self, sample_id: str) -> ClassificationSample:
         pass
 
     @abc.abstractmethod
-    def update_sample(self, sample):
+    def update_sample(self, sample: ClassificationSample) -> ClassificationSample:
         pass
 
     @abc.abstractmethod
-    def delete_sample(self, sample_id: str):
+    def delete_sample(self, sample_id: str) -> None:
         pass
 
     @abc.abstractmethod
-    def delete(self):
+    def delete(self) -> None:
         """Deletes the function"""
         pass
 
@@ -138,7 +138,7 @@ class ClassificationFunctionHandler:
     def validate_function(self) -> None:
         self._refresh_auth_token()
 
-        def _check_response(response):
+        def _check_response(response: requests.Response) -> None:
             if response.status_code == 401:
                 raise ValueError(f"Invalid access tokens. Can't access {self._function_id}.")
             if response.status_code == 403:
@@ -150,7 +150,7 @@ class ClassificationFunctionHandler:
                     f"Failed to load function with id = {self._function_id}. Status code: {response.status_code}"
                 )
 
-        def _assert_function_type(response):
+        def _assert_function_type(response: requests.Response) -> None:
             expected_type_by_key = {"output": "Classification", "input": "Text"}
             for key, expected_type in expected_type_by_key.items():
                 if not response.json()[key] == expected_type:
@@ -190,7 +190,7 @@ class ClassificationFunctionHandler:
             and meta["state"] in ["Browsing", "Tuning"]
         )
 
-    def _refresh_auth_token(self):
+    def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
 
@@ -202,7 +202,7 @@ class ClassificationLabelHandler:
         self._session = get_session_that_retries()
         self._label_name_by_id: Dict = {}
 
-    def _refresh_auth_token(self):
+    def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
@@ -220,7 +220,7 @@ class ClassificationLabelHandler:
         labels = [self._label_from_dict(entry) for entry in labels_dict_list]
         return labels
 
-    def read_label(self, label_id: str):
+    def read_label(self, label_id: str) -> ClassificationLabel:
         self._refresh_auth_token()
         response = self._session.get(self._url_handler.api_endpoint(f"labels/{label_id}"))
         if response.status_code == 404:
@@ -234,10 +234,10 @@ class ClassificationLabelHandler:
         label_dict = response.json()
         return self._label_from_dict(label_dict)
 
-    def update_label(self, label: ClassificationLabel):
+    def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         raise NotImplementedError
 
-    def delete_label(self, label_id: str):
+    def delete_label(self, label_id: str) -> None:
         self._refresh_auth_token()
         response = self._session.delete(self._url_handler.api_endpoint(f"labels/{label_id}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
@@ -254,9 +254,9 @@ class ClassificationLabelHandler:
 
         raise ValueError(f"Label with id:{label_id} not know to function {self._function_id}")
 
-    def _update_label_list(self):
+    def _update_label_list(self) -> None:
         label_list = self.list_labels()
-        self._label_name_by_id = {strip_nyckel_prefix(label.id): label.name for label in label_list}
+        self._label_name_by_id = {strip_nyckel_prefix(label.id): label.name for label in label_list}  # type: ignore
 
     def _label_from_dict(self, label_dict: Dict) -> ClassificationLabel:
         return ClassificationLabel(
@@ -273,10 +273,10 @@ class ClassificationFunctionURLHandler:
         self._server_url = server_url
 
     @property
-    def train_page(self):
+    def train_page(self) -> str:
         return f"{self._server_url}/console/functions/{self._function_id}/train"
 
-    def api_endpoint(self, path, api_version="v1"):
+    def api_endpoint(self, path: str, api_version: str = "v1") -> str:
         if path == "":
             return f"{self._server_url}/{api_version}/functions/{self._function_id}"
         else:

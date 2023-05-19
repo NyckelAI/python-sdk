@@ -1,5 +1,5 @@
 import concurrent.futures
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import requests
 from requests.adapters import HTTPAdapter, Retry
@@ -13,7 +13,7 @@ class ParallelPoster:
         self._session = session
         self._endpoint = endpoint
 
-    def _post_as_json(self, data: Dict):
+    def _post_as_json(self, data: Dict) -> requests.Response:
         response = self._session.post(self._endpoint, json=data)
         return response
 
@@ -39,8 +39,8 @@ class ParallelPoster:
         return responses
 
 
-def repeated_get(session: requests.Session, endpoint: str):
-    def get_base_url(endpoint):
+def repeated_get(session: requests.Session, endpoint: str) -> List[Dict]:
+    def get_base_url(endpoint: str) -> Tuple[str, str]:
         parts = endpoint.split(".com")
         if len(parts) == 1:
             # Running locally

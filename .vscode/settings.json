@@ -8,7 +8,15 @@
     "editor.codeActionsOnSave": {
         "source.fixAll": true
     },
-    "editor.defaultFormatter": "ms-python.black-formatter""cSpell.words": [
-        "nyckel"
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "cSpell.words": [
+        "Gruezi",
+        "Hola",
+        "nyckel",
+        "pytest",
+        "tqdm"
+    ],
+    "mypy.targets": [
+        "src"
     ]
 }
