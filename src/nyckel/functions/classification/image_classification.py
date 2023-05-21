@@ -40,7 +40,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     @classmethod
     def create_function(cls, name: str, auth: OAuth2Renewer) -> "ImageClassificationFunction":
-        return ImageClassificationFunction(ClassificationFunctionHandler.create_function(name, "Text", auth), auth)
+        return ImageClassificationFunction(ClassificationFunctionHandler.create_function(name, "Image", auth), auth)
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -73,9 +73,6 @@ class ImageClassificationFunction(ClassificationFunction):
     def metrics(self) -> Dict:
         return self._function_handler.get_metrics()
 
-    def has_trained_model(self) -> bool:
-        return self._function_handler.is_trained
-
     def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
         self._refresh_auth_token()
         if not self.has_trained_model():
@@ -104,6 +101,9 @@ class ImageClassificationFunction(ClassificationFunction):
             predictions.extend(_invoke_chunk(chunk))
 
         return predictions
+
+    def has_trained_model(self) -> bool:
+        return self._function_handler.is_trained
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
         return self._label_handler.create_labels(labels)

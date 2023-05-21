@@ -2,7 +2,7 @@ import os
 
 import pytest
 import requests
-from nyckel import ImageClassificationFunction, OAuth2Renewer, TextClassificationFunction
+from nyckel import ImageClassificationFunction, OAuth2Renewer, TextClassificationFunction, TabularClassificationFunction
 
 
 @pytest.fixture
@@ -26,6 +26,13 @@ def image_classification_function(auth_test_user):
     func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
+
+
+@pytest.fixture
+def tabular_classification_function(auth_test_user):
+    func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+    yield func
+    # func.delete()
 
 
 def get_test_user() -> OAuth2Renewer:

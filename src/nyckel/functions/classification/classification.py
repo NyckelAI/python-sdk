@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 import requests
 
-from nyckel.auth import OAuth2Renewer
+from nyckel import OAuth2Renewer
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelPoster, get_session_that_retries, repeated_get
 
@@ -29,6 +29,13 @@ class ClassificationAnnotation:
 
 
 @dataclass
+class TabularFunctionField:
+    name: str
+    type: str
+    id: Optional[str] = None
+
+
+@dataclass
 class ImageClassificationSample:
     data: str  # DataUri, Url, or local filepath.
     id: Optional[str] = None
@@ -46,7 +53,16 @@ class TextClassificationSample:
     prediction: Optional[ClassificationPrediction] = None
 
 
-ClassificationSample = Union[TextClassificationSample, ImageClassificationSample]
+@dataclass
+class TabularClassificationSample:
+    data: Dict[str, Union[str, int]]  # Maps from Field name (str) to the field data (str or int)
+    id: Optional[str] = None
+    external_id: Optional[str] = None
+    annotation: Optional[ClassificationAnnotation] = None
+    prediction: Optional[ClassificationPrediction] = None
+
+
+ClassificationSample = Union[TextClassificationSample, ImageClassificationSample, TabularClassificationSample]
 
 
 class ClassificationFunction(abc.ABC):
@@ -90,7 +106,7 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def create_samples(self, samples: ClassificationSample) -> List[str]:
+    def create_samples(self, samples: List[ClassificationSample]) -> List[str]:
         pass
 
     @abc.abstractmethod
@@ -151,7 +167,7 @@ class ClassificationFunctionHandler:
                 )
 
         def _assert_function_type(response: requests.Response) -> None:
-            expected_type_by_key = {"output": "Classification", "input": "Text"}
+            expected_type_by_key = {"output": "Classification"}
             for key, expected_type in expected_type_by_key.items():
                 if not response.json()[key] == expected_type:
                     raise ValueError(
