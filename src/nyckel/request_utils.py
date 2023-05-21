@@ -41,13 +41,13 @@ class ParallelPoster:
 
 def repeated_get(session: requests.Session, endpoint: str) -> List[Dict]:
     def get_base_url(endpoint: str) -> Tuple[str, str]:
-        parts = endpoint.split(".com")
-        if len(parts) == 1:
+        if ":5000" in endpoint:
             # Running locally
             parts = endpoint.split(":5000")
             base_url, slug = parts
             base_url += ":5000"
         else:
+            parts = endpoint.split(".com")
             base_url, slug = parts
             base_url += ".com"
         return base_url, slug
