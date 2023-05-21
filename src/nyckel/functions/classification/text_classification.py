@@ -120,7 +120,9 @@ class TextClassificationFunction(ClassificationFunction):
     def list_samples(self) -> List[TextClassificationSample]:  # type: ignore
         self._refresh_auth_token()
         samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
-        samples_typed = [self._sample_from_dict(entry) for entry in samples_dict_list]
+        labels = self._label_handler.list_labels()
+        label_name_by_id = {label.id: label.name for label in labels}
+        samples_typed = [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]  # type: ignore
         return samples_typed
 
     def read_sample(self, sample_id: str) -> TextClassificationSample:
@@ -134,7 +136,9 @@ class TextClassificationFunction(ClassificationFunction):
             raise RuntimeError(
                 f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} from {self._url_handler.train_page}"
             )
-        return self._sample_from_dict(response.json())
+        labels = self._label_handler.list_labels()
+        label_name_by_id = {strip_nyckel_prefix(label.id): label.name for label in labels}  # type: ignore
+        return self._sample_from_dict(response.json(), label_name_by_id)  # type: ignore
 
     def update_sample(self, sample: TextClassificationSample) -> TextClassificationSample:  # type: ignore
         raise NotImplementedError
@@ -156,17 +160,17 @@ class TextClassificationFunction(ClassificationFunction):
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
-    def _sample_from_dict(self, sample_dict: Dict) -> TextClassificationSample:
+    def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict[str, str]) -> TextClassificationSample:
         if "annotation" in sample_dict:
             annotation = ClassificationAnnotation(
-                label_name=self._label_handler.get_label_name(sample_dict["annotation"]["labelId"]),
+                label_name=label_name_by_id[strip_nyckel_prefix(sample_dict["annotation"]["labelId"])],
             )
         else:
             annotation = None
         if "prediction" in sample_dict:
             prediction = ClassificationPrediction(
                 confidence=sample_dict["prediction"]["confidence"],
-                label_name=self._label_handler.get_label_name(sample_dict["prediction"]["labelId"]),
+                label_name=label_name_by_id[strip_nyckel_prefix(sample_dict["prediction"]["labelId"])],
             )
         else:
             prediction = None

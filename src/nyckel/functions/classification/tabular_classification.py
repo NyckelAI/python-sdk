@@ -127,7 +127,11 @@ class TabularClassificationFunction(ClassificationFunction):
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         self._refresh_auth_token()
         samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
-        samples_typed = [self._sample_from_dict(entry) for entry in samples_dict_list]
+        labels = self._label_handler.list_labels()
+        label_name_by_id = {label.id: label.name for label in labels}
+        fields = self._field_handler.list_fields()
+        field_name_by_id = {field.id: field.name for field in fields}  # type: ignore
+        samples_typed = [self._sample_from_dict(entry, label_name_by_id, field_name_by_id) for entry in samples_dict_list]  # type: ignore
         return samples_typed
 
     def read_sample(self, sample_id: str) -> TabularClassificationSample:
@@ -141,7 +145,12 @@ class TabularClassificationFunction(ClassificationFunction):
             raise RuntimeError(
                 f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} from {self._url_handler.train_page}"
             )
-        return self._sample_from_dict(response.json())
+        labels = self._label_handler.list_labels()
+        label_name_by_id = {label.id: label.name for label in labels}
+        fields = self._field_handler.list_fields()
+        field_name_by_id = {field.id: field.name for field in fields}  # type: ignore
+
+        return self._sample_from_dict(response.json(), label_name_by_id, field_name_by_id)  # type: ignore
 
     def update_sample(self, sample: TabularClassificationSample) -> TabularClassificationSample:  # type: ignore
         raise NotImplementedError
@@ -177,15 +186,14 @@ class TabularClassificationFunction(ClassificationFunction):
         if len(new_fields) > 0:
             print(f"Creating {len(new_fields)} new fields for {self._url_handler.train_page} ...")
             self._field_handler.create_fields(new_fields)
-            time.sleep(1)  # Sleep to allow time for the new fields to register
+            time.sleep(2)  # Sleep to allow time for the new fields to register
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
-    def _sample_from_dict(self, sample_dict: Dict) -> TabularClassificationSample:
-        fields = self._field_handler.list_fields()
-        field_name_by_id = {field.id: field.name for field in fields}  # type: ignore
-
+    def _sample_from_dict(
+        self, sample_dict: Dict, label_name_by_id: Dict[str, str], field_name_by_id: Dict[str, str]
+    ) -> TabularClassificationSample:
         tabular_data_body = {
             field_name_by_id[strip_nyckel_prefix(field_id)]: field_data
             for field_id, field_data in sample_dict["data"].items()
@@ -198,7 +206,7 @@ class TabularClassificationFunction(ClassificationFunction):
 
         if "annotation" in sample_dict:
             annotation = ClassificationAnnotation(
-                label_name=self._label_handler.get_label_name(sample_dict["annotation"]["labelId"]),
+                label_name=label_name_by_id[strip_nyckel_prefix(sample_dict["annotation"]["labelId"])],
             )
         else:
             annotation = None
@@ -206,7 +214,7 @@ class TabularClassificationFunction(ClassificationFunction):
         if "prediction" in sample_dict:
             prediction = ClassificationPrediction(
                 confidence=sample_dict["prediction"]["confidence"],
-                label_name=self._label_handler.get_label_name(sample_dict["prediction"]["labelId"]),
+                label_name=label_name_by_id[strip_nyckel_prefix(sample_dict["prediction"]["labelId"])],
             )
         else:
             prediction = None
