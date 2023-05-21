@@ -227,7 +227,18 @@ class ClassificationLabelHandler:
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels
         ]
         responses = ParallelPoster(self._session, self._url_handler.api_endpoint("labels"))(bodies)
-        return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
+
+        label_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
+
+        # Before returning, make sure the assets are available via the API.
+        label_names_post_complete = False
+        while not label_names_post_complete:
+            print("Waiting to confirm label assets are available...")
+            time.sleep(0.5)
+            labels_retrieved = self.list_labels()
+            label_names_post_complete = set([l.name for l in labels]).issubset([l.name for l in labels_retrieved])
+
+        return label_ids
 
     def list_labels(self) -> List[ClassificationLabel]:
         self._refresh_auth_token()
@@ -238,10 +249,6 @@ class ClassificationLabelHandler:
     def read_label(self, label_id: str) -> ClassificationLabel:
         self._refresh_auth_token()
         response = self._session.get(self._url_handler.api_endpoint(f"labels/{label_id}"))
-        if response.status_code == 404:
-            # If calling read right after create, the resource is not available yet. Sleep and retry once.
-            time.sleep(1)
-            response = self._session.get(self._url_handler.api_endpoint(f"labels/{label_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
                 f"Unable to fetch label {label_id} from {self._url_handler.train_page} {response.text=} {response.status_code=}"

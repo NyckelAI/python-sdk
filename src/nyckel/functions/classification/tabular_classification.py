@@ -186,7 +186,6 @@ class TabularClassificationFunction(ClassificationFunction):
         if len(new_fields) > 0:
             print(f"Creating {len(new_fields)} new fields for {self._url_handler.train_page} ...")
             self._field_handler.create_fields(new_fields)
-            time.sleep(2)  # Sleep to allow time for the new fields to register
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
@@ -245,7 +244,17 @@ class TabularFieldHandler:
         bodies = [{"name": field.name, "type": field.type} for field in fields]
         url = self._url_handler.api_endpoint("fields")
         responses = ParallelPoster(self._session, url)(bodies)
-        return [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
+        field_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
+
+        # Before returning, make sure the assets are available via the API.
+        new_fields_available_via_api = False
+        while not new_fields_available_via_api:
+            print("Waiting to confirm fields assets are available...")
+            time.sleep(0.5)
+            fields_retrieved = self.list_fields()
+            new_fields_available_via_api = set([l.name for l in fields]).issubset([l.name for l in fields_retrieved])
+
+        return field_ids
 
     def list_fields(self) -> List[TabularFunctionField]:
         self._refresh_auth_token()
@@ -256,10 +265,6 @@ class TabularFieldHandler:
         self._refresh_auth_token()
         url = self._url_handler.api_endpoint(f"fields/{field_id}")
         response = self._session.get(url)
-        if response.status_code == 404:
-            # If calling read right after create, the resource is not available yet. Sleep and retry once.
-            time.sleep(1)
-            response = self._session.get(url)
         if not response.status_code == 200:
             raise RuntimeError(
                 f"Unable to fetch field {field_id} from {self._url_handler.train_page} {response.text=} {response.status_code=}"

@@ -15,7 +15,6 @@ def test_samples(text_classification_function):
     func.create_labels([label])
 
     sample = TextClassificationSample(data="hello", annotation=ClassificationAnnotation(label_name="Nice"))
-    time.sleep(1)
     sample_ids = func.create_samples([sample])
     sample_back = func.read_sample(sample_ids[0])
     assert sample_back.data == sample.data
@@ -46,13 +45,6 @@ def test_end_to_end(text_classification_function):
 
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
-
-    label_names_post_complete = False
-    while not label_names_post_complete:
-        print("Labels not posted yet. Sleeping 1 sec...")
-        time.sleep(1)
-        labels = func.list_labels()
-        label_names_post_complete = set([l.name for l in labels_to_create]) == set([l.name for l in labels])
 
     samples = [
         TextClassificationSample(data="hello", annotation=ClassificationAnnotation(label_name="Nice")),

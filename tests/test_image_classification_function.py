@@ -26,7 +26,7 @@ def test_samples(image_classification_function):
     sample = ImageClassificationSample(data=images[0], annotation=ClassificationAnnotation(label_name="Nice"))
     sample_ids = func.create_samples([sample])
     sample_back = func.read_sample(sample_ids[0])
-    assert ImageDecoder()(sample_back.data).size == ImageDecoder()(sample.data).size
+    assert ImageDecoder().to_image(sample_back.data).size == ImageDecoder().to_image(sample.data).size
 
     sample = ImageClassificationSample(
         data=images[1], annotation=ClassificationAnnotation(label_name="Nice"), external_id="my_external_id"
@@ -51,13 +51,6 @@ def test_end_to_end(image_classification_function):
 
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
-
-    label_names_post_complete = False
-    while not label_names_post_complete:
-        print("Labels not posted yet. Sleeping 1 sec...")
-        time.sleep(1)
-        labels = func.list_labels()
-        label_names_post_complete = set([l.name for l in labels_to_create]) == set([l.name for l in labels])
 
     samples = [
         ImageClassificationSample(data=make_random_image(), annotation=ClassificationAnnotation(label_name="Nice")),
