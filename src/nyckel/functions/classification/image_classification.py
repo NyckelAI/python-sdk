@@ -52,7 +52,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def __call__(self, sample_data: str) -> ClassificationPrediction:
         self._refresh_auth_token()
-        image: Image.Image = ImageDecoder()(sample_data)
+        image: Image.Image = ImageDecoder().to_image(sample_data)
         body = {"data": self._to_inline_data(image)}
         endpoint = self._url_handler.api_endpoint("invoke")
         response = self._session.post(endpoint, json=body)
@@ -84,7 +84,8 @@ class ImageClassificationFunction(ClassificationFunction):
 
         def _invoke_chunk(sample_data_list_chunk: List[str]) -> List[ClassificationPrediction]:
             bodies = [
-                {"data": self._to_inline_data(ImageDecoder()(sample_data))} for sample_data in sample_data_list_chunk
+                {"data": self._to_inline_data(ImageDecoder().to_image(sample_data))}
+                for sample_data in sample_data_list_chunk
             ]
             endpoint = self._url_handler.api_endpoint("invoke")
             response_list = ParallelPoster(self._session, endpoint)(bodies)
@@ -131,7 +132,7 @@ class ImageClassificationFunction(ClassificationFunction):
             bodies = []
             for sample in samples_chunk:
                 body: Dict[str, Union[str, Dict, None]] = {
-                    "data": self._to_inline_data(decoder(sample.data)),
+                    "data": self._to_inline_data(decoder.to_image(sample.data)),
                     "externalId": sample.external_id,
                 }
                 if sample.annotation:
@@ -233,34 +234,45 @@ class ImageClassificationFunction(ClassificationFunction):
 
 
 class ImageDecoder:
-    def __call__(self, sample_data: str) -> Image.Image:
+    def to_image(self, sample_data: str) -> Image.Image:
+        byte_stream = self.to_stream(sample_data)
+        try:
+            img = Image.open(byte_stream)
+        except OSError:
+            raise ValueError("Truncated Image Bytes")
+        return img
+
+    def to_stream(self, sample_data: str) -> BytesIO:
         if self._looks_like_url(sample_data):
             return self._load_from_url(sample_data)
         if self._looks_like_local_filepath(sample_data):
-            return Image.open(sample_data)
-        return self._load_from_data_uri(sample_data)
+            return self._load_from_local_filepath(sample_data)
+        if self._looks_like_data_uri(sample_data):
+            return self._load_from_data_uri(sample_data)
+        raise ValueError(f"Unable to parse input {sample_data=}.")
 
     def _looks_like_url(self, sample_data: str) -> bool:
         return sample_data.startswith("https://") or sample_data.startswith("http://")
 
-    def _load_from_url(self, url: str) -> Image.Image:
+    def _load_from_url(self, url: str) -> BytesIO:
         response = requests.get(url)
-        img = Image.open(BytesIO(response.content))
-        return img
+        return BytesIO(response.content)
 
     def _looks_like_local_filepath(self, local_path: str) -> bool:
         return os.path.exists(local_path)
 
-    def _load_from_data_uri(self, data_uri: str) -> Image.Image:
+    def _load_from_local_filepath(self, local_path: str) -> BytesIO:
+        with open(local_path, "rb") as fh:
+            return BytesIO(fh.read())
+
+    def _looks_like_data_uri(self, data_uri: str) -> bool:
+        return data_uri.startswith("data:image")
+
+    def _load_from_data_uri(self, data_uri: str) -> BytesIO:
         self._validate_image_data_uri(data_uri)
         image_b64_encoded_string = self.strip_base64_prefix(data_uri)
         im_bytes = base64.b64decode(image_b64_encoded_string)
-        im_file = BytesIO(im_bytes)
-        try:
-            img = Image.open(im_file)
-        except OSError:
-            raise ValueError("Truncated Image Bytes")
-        return img
+        return BytesIO(im_bytes)
 
     def _validate_image_data_uri(self, inline_data: str) -> None:
         if inline_data == "":
