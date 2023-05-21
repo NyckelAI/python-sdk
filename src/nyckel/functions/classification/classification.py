@@ -216,7 +216,6 @@ class ClassificationLabelHandler:
         self._auth = auth
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
-        self._label_name_by_id: Dict = {}
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
@@ -258,21 +257,6 @@ class ClassificationLabelHandler:
         response = self._session.delete(self._url_handler.api_endpoint(f"labels/{label_id}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
         print(f"Label {label_id} deleted.")
-
-    def get_label_name(self, label_id: str) -> str:
-        label_id = strip_nyckel_prefix(label_id)
-        if label_id in self._label_name_by_id:
-            return self._label_name_by_id[label_id]
-
-        self._update_label_list()
-        if label_id in self._label_name_by_id:
-            return self._label_name_by_id[label_id]
-
-        raise ValueError(f"Label with id:{label_id} not know to function {self._function_id}")
-
-    def _update_label_list(self) -> None:
-        label_list = self.list_labels()
-        self._label_name_by_id = {strip_nyckel_prefix(label.id): label.name for label in label_list}  # type: ignore
 
     def _label_from_dict(self, label_dict: Dict) -> ClassificationLabel:
         return ClassificationLabel(

@@ -152,7 +152,9 @@ class ImageClassificationFunction(ClassificationFunction):
     def list_samples(self) -> List[ImageClassificationSample]:  # type: ignore
         self._refresh_auth_token()
         samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
-        samples_typed = [self._sample_from_dict(entry) for entry in samples_dict_list]
+        labels = self._label_handler.list_labels()
+        label_name_by_id = {label.id: label.name for label in labels}
+        samples_typed = [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]
         return samples_typed
 
     def read_sample(self, sample_id: str) -> ImageClassificationSample:
@@ -164,7 +166,9 @@ class ImageClassificationFunction(ClassificationFunction):
             response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
         if not response.status_code == 200:
             raise RuntimeError(f"Unable to fetch sample {sample_id} from {self._url_handler.train_page}")
-        return self._sample_from_dict(response.json())
+        labels = self._label_handler.list_labels()
+        label_name_by_id = {label.id: label.name for label in labels}
+        return self._sample_from_dict(response.json(), label_name_by_id)
 
     def update_sample(self, sample: ImageClassificationSample) -> ImageClassificationSample:  # type: ignore
         raise NotImplementedError
@@ -205,17 +209,17 @@ class ImageClassificationFunction(ClassificationFunction):
         img = img.resize((width, height))
         return img
 
-    def _sample_from_dict(self, sample_dict: Dict) -> ImageClassificationSample:
+    def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict) -> ImageClassificationSample:
         if "annotation" in sample_dict:
             annotation = ClassificationAnnotation(
-                label_name=self._label_handler.get_label_name(sample_dict["annotation"]["labelId"]),
+                label_name=label_name_by_id[strip_nyckel_prefix(sample_dict["annotation"]["labelId"])],
             )
         else:
             annotation = None
         if "prediction" in sample_dict:
             prediction = ClassificationPrediction(
                 confidence=sample_dict["prediction"]["confidence"],
-                label_name=self._label_handler.get_label_name(sample_dict["prediction"]["labelId"]),
+                label_name=label_name_by_id[strip_nyckel_prefix(sample_dict["prediction"]["labelId"])],
             )
         else:
             prediction = None
