@@ -12,7 +12,6 @@ def test_fields(tabular_classification_function, auth_test_user):
     field = TabularFunctionField(name="Firstname", type="Text")
     field_id = fields_handler.create_fields([field])[0]
     fields_back = fields_handler.read_field(field_id)
-    print(fields_back)
     assert fields_back.name == "Firstname"
     assert fields_back.type == "Text"
 
