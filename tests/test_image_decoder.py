@@ -20,6 +20,9 @@ def test_to_bytes():
     assert isinstance(decoder.to_stream(image_base64), BytesIO)
     assert isinstance(decoder.to_stream(image_filepath), BytesIO)
 
+
+def test_to_image():
+    decoder = ImageDecoder()
     assert isinstance(decoder.to_image(image_url), Image.Image)
     assert isinstance(decoder.to_image(image_base64), Image.Image)
     assert isinstance(decoder.to_image(image_filepath), Image.Image)

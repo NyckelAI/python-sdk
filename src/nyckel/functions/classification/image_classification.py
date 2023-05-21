@@ -52,8 +52,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def __call__(self, sample_data: str) -> ClassificationPrediction:
         self._refresh_auth_token()
-        image: Image.Image = ImageDecoder().to_image(sample_data)
-        body = {"data": self._to_inline_data(image)}
+        body = {"data": self._resize_and_encode(ImageDecoder().to_image(sample_data))}
         endpoint = self._url_handler.api_endpoint("invoke")
         response = self._session.post(endpoint, json=body)
 
@@ -79,12 +78,12 @@ class ImageClassificationFunction(ClassificationFunction):
             raise ValueError(
                 f"No model trained yet for this function. Go to {self._url_handler.train_page} to see function status."
             )
-
         print(f"Invoking {len(sample_data_list)} samples to {self._url_handler.train_page} ...")
+        decoder = ImageDecoder()
 
         def _invoke_chunk(sample_data_list_chunk: List[str]) -> List[ClassificationPrediction]:
             bodies = [
-                {"data": self._to_inline_data(ImageDecoder().to_image(sample_data))}
+                {"data": self._resize_and_encode(decoder.to_image(sample_data))}
                 for sample_data in sample_data_list_chunk
             ]
             endpoint = self._url_handler.api_endpoint("invoke")
@@ -124,7 +123,6 @@ class ImageClassificationFunction(ClassificationFunction):
     def create_samples(self, samples: List[ImageClassificationSample]) -> List[str]:  # type: ignore
         self._refresh_auth_token()
         print(f"Posting {len(samples)} samples to {self._url_handler.train_page} ...")
-
         decoder = ImageDecoder()
 
         def _post_chunk(samples_chunk: List[ImageClassificationSample]) -> List[str]:
@@ -132,7 +130,7 @@ class ImageClassificationFunction(ClassificationFunction):
             bodies = []
             for sample in samples_chunk:
                 body: Dict[str, Union[str, Dict, None]] = {
-                    "data": self._to_inline_data(decoder.to_image(sample.data)),
+                    "data": self._resize_and_encode(decoder.to_image(sample.data)),
                     "externalId": sample.external_id,
                 }
                 if sample.annotation:
@@ -191,7 +189,7 @@ class ImageClassificationFunction(ClassificationFunction):
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
-    def _to_inline_data(self, img: Image.Image) -> str:
+    def _resize_and_encode(self, img: Image.Image) -> str:
         return ImageEncoder().to_base64(self._resize_image(img))
 
     def _resize_image(self, img: Image.Image) -> Image.Image:
