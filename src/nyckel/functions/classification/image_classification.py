@@ -24,16 +24,18 @@ from nyckel.utils import chunkify_list
 
 
 class ImageClassificationFunction(ClassificationFunction):
-    # TODO: allow users to toggle recoding and resizing.
-    # TODO: enable sending the original bytes of no resizing desired.
-
-    def __init__(self, function_id: str, auth: OAuth2Renewer, target_largest_side: int = 1024) -> None:
+    def __init__(
+        self, function_id: str, auth: OAuth2Renewer, target_largest_side: int = 1024, force_recode: bool = True
+    ) -> None:
         self._function_id = function_id
         self._auth = auth
-        self.target_largest_side = target_largest_side
+        self._target_largest_side = target_largest_side
+        self._force_recode = force_recode  # Whether to resize & recode images before uploading them.
         self._function_handler = ClassificationFunctionHandler(function_id, auth)
         self._label_handler = ClassificationLabelHandler(function_id, auth)
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+        self._decoder = ImageDecoder()
+        self._encoder = ImageEncoder()
         self._session = get_session_that_retries()
 
         self._function_handler.validate_function()
@@ -52,7 +54,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def __call__(self, sample_data: str) -> ClassificationPrediction:
         self._refresh_auth_token()
-        body = {"data": self._resize_and_encode(ImageDecoder().to_image(sample_data))}
+        body = {"data": self._sample_data_to_body(sample_data)}
         endpoint = self._url_handler.api_endpoint("invoke")
         response = self._session.post(endpoint, json=body)
 
@@ -79,13 +81,9 @@ class ImageClassificationFunction(ClassificationFunction):
                 f"No model trained yet for this function. Go to {self._url_handler.train_page} to see function status."
             )
         print(f"Invoking {len(sample_data_list)} samples to {self._url_handler.train_page} ...")
-        decoder = ImageDecoder()
 
         def _invoke_chunk(sample_data_list_chunk: List[str]) -> List[ClassificationPrediction]:
-            bodies = [
-                {"data": self._resize_and_encode(decoder.to_image(sample_data))}
-                for sample_data in sample_data_list_chunk
-            ]
+            bodies = [{"data": self._sample_data_to_body(sample_data)} for sample_data in sample_data_list_chunk]
             endpoint = self._url_handler.api_endpoint("invoke")
             response_list = ParallelPoster(self._session, endpoint)(bodies)
             return [
@@ -123,14 +121,13 @@ class ImageClassificationFunction(ClassificationFunction):
     def create_samples(self, samples: List[ImageClassificationSample]) -> List[str]:  # type: ignore
         self._refresh_auth_token()
         print(f"Posting {len(samples)} samples to {self._url_handler.train_page} ...")
-        decoder = ImageDecoder()
 
         def _post_chunk(samples_chunk: List[ImageClassificationSample]) -> List[str]:
             # Chunking up the processing since we fetch & resize images before posting.
             bodies = []
             for sample in samples_chunk:
                 body: Dict[str, Union[str, Dict, None]] = {
-                    "data": self._resize_and_encode(decoder.to_image(sample.data)),
+                    "data": self._sample_data_to_body(sample.data),
                     "externalId": sample.external_id,
                 }
                 if sample.annotation:
@@ -189,24 +186,48 @@ class ImageClassificationFunction(ClassificationFunction):
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
-    def _resize_and_encode(self, img: Image.Image) -> str:
-        return ImageEncoder().to_base64(self._resize_image(img))
-
     def _resize_image(self, img: Image.Image) -> Image.Image:
         def get_new_width_height(width: int, height: int) -> Tuple[int, int]:
-            if width < self.target_largest_side and height < self.target_largest_side:
+            if width < self._target_largest_side and height < self._target_largest_side:
                 return width, height
             if width > height:
-                new_width = self.target_largest_side
+                new_width = self._target_largest_side
                 new_height = int(new_width * height / width)
             else:
-                new_height = self.target_largest_side
+                new_height = self._target_largest_side
                 new_width = int(new_height * width / height)
             return new_width, new_height
 
         width, height = get_new_width_height(img.width, img.height)
         img = img.resize((width, height))
         return img
+
+    def _sample_data_to_body(self, sample_data: str) -> str:
+        """Encodes the sample data as a URL or dataURI as appropriate."""
+        if self._is_nyckel_owned_url(sample_data):
+            # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified. So just point back to that URL.
+            # This overrides the force_resize input and ensures that the image doesn't get recoded twice.
+            return sample_data
+        else:
+            if self._decoder.looks_like_url(sample_data):
+                if self._force_recode:
+                    return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+                else:
+                    return sample_data
+            if self._decoder.looks_like_local_filepath(sample_data):
+                if self._force_recode:
+                    return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+                else:
+                    return self._encoder.stream_to_base64(self._decoder.to_stream(sample_data))
+            if self._decoder.looks_like_data_uri(sample_data):
+                if self._force_recode:
+                    return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+                else:
+                    return sample_data
+            raise ValueError(f"Can't parse input sample.data={sample_data}")
+
+    def _is_nyckel_owned_url(self, sample_data: str) -> bool:
+        return sample_data.startswith("https://s3.us-west-2.amazonaws.com/nyckel.server.")
 
     def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict) -> ImageClassificationSample:
         if "annotation" in sample_dict:
@@ -241,29 +262,29 @@ class ImageDecoder:
         return img
 
     def to_stream(self, sample_data: str) -> BytesIO:
-        if self._looks_like_url(sample_data):
+        if self.looks_like_url(sample_data):
             return self._load_from_url(sample_data)
-        if self._looks_like_local_filepath(sample_data):
+        if self.looks_like_local_filepath(sample_data):
             return self._load_from_local_filepath(sample_data)
-        if self._looks_like_data_uri(sample_data):
+        if self.looks_like_data_uri(sample_data):
             return self._load_from_data_uri(sample_data)
         raise ValueError(f"Unable to parse input {sample_data=}.")
 
-    def _looks_like_url(self, sample_data: str) -> bool:
+    def looks_like_url(self, sample_data: str) -> bool:
         return sample_data.startswith("https://") or sample_data.startswith("http://")
 
     def _load_from_url(self, url: str) -> BytesIO:
         response = requests.get(url)
         return BytesIO(response.content)
 
-    def _looks_like_local_filepath(self, local_path: str) -> bool:
+    def looks_like_local_filepath(self, local_path: str) -> bool:
         return os.path.exists(local_path)
 
     def _load_from_local_filepath(self, local_path: str) -> BytesIO:
         with open(local_path, "rb") as fh:
             return BytesIO(fh.read())
 
-    def _looks_like_data_uri(self, data_uri: str) -> bool:
+    def looks_like_data_uri(self, data_uri: str) -> bool:
         return data_uri.startswith("data:image")
 
     def _load_from_data_uri(self, data_uri: str) -> BytesIO:
@@ -288,10 +309,14 @@ class ImageDecoder:
 
 
 class ImageEncoder:
-    def to_base64(self, img: Image.Image) -> str:
+    def image_to_base64(self, img: Image.Image) -> str:
         buffered = BytesIO()
         if not img.mode == "RGB":
             img = img.convert("RGB")
         img.save(buffered, format="JPEG", quality=95)
         encoded_string = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        return "data:image/jpg;base64," + encoded_string
+
+    def stream_to_base64(self, im_bytes: BytesIO) -> str:
+        encoded_string = base64.b64encode(im_bytes.getvalue()).decode("utf-8")
         return "data:image/jpg;base64," + encoded_string

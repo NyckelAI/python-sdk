@@ -6,7 +6,7 @@ from nyckel import ImageClassificationFunction, OAuth2Renewer, TextClassificatio
 
 
 @pytest.fixture
-def auth_test_user():
+def auth_test_user() -> OAuth2Renewer:
     user = get_test_user()
     assert_user_has_access(user)
     if not user_has_project(user):
