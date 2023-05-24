@@ -1,6 +1,8 @@
+from datetime import datetime
 from typing import Type
 
 import fire
+
 from nyckel import ImageClassificationFunction, OAuth2Renewer, TabularClassificationFunction, TextClassificationFunction
 from nyckel.functions.classification.classification import ClassificationFunction
 from nyckel.request_utils import get_session_that_retries
@@ -63,7 +65,9 @@ class NyckelFunctionDuplicator:
             print("Ok. Aborting...")
             return from_function
 
-        new_function = self._get_function_type().create_function(f"COPY OF {from_function.get_name()}", self._auth)
+        new_function = self._get_function_type().create_function(
+            f"{from_function.get_name()} [COPIED AT {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]", self._auth
+        )
 
         print(f"-> Adding labels and samples to {new_function.function_id}")
         new_function.create_labels(labels)
