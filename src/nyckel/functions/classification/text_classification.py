@@ -25,7 +25,7 @@ class TextClassificationFunction(ClassificationFunction):
         self._label_handler = ClassificationLabelHandler(function_id, auth)
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
-        self._function_handler.validate_function()
+        self._function_handler.validate_function("Text")
 
     @classmethod
     def create_function(cls, name: str, auth: OAuth2Renewer) -> "TextClassificationFunction":
@@ -35,8 +35,7 @@ class TextClassificationFunction(ClassificationFunction):
         return self.__repr__()
 
     def __repr__(self) -> str:
-        metrics = self.metrics
-        status_string = f"[{self._url_handler.train_page}] sampleCount: {metrics['sampleCount']}, annotatedSampleCount: {metrics['annotatedSampleCount']}, predictionCount: {metrics['predictionCount']}, labelCount: {len(metrics['annotatedLabelCounts'])},"
+        status_string = f"Name: {self.get_name()}, id: {self.function_id}, url: {self._url_handler.train_page}"
         return status_string
 
     def __call__(self, sample_data: str) -> ClassificationPrediction:
@@ -57,6 +56,13 @@ class TextClassificationFunction(ClassificationFunction):
             label_name=response.json()["labelName"],
             confidence=response.json()["confidence"],
         )
+
+    @property
+    def function_id(self) -> str:
+        return self._function_id
+
+    def get_name(self) -> str:
+        return self._function_handler.get_name()
 
     @property
     def metrics(self) -> Dict:

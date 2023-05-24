@@ -72,8 +72,21 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def __init__(self, function_id: str, auth: OAuth2Renewer):
+        pass
+
+    @abc.abstractmethod
     def __call__(self, sample_data: str) -> ClassificationPrediction:
         """Invokes the trained function. Raises ValueError if function is not trained"""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def function_id(self) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_name(self) -> str:
         pass
 
     @abc.abstractmethod
@@ -151,7 +164,7 @@ class ClassificationFunctionHandler:
         self._session = get_session_that_retries()
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
 
-    def validate_function(self) -> None:
+    def validate_function(self, function_input: str) -> None:
         self._refresh_auth_token()
 
         def _check_response(response: requests.Response) -> None:
@@ -167,7 +180,7 @@ class ClassificationFunctionHandler:
                 )
 
         def _assert_function_type(response: requests.Response) -> None:
-            expected_type_by_key = {"output": "Classification"}
+            expected_type_by_key = {"output": "Classification", "input": function_input}
             for key, expected_type in expected_type_by_key.items():
                 if not response.json()[key] == expected_type:
                     raise ValueError(
@@ -178,7 +191,12 @@ class ClassificationFunctionHandler:
         response = self._session.get(url)
         _check_response(response)
         _assert_function_type(response)
-        return None
+
+    def get_name(self) -> str:
+        url = f"{self._auth.server_url}/v1/functions/{self._function_id}"
+        response = self._session.get(url)
+        assert response.status_code == 200
+        return response.json()["name"] if "name" in response.json() else "NewFunction"
 
     def get_metrics(self) -> Dict:
         self._refresh_auth_token()
