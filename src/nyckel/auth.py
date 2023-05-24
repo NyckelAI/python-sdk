@@ -3,7 +3,7 @@ import requests
 
 
 class OAuth2Renewer:
-    def __init__(self, client_id: str, client_secret: str, server_url: str):
+    def __init__(self, client_id: str, client_secret: str, server_url: str = "https://www.nyckel.com"):
         self._client_id = client_id
         self._client_secret = client_secret
         self._server_url = server_url
