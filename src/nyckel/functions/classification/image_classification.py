@@ -38,7 +38,7 @@ class ImageClassificationFunction(ClassificationFunction):
         self._decoder = ImageDecoder()
         self._encoder = ImageEncoder()
         self._session = get_session_that_retries()
-
+        self._refresh_auth_token()
         self._function_handler.validate_function("Image")
 
     @classmethod
@@ -99,12 +99,15 @@ class ImageClassificationFunction(ClassificationFunction):
     def delete_label(self, label_id: str) -> None:
         return self._label_handler.delete_label(label_id)
 
+    def delete_labels(self, label_ids: List[str]) -> None:
+        return self._label_handler.delete_labels(label_ids)
+
     def create_samples(self, samples: List[ImageClassificationSample]) -> List[str]:  # type: ignore
         return self._sample_handler.create_samples(samples, self._sample_data_to_body)
 
     def list_samples(self) -> List[ImageClassificationSample]:  # type: ignore
         self._refresh_auth_token()
-        samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
+        samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="samples"))
 
         labels = self._label_handler.list_labels()
         label_name_by_id = {label.id: label.name for label in labels}
@@ -124,6 +127,9 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def delete_sample(self, sample_id: str) -> None:
         self._sample_handler.delete_sample(sample_id)
+
+    def delete_samples(self, sample_ids: List[str]) -> None:
+        self._sample_handler.delete_samples(sample_ids)
 
     def delete(self) -> None:
         self._function_handler.delete()

@@ -82,7 +82,7 @@ class ClassificationFunctionHandler:
 
     def get_metrics(self) -> Dict:
         self._refresh_auth_token()
-        url = self._url_handler.api_endpoint("metrics", api_version="v0.9")
+        url = self._url_handler.api_endpoint(path="metrics", api_version="v0.9")
         resp = self._session.get(url)
         if not resp.status_code == 200:
             raise RuntimeError(f"Can't get {url=}. {resp.status_code=} {resp.text=}")
@@ -90,21 +90,21 @@ class ClassificationFunctionHandler:
 
     def get_input_modality(self) -> str:
         self._refresh_auth_token()
-        url = self._url_handler.api_endpoint("")
+        url = self._url_handler.api_endpoint()
         response = self._session.get(url)
         assert response.status_code == 200, f"{response.text=} {response.status_code=}"
         return response.json()["input"]
 
     def get_output_modality(self) -> str:
         self._refresh_auth_token()
-        url = self._url_handler.api_endpoint("")
+        url = self._url_handler.api_endpoint()
         response = self._session.get(url)
         assert response.status_code == 200, f"{response.text=} {response.status_code=}"
         return response.json()["output"]
 
     def get_v09_function_meta(self) -> Dict:
         self._refresh_auth_token()
-        url = self._url_handler.api_endpoint("", api_version="v0.9")
+        url = self._url_handler.api_endpoint(api_version="v0.9")
         resp = self._session.get(url)
         if not resp.status_code == 200:
             raise RuntimeError(f"Can't get {url=}. {resp.status_code=} {resp.text=}")
@@ -112,7 +112,7 @@ class ClassificationFunctionHandler:
 
     def delete(self) -> None:
         self._refresh_auth_token()
-        endpoint = self._url_handler.api_endpoint("")
+        endpoint = self._url_handler.api_endpoint()
         response = self._session.delete(endpoint)
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
         print(f"Function {self._url_handler.train_page} deleted.")

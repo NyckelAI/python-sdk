@@ -130,6 +130,10 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def delete_labels(self, label_ids: List[str]) -> None:
+        pass
+
+    @abc.abstractmethod
     def create_samples(self, samples: List[ClassificationSample]) -> List[str]:
         pass
 
@@ -150,6 +154,10 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def delete_samples(self, sample_ids: List[str]) -> None:
+        pass
+
+    @abc.abstractmethod
     def delete(self) -> None:
         """Deletes the function"""
         pass
@@ -164,8 +172,10 @@ class ClassificationFunctionURLHandler:
     def train_page(self) -> str:
         return f"{self._server_url}/console/functions/{self._function_id}/train"
 
-    def api_endpoint(self, path: str, api_version: str = "v1") -> str:
-        if path == "":
-            return f"{self._server_url}/{api_version}/functions/{self._function_id}"
-        else:
-            return f"{self._server_url}/{api_version}/functions/{self._function_id}/{path}"
+    def api_endpoint(self, path: Optional[str] = None, api_version: str = "v1", query_str: Optional[str] = None) -> str:
+        endpoint = f"{self._server_url}/{api_version}/functions/{self._function_id}"
+        if path:
+            endpoint += f"/{path}"
+        if query_str:
+            endpoint += f"?{query_str}"
+        return endpoint

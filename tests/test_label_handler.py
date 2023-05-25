@@ -3,6 +3,7 @@ import time
 from nyckel import (
     ClassificationLabel,
 )
+from nyckel.functions.classification.text_classification import TextClassificationFunction
 
 
 def test_labels(text_classification_function):
@@ -40,6 +41,15 @@ def test_labels(text_classification_function):
         labels = func.list_labels()
     assert len(labels) == 1
     assert labels[0].name == "Nice"
+
+
+def test_parallel_delete(text_classification_function_with_content):
+    func: TextClassificationFunction = text_classification_function_with_content
+    labels = func.list_labels()
+    label_ids = [label.id for label in labels]  # type: ignore
+    func.delete_labels(label_ids)
+    time.sleep(1)
+    assert len(func.list_labels()) == 0
 
 
 def test_labels_optional_params(text_classification_function):

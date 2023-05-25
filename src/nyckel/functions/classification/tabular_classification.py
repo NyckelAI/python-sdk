@@ -93,13 +93,16 @@ class TabularClassificationFunction(ClassificationFunction):
     def delete_label(self, label_id: str) -> None:
         return self._label_handler.delete_label(label_id)
 
+    def delete_labels(self, label_ids: List[str]) -> None:
+        return self._label_handler.delete_labels(label_ids)
+
     def create_samples(self, samples: List[TabularClassificationSample]) -> List[str]:  # type: ignore
         self._create_fields_as_needed(samples)
         return self._sample_handler.create_samples(samples, lambda x: x)
 
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         self._refresh_auth_token()
-        samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
+        samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="samples"))
 
         labels = self._label_handler.list_labels()
         fields = self._field_handler.list_fields()
@@ -125,6 +128,9 @@ class TabularClassificationFunction(ClassificationFunction):
 
     def delete_sample(self, sample_id: str) -> None:
         self._sample_handler.delete_sample(sample_id)
+
+    def delete_samples(self, sample_ids: List[str]) -> None:
+        self._sample_handler.delete_samples(sample_ids)
 
     def delete(self) -> None:
         self._function_handler.delete()
@@ -201,7 +207,7 @@ class TabularFieldHandler:
         self._refresh_auth_token()
         print(f"Posting {len(fields)} fields to {self._url_handler.train_page} ...")
         bodies = [{"name": field.name, "type": field.type} for field in fields]
-        url = self._url_handler.api_endpoint("fields")
+        url = self._url_handler.api_endpoint(path="fields")
         responses = ParallelPoster(self._session, url)(bodies)
         field_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
@@ -217,12 +223,12 @@ class TabularFieldHandler:
 
     def list_fields(self) -> List[TabularFunctionField]:
         self._refresh_auth_token()
-        fields_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("fields"))
+        fields_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="fields"))
         return [self._field_from_dict(entry) for entry in fields_dict_list]
 
     def read_field(self, field_id: str) -> TabularFunctionField:
         self._refresh_auth_token()
-        url = self._url_handler.api_endpoint(f"fields/{field_id}")
+        url = self._url_handler.api_endpoint(path=f"fields/{field_id}")
         response = self._session.get(url)
         if not response.status_code == 200:
             raise RuntimeError(
@@ -232,7 +238,7 @@ class TabularFieldHandler:
 
     def delete_field(self, field_id: str) -> None:
         self._refresh_auth_token()
-        response = self._session.delete(self._url_handler.api_endpoint(f"fields/{field_id}"))
+        response = self._session.delete(self._url_handler.api_endpoint(path=f"fields/{field_id}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
         print(f"Field {field_id} deleted.")
 

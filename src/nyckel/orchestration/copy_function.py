@@ -1,9 +1,9 @@
 import sys
+import time
 from datetime import datetime
 from typing import Type
 
-import time
-import fire
+import fire  # type:ignore
 
 from nyckel import ImageClassificationFunction, OAuth2Renewer, TabularClassificationFunction, TextClassificationFunction
 from nyckel.functions.classification.classification import ClassificationFunction

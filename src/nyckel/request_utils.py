@@ -29,9 +29,7 @@ class ParallelPoster:
                 index = index_by_future[future]
                 body = bodies[index]
                 response = future.result()
-                if response.status_code == 200:
-                    pass  # It worked.
-                else:
+                if not response.status_code == 200:
                     raise ValueError(
                         f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}"
                     )
@@ -39,32 +37,73 @@ class ParallelPoster:
         return responses
 
 
-def repeated_get(session: requests.Session, endpoint: str) -> List[Dict]:
-    def get_base_url(endpoint: str) -> Tuple[str, str]:
-        if ":5000" in endpoint:
+class ParallelDeleter:
+    def __init__(self, session: requests.Session, endpoint: str):
+        self._session = session
+        self._endpoint = endpoint
+
+    def _delete_one(self, asset_id: str) -> requests.Response:
+        response = self._session.delete(f"{self._endpoint}/{asset_id}")
+        return response
+
+    def __call__(self, asset_ids: List[str]) -> List[requests.Response]:
+        responses = [requests.Response()] * len(asset_ids)
+        n_workers = min(len(asset_ids), NBR_CONCURRENT_REQUESTS)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:
+            index_by_future = {
+                executor.submit(self._delete_one, asset_id): index for index, asset_id in enumerate(asset_ids)
+            }
+            for future in tqdm(concurrent.futures.as_completed(index_by_future)):
+                index = index_by_future[future]
+                asset_id = asset_ids[index]
+                response = future.result()
+                if not response.status_code == 200:
+                    raise ValueError(
+                        f"Error when deleting asset: {self._endpoint}/{asset_id}. {response.status_code=} {response.text=}"
+                    )
+                responses[index] = response
+        return responses
+
+
+class SequentialGetter:
+    def __init__(self, session: requests.Session, endpoint: str):
+        self._session = session
+        self._endpoint = endpoint
+
+    def __call__(self) -> List[Dict]:
+        base_url, slug = self._get_base_url()
+
+        resp = self._session.get(base_url + slug)
+        if not resp.status_code == 200:
+            raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
+
+        resource_list = resp.json()
+
+        while "next" in resp.links:
+            slug = resp.links["next"]["url"]
+            resp = self._session.get(base_url + slug)
+            if not resp.status_code == 200:
+                raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
+            resource_list.extend(resp.json())
+
+        return resource_list
+
+    def _get_base_url(self) -> Tuple[str, str]:
+        if ":5000" in self._endpoint:
             # Running locally
-            parts = endpoint.split(":5000")
+            parts = self._endpoint.split(":5000")
             base_url, slug = parts
             base_url += ":5000"
         else:
-            parts = endpoint.split(".com")
+            parts = self._endpoint.split(".com")
             base_url, slug = parts
             base_url += ".com"
         return base_url, slug
 
-    base_url, slug = get_base_url(endpoint)
-    resp = session.get(base_url + slug)
-    if not resp.status_code == 200:
-        raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
-    resource_list = resp.json()
-    while "next" in resp.links:
-        slug = resp.links["next"]["url"]
-        resp = session.get(base_url + slug)
-        if not resp.status_code == 200:
-            raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
-        resource_list.extend(resp.json())
 
-    return resource_list
+def repeated_get(session: requests.Session, endpoint: str) -> List[Dict]:
+    return SequentialGetter(session, endpoint)()
 
 
 def get_session_that_retries() -> requests.Session:
