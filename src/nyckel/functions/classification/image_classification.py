@@ -1,8 +1,7 @@
 import base64
 import os
-import time
 from io import BytesIO
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 import requests
 from PIL import Image
@@ -11,16 +10,17 @@ from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
     ClassificationFunction,
-    ClassificationFunctionHandler,
     ClassificationFunctionURLHandler,
     ClassificationLabel,
-    ClassificationLabelHandler,
     ClassificationPrediction,
     ImageClassificationSample,
 )
+
+from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
+from nyckel.functions.classification.label_handler import ClassificationLabelHandler
+from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelPoster, get_session_that_retries, repeated_get
-from nyckel.utils import chunkify_list
+from nyckel.request_utils import get_session_that_retries, repeated_get
 
 
 class ImageClassificationFunction(ClassificationFunction):
@@ -34,6 +34,7 @@ class ImageClassificationFunction(ClassificationFunction):
         self._function_handler = ClassificationFunctionHandler(function_id, auth)
         self._label_handler = ClassificationLabelHandler(function_id, auth)
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+        self._sample_handler = ClassificationSampleHandler(function_id, auth)
         self._decoder = ImageDecoder()
         self._encoder = ImageEncoder()
         self._session = get_session_that_retries()
@@ -52,26 +53,19 @@ class ImageClassificationFunction(ClassificationFunction):
         return status_string
 
     def __call__(self, sample_data: str) -> ClassificationPrediction:
-        self._refresh_auth_token()
-        body = {"data": self._sample_data_to_body(sample_data)}
-        endpoint = self._url_handler.api_endpoint("invoke")
-        response = self._session.post(endpoint, json=body)
-
-        if "No model available" in response.text:
-            raise ValueError(
-                f"No model trained yet for this function. Go to {self._url_handler.train_page} to see function status."
-            )
-
-        assert response.status_code == 200, f"Invoke failed with {response.status_code=}, {response.text=}"
-
-        return ClassificationPrediction(
-            label_name=response.json()["labelName"],
-            confidence=response.json()["confidence"],
-        )
+        return self.invoke([sample_data])[0]
 
     @property
     def function_id(self) -> str:
         return self._function_id
+
+    @property
+    def sample_count(self) -> int:
+        return self._function_handler.sample_count
+
+    @property
+    def label_count(self) -> int:
+        return self._function_handler.label_count
 
     def get_name(self) -> str:
         return self._function_handler.get_name()
@@ -81,30 +75,7 @@ class ImageClassificationFunction(ClassificationFunction):
         return self._function_handler.get_metrics()
 
     def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
-        self._refresh_auth_token()
-        if not self.has_trained_model():
-            raise ValueError(
-                f"No model trained yet for this function. Go to {self._url_handler.train_page} to see function status."
-            )
-        print(f"Invoking {len(sample_data_list)} samples to {self._url_handler.train_page} ...")
-
-        def _invoke_chunk(sample_data_list_chunk: List[str]) -> List[ClassificationPrediction]:
-            bodies = [{"data": self._sample_data_to_body(sample_data)} for sample_data in sample_data_list_chunk]
-            endpoint = self._url_handler.api_endpoint("invoke")
-            response_list = ParallelPoster(self._session, endpoint)(bodies)
-            return [
-                ClassificationPrediction(
-                    label_name=response.json()["labelName"],
-                    confidence=response.json()["confidence"],
-                )
-                for response in response_list
-            ]
-
-        predictions: List[ClassificationPrediction] = list()
-        for chunk in chunkify_list(sample_data_list, 500):
-            predictions.extend(_invoke_chunk(chunk))
-
-        return predictions
+        return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body)
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
@@ -125,69 +96,33 @@ class ImageClassificationFunction(ClassificationFunction):
         return self._label_handler.delete_label(label_id)
 
     def create_samples(self, samples: List[ImageClassificationSample]) -> List[str]:  # type: ignore
-        self._refresh_auth_token()
-        print(f"Posting {len(samples)} samples to {self._url_handler.train_page} ...")
-
-        def _post_chunk(samples_chunk: List[ImageClassificationSample]) -> List[str]:
-            # Chunking up the processing since we fetch & resize images before posting.
-            bodies = []
-            for sample in samples_chunk:
-                body: Dict[str, Union[str, Dict, None]] = {
-                    "data": self._sample_data_to_body(sample.data),
-                    "externalId": sample.external_id,
-                }
-                if sample.annotation:
-                    body["annotation"] = {"labelName": sample.annotation.label_name}
-                bodies.append(body)
-
-            endpoint = self._url_handler.api_endpoint("samples")
-            responses = ParallelPoster(self._session, endpoint)(bodies)
-            sample_ids_chunk = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
-            return sample_ids_chunk
-
-        sample_ids: List[str] = list()
-        for samples_chunk in chunkify_list(samples, 500):
-            sample_ids.extend(_post_chunk(samples_chunk))
-
-        return sample_ids
+        return self._sample_handler.create_samples(samples, self._sample_data_to_body)
 
     def list_samples(self) -> List[ImageClassificationSample]:  # type: ignore
         self._refresh_auth_token()
         samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("samples"))
+
         labels = self._label_handler.list_labels()
         label_name_by_id = {label.id: label.name for label in labels}
-        samples_typed = [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]
-        return samples_typed
+
+        return [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]
 
     def read_sample(self, sample_id: str) -> ImageClassificationSample:
-        self._refresh_auth_token()
-        response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
-        if response.status_code == 404:
-            # If calling read right after create, the resource might not be available. Sleep and retry once.
-            time.sleep(1)
-            response = self._session.get(self._url_handler.api_endpoint(f"samples/{sample_id}"))
-        if not response.status_code == 200:
-            raise RuntimeError(f"Unable to fetch sample {sample_id} from {self._url_handler.train_page}")
+        sample_dict = self._sample_handler.read_sample(sample_id)
+
         labels = self._label_handler.list_labels()
         label_name_by_id = {label.id: label.name for label in labels}
-        return self._sample_from_dict(response.json(), label_name_by_id)
+
+        return self._sample_from_dict(sample_dict, label_name_by_id)
 
     def update_sample(self, sample: ImageClassificationSample) -> ImageClassificationSample:  # type: ignore
         raise NotImplementedError
 
     def delete_sample(self, sample_id: str) -> None:
-        self._refresh_auth_token()
-        endpoint = self._url_handler.api_endpoint(f"samples/{sample_id}")
-        response = self._session.delete(endpoint)
-        assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        print(f"Sample {sample_id} deleted.")
+        self._sample_handler.delete_sample(sample_id)
 
     def delete(self) -> None:
-        self._refresh_auth_token()
-        endpoint = self._url_handler.api_endpoint("")
-        response = self._session.delete(endpoint)
-        assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        print(f"Function {self._url_handler.train_page} deleted.")
+        self._function_handler.delete()
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
