@@ -74,6 +74,7 @@ class ClassificationFunctionHandler:
         _assert_function_type(response)
 
     def get_name(self) -> str:
+        self._refresh_auth_token()
         url = f"{self._auth.server_url}/v1/functions/{self._function_id}"
         response = self._session.get(url)
         assert response.status_code == 200
@@ -86,6 +87,20 @@ class ClassificationFunctionHandler:
         if not resp.status_code == 200:
             raise RuntimeError(f"Can't get {url=}. {resp.status_code=} {resp.text=}")
         return resp.json()
+
+    def get_input_modality(self) -> str:
+        self._refresh_auth_token()
+        url = self._url_handler.api_endpoint("")
+        response = self._session.get(url)
+        assert response.status_code == 200, f"{response.text=} {response.status_code=}"
+        return response.json()["input"]
+
+    def get_output_modality(self) -> str:
+        self._refresh_auth_token()
+        url = self._url_handler.api_endpoint("")
+        response = self._session.get(url)
+        assert response.status_code == 200, f"{response.text=} {response.status_code=}"
+        return response.json()["output"]
 
     def get_v09_function_meta(self) -> Dict:
         self._refresh_auth_token()
