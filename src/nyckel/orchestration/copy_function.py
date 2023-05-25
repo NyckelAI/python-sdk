@@ -50,7 +50,7 @@ class NyckelFunctionDuplicator:
 
     def _request_confirmation(self, function_name: str, function_id: str, n_labels: int, n_samples: int) -> bool:
         reply = input(
-            f"Ok to proceed with copy of function: {function_name}, id: {function_id}, with {n_labels} labels and {n_samples} samples (y/n)? "
+            f"Ready to copy function: [name: {function_name}, id: {function_id}, label-count: {n_labels}, sample-count: {n_samples}]. Ok to proceed (y/n)? "
         )
         return reply == "y"
 
