@@ -4,7 +4,7 @@ from typing import Dict, List
 from nyckel import OAuth2Renewer
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler, ClassificationLabel
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelPoster, get_session_that_retries, repeated_get
+from nyckel.request_utils import ParallelDeleter, ParallelPoster, get_session_that_retries, repeated_get
 
 
 class ClassificationLabelHandler:
@@ -13,6 +13,7 @@ class ClassificationLabelHandler:
         self._auth = auth
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
+        self._refresh_auth_token()
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
@@ -23,7 +24,7 @@ class ClassificationLabelHandler:
         bodies = [
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels
         ]
-        responses = ParallelPoster(self._session, self._url_handler.api_endpoint("labels"))(bodies)
+        responses = ParallelPoster(self._session, self._url_handler.api_endpoint(path="labels"))(bodies)
 
         label_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
@@ -39,13 +40,13 @@ class ClassificationLabelHandler:
 
     def list_labels(self) -> List[ClassificationLabel]:
         self._refresh_auth_token()
-        labels_dict_list = repeated_get(self._session, self._url_handler.api_endpoint("labels"))
+        labels_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="labels"))
         labels = [self._label_from_dict(entry) for entry in labels_dict_list]
         return labels
 
     def read_label(self, label_id: str) -> ClassificationLabel:
         self._refresh_auth_token()
-        response = self._session.get(self._url_handler.api_endpoint(f"labels/{label_id}"))
+        response = self._session.get(self._url_handler.api_endpoint(path=f"labels/{label_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
                 f"Unable to fetch label {label_id} from {self._url_handler.train_page} {response.text=} {response.status_code=}"
@@ -58,9 +59,16 @@ class ClassificationLabelHandler:
 
     def delete_label(self, label_id: str) -> None:
         self._refresh_auth_token()
-        response = self._session.delete(self._url_handler.api_endpoint(f"labels/{label_id}"))
+        response = self._session.delete(self._url_handler.api_endpoint(path=f"labels/{strip_nyckel_prefix(label_id)}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
         print(f"Label {label_id} deleted.")
+
+    def delete_labels(self, label_ids: List[str]) -> None:
+        self._refresh_auth_token()
+        label_ids = [strip_nyckel_prefix(label_id) for label_id in label_ids]
+        parallel_deleter = ParallelDeleter(self._session, self._url_handler.api_endpoint(path="labels"))
+        parallel_deleter(label_ids)
+        print(f"{len(label_ids)} labels deleted.")
 
     def _label_from_dict(self, label_dict: Dict) -> ClassificationLabel:
         return ClassificationLabel(
