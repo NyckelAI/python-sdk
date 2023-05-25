@@ -91,6 +91,11 @@ class ClassificationFunction(abc.ABC):
     def label_count(self) -> int:
         pass
 
+    @property
+    @abc.abstractmethod
+    def train_page(self) -> str:
+        pass
+
     @abc.abstractmethod
     def get_name(self) -> str:
         pass

@@ -1,78 +1,75 @@
+import sys
 from datetime import datetime
 from typing import Type
 
+import time
 import fire
 
 from nyckel import ImageClassificationFunction, OAuth2Renewer, TabularClassificationFunction, TextClassificationFunction
 from nyckel.functions.classification.classification import ClassificationFunction
+from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.request_utils import get_session_that_retries
 
 
 class NyckelFunctionDuplicator:
-    def __init__(self, from_function_id: str, auth: OAuth2Renewer):
+    def __init__(self, from_function_id: str, auth: OAuth2Renewer, skip_confirmation: bool = False):
         self._from_function_id = from_function_id
         self._auth = auth
+        self._skip_confirmation = skip_confirmation
         self._session = get_session_that_retries()
-        self._function_input_type: str
+        self._function_handler: ClassificationFunctionHandler
 
-    def __call__(self) -> None:
+    def __call__(self) -> ClassificationFunction:
         print(f"-> Starting copy process for {self._from_function_id} ...")
         self._refresh_auth_token()
-        self._set_function_input_type()
+        self._function_handler = ClassificationFunctionHandler(self._from_function_id, self._auth)
+        self._validate_function_type()
+        self._request_user_confirmation()
+        return self._make_copy()
 
-        from_function = self._load_function()
-        print(f"-> Loaded up function {self._from_function_id}")
-        to_function = self._make_copy(from_function)
-        if not to_function == from_function:
-            print(f"-> Done!\n{from_function}\nsuccessfully copied to\n{to_function}")
-
-    def _set_function_input_type(self) -> None:
-        url = f"{self._auth.server_url}/v1/functions/{self._from_function_id}"
-        response = self._session.get(url)
-        assert response.status_code == 200, f"{response.text=} {response.status_code=}"
-        if not response.json()["output"] == "Classification":
-            raise ValueError("Can only copy classification functions.")
-        function_input = response.json()["input"]
-        assert function_input in ["Text", "Image", "Tabular"]
-        self._function_input_type = function_input
-
-    def _load_function(self) -> ClassificationFunction:
-        return self._get_function_type()(self._from_function_id, self._auth)
+    def _validate_function_type(self) -> None:
+        if not self._function_handler.get_output_modality() == "Classification":
+            raise ValueError("Can only copy Classification functions.")
+        if not self._function_handler.get_input_modality() in ["Text", "Image", "Tabular"]:
+            raise ValueError(f"Unknown output type {self._function_handler.get_input_modality()}")
 
     def _get_function_type(self) -> Type[ClassificationFunction]:
-        if self._function_input_type == "Text":
+        input_modality = self._function_handler.get_input_modality()
+        if input_modality == "Text":
             return TextClassificationFunction
-        if self._function_input_type == "Image":
+        if input_modality == "Image":
             return ImageClassificationFunction
-        if self._function_input_type == "Tabular":
-            return TabularClassificationFunction
-        raise ValueError(f"Unknown input type {self._function_input_type=}")
+        return TabularClassificationFunction
 
-    def _request_confirmation(self, function_name: str, function_id: str, n_labels: int, n_samples: int) -> bool:
+    def _request_user_confirmation(self) -> None:
+        if self._skip_confirmation:
+            return None
         reply = input(
-            f"Ready to copy function: [name: {function_name}, id: {function_id}, label-count: {n_labels}, sample-count: {n_samples}]. Ok to proceed (y/n)? "
+            f"Ready to copy function: [name: {self._function_handler.get_name()}, id: {self._from_function_id}, label-count: {self._function_handler.label_count}, sample-count: {self._function_handler.sample_count}]. Ok to proceed (y/n)? "
         )
-        return reply == "y"
+        if not reply == "y":
+            print("Ok. Aborting...")
+            sys.exit(0)
 
-    def _make_copy(self, from_function: ClassificationFunction) -> ClassificationFunction:
+    def _make_copy(self) -> ClassificationFunction:
         print(f"-> Reading labels and samples from {self._from_function_id}")
+        FunctionType = self._get_function_type()
+        from_function = FunctionType(self._from_function_id, self._auth)
         labels = from_function.list_labels()
         samples = from_function.list_samples()
 
-        if not self._request_confirmation(
-            from_function.get_name(), from_function.function_id, len(labels), len(samples)
-        ):
-            print("Ok. Aborting...")
-            return from_function
+        to_function = FunctionType.create_function(self.new_function_name, self._auth)
 
-        new_function = self._get_function_type().create_function(
-            f"{from_function.get_name()} [COPIED AT {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]", self._auth
-        )
+        print(f"-> Adding labels and samples to {to_function.function_id}")
+        to_function.create_labels(labels)
+        to_function.create_samples(samples)
+        time.sleep(2)  # Pause to allow assets to be available via the API.
+        print(f"-> Done! New function available at: {to_function.train_page}")
+        return to_function
 
-        print(f"-> Adding labels and samples to {new_function.function_id}")
-        new_function.create_labels(labels)
-        new_function.create_samples(samples)
-        return new_function
+    @property
+    def new_function_name(self) -> str:
+        return f"COPY OF {self._function_handler.get_name()} -- {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})

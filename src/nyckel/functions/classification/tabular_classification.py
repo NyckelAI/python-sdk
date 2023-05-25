@@ -43,7 +43,7 @@ class TabularClassificationFunction(ClassificationFunction):
         return self.__repr__()
 
     def __repr__(self) -> str:
-        status_string = f"Name: {self.get_name()}, id: {self.function_id}, url: {self._url_handler.train_page}"
+        status_string = f"Name: {self.get_name()}, id: {self.function_id}, url: {self.train_page}"
         return status_string
 
     def __call__(self, sample_data: Dict) -> ClassificationPrediction:  # type: ignore
@@ -60,6 +60,10 @@ class TabularClassificationFunction(ClassificationFunction):
     @property
     def label_count(self) -> int:
         return self._function_handler.label_count
+
+    @property
+    def train_page(self) -> str:
+        return self._url_handler.train_page
 
     def get_name(self) -> str:
         return self._function_handler.get_name()

@@ -1,8 +1,33 @@
 import os
+import time
 
+import numpy as np
 import pytest
 import requests
-from nyckel import ImageClassificationFunction, OAuth2Renewer, TextClassificationFunction, TabularClassificationFunction
+from nyckel import ImageClassificationFunction, OAuth2Renewer, TabularClassificationFunction, TextClassificationFunction
+from nyckel.functions.classification.classification import (
+    ClassificationAnnotation,
+    ClassificationFunction,
+    ClassificationLabel,
+    ImageClassificationSample,
+    TabularClassificationSample,
+    TextClassificationSample,
+)
+from nyckel.functions.classification.image_classification import ImageEncoder
+from PIL import Image
+
+
+def make_random_image(size=100):
+    imarray = np.random.rand(size, size, 3) * 255
+    img = Image.fromarray(imarray.astype("uint8")).convert("RGB")
+    return ImageEncoder().image_to_base64(img)
+
+
+def hold_until_list_samples_available(function: ClassificationFunction, expected_count: int):
+    actual_count = 0
+    while not actual_count == expected_count:
+        actual_count = len(function.list_samples())
+        time.sleep(0.25)
 
 
 @pytest.fixture
@@ -15,24 +40,84 @@ def auth_test_user() -> OAuth2Renewer:
 
 
 @pytest.fixture
-def text_classification_function(auth_test_user):
+def text_classification_function(auth_test_user: OAuth2Renewer):
     func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
 
 
 @pytest.fixture
-def image_classification_function(auth_test_user):
+def text_classification_function_with_content(auth_test_user: OAuth2Renewer):
+    func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+    labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
+    func.create_labels(labels_to_create)
+    nice = ClassificationAnnotation(label_name="Nice")
+    boo = ClassificationAnnotation(label_name="Boo")
+    samples = [
+        TextClassificationSample(data="hello", external_id="1", annotation=nice),
+        TextClassificationSample(data="hi", external_id="2", annotation=nice),
+        TextClassificationSample(data="Good bye", external_id="3", annotation=boo),
+        TextClassificationSample(data="I'm leaving", external_id="4", annotation=boo),
+        TextClassificationSample(data="Hi again", external_id="5"),
+    ]
+    func.create_samples(samples)
+    hold_until_list_samples_available(func, len(samples))
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def image_classification_function(auth_test_user: OAuth2Renewer):
     func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
 
 
 @pytest.fixture
-def tabular_classification_function(auth_test_user):
+def image_classification_function_with_content(auth_test_user: OAuth2Renewer):
+    func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+    labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
+    func.create_labels(labels_to_create)
+    nice = ClassificationAnnotation(label_name="Nice")
+    boo = ClassificationAnnotation(label_name="Boo")
+    samples = [
+        ImageClassificationSample(data=make_random_image(), external_id="1", annotation=nice),
+        ImageClassificationSample(data=make_random_image(), external_id="2", annotation=nice),
+        ImageClassificationSample(data=make_random_image(), external_id="3", annotation=boo),
+        ImageClassificationSample(data=make_random_image(), external_id="4", annotation=boo),
+        ImageClassificationSample(data=make_random_image(), external_id="5"),
+    ]
+    func.create_samples(samples)
+    hold_until_list_samples_available(func, len(samples))
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def tabular_classification_function(auth_test_user: OAuth2Renewer):
     func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
     yield func
-    # func.delete()
+    func.delete()
+
+
+@pytest.fixture
+def tabular_classification_function_with_content(auth_test_user: OAuth2Renewer):
+    func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+    labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
+    func.create_labels(labels_to_create)
+    nice = ClassificationAnnotation(label_name="Nice")
+    boo = ClassificationAnnotation(label_name="Boo")
+    samples = [
+        TabularClassificationSample(data={"firstname": "Adam", "lastname": "Adams"}, external_id="1", annotation=nice),
+        TabularClassificationSample(data={"firstname": "Bo", "lastname": "Biden"}, external_id="2", annotation=nice),
+        TabularClassificationSample(data={"firstname": "Carl", "lastname": "Carrot"}, external_id="3", annotation=boo),
+        TabularClassificationSample(data={"firstname": "Dick", "lastname": "Denali"}, external_id="4", annotation=boo),
+        TabularClassificationSample(data={"firstname": "Erik", "lastname": "Elk"}, external_id="5"),
+    ]
+    func.create_samples(samples)
+    hold_until_list_samples_available(func, len(samples))
+    yield func
+    func.delete()
 
 
 def get_test_user() -> OAuth2Renewer:

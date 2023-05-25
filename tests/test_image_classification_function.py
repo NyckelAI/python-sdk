@@ -9,18 +9,11 @@ from nyckel import (
     ImageClassificationSample,
     ImageClassificationFunction,
 )
-from nyckel.functions.classification.image_classification import ImageDecoder, ImageEncoder
-from PIL import Image
+from nyckel.functions.classification.image_classification import ImageDecoder
 import numpy as np
-from conftest import get_test_user
+from conftest import get_test_user, make_random_image
 
 user = get_test_user()
-
-
-def make_random_image(size=100):
-    imarray = np.random.rand(size, size, 3) * 255
-    img = Image.fromarray(imarray.astype("uint8")).convert("RGB")
-    return ImageEncoder().image_to_base64(img)
 
 
 def test_samples(image_classification_function):
