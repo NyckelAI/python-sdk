@@ -13,12 +13,11 @@ from nyckel.functions.classification.classification import (
     TabularClassificationSample,
     TabularFunctionField,
 )
-
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelPoster, get_session_that_retries, repeated_get
+from nyckel.request_utils import ParallelPoster, SequentialGetter, get_session_that_retries
 
 
 class TabularClassificationFunction(ClassificationFunction):
@@ -32,7 +31,7 @@ class TabularClassificationFunction(ClassificationFunction):
         self._sample_handler = ClassificationSampleHandler(function_id, auth)
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
-
+        self._refresh_auth_token()
         self._function_handler.validate_function("Tabular")
 
     @classmethod
@@ -102,7 +101,7 @@ class TabularClassificationFunction(ClassificationFunction):
 
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         self._refresh_auth_token()
-        samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="samples"))
+        samples_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="samples"))()
 
         labels = self._label_handler.list_labels()
         fields = self._field_handler.list_fields()
@@ -223,7 +222,7 @@ class TabularFieldHandler:
 
     def list_fields(self) -> List[TabularFunctionField]:
         self._refresh_auth_token()
-        fields_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="fields"))
+        fields_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="fields"))()
         return [self._field_from_dict(entry) for entry in fields_dict_list]
 
     def read_field(self, field_id: str) -> TabularFunctionField:

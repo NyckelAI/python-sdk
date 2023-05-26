@@ -4,7 +4,7 @@ from typing import Dict, List
 from nyckel import OAuth2Renewer
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler, ClassificationLabel
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelDeleter, ParallelPoster, get_session_that_retries, repeated_get
+from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
 
 
 class ClassificationLabelHandler:
@@ -13,7 +13,6 @@ class ClassificationLabelHandler:
         self._auth = auth
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
-        self._refresh_auth_token()
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
@@ -40,7 +39,7 @@ class ClassificationLabelHandler:
 
     def list_labels(self) -> List[ClassificationLabel]:
         self._refresh_auth_token()
-        labels_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="labels"))
+        labels_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="labels"))()
         labels = [self._label_from_dict(entry) for entry in labels_dict_list]
         return labels
 

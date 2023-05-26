@@ -12,7 +12,7 @@ from nyckel.functions.classification.classification import (
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
-from nyckel.request_utils import get_session_that_retries, repeated_get
+from nyckel.request_utils import get_session_that_retries, SequentialGetter
 
 
 class NyckelLabelDeleter:
@@ -62,7 +62,7 @@ class NyckelLabelDeleter:
         url = self._url_handler.api_endpoint(
             path="samples", query_str=f"annotationLabelId={label_id_by_name[label_name]}"
         )
-        samples_list_dict = repeated_get(self._session, url)
+        samples_list_dict = SequentialGetter(self._session, url)()
         return samples_list_dict
 
     def _get_function_type(self) -> Type[ClassificationFunction]:
