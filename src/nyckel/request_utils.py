@@ -4,7 +4,6 @@ from typing import Dict, List, Tuple
 import requests
 from requests.adapters import HTTPAdapter, Retry
 from tqdm import tqdm
-from warnings import warn
 
 from nyckel.config import NBR_CONCURRENT_REQUESTS
 
@@ -101,11 +100,6 @@ class SequentialGetter:
             base_url, slug = parts
             base_url += ".com"
         return base_url, slug
-
-
-def repeated_get(session: requests.Session, endpoint: str) -> List[Dict]:
-    warn("This is deprecated; version=0.0.34", DeprecationWarning, stacklevel=2)
-    return SequentialGetter(session, endpoint)()
 
 
 def get_session_that_retries() -> requests.Session:

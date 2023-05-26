@@ -20,7 +20,7 @@ from nyckel.functions.classification.function_handler import ClassificationFunct
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import get_session_that_retries, repeated_get
+from nyckel.request_utils import get_session_that_retries, SequentialGetter
 
 
 class ImageClassificationFunction(ClassificationFunction):
@@ -107,7 +107,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def list_samples(self) -> List[ImageClassificationSample]:  # type: ignore
         self._refresh_auth_token()
-        samples_dict_list = repeated_get(self._session, self._url_handler.api_endpoint(path="samples"))
+        samples_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="samples"))()
 
         labels = self._label_handler.list_labels()
         label_name_by_id = {label.id: label.name for label in labels}
