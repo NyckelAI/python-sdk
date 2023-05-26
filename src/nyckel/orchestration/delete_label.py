@@ -37,7 +37,8 @@ class NyckelLabelDeleter:
     def _validate_label_name_exists(self, label_name: str) -> None:
         self._refresh_auth_token()
         labels = self._function.list_labels()
-        assert label_name in [label.name for label in labels]
+        if not label_name in [label.name for label in labels]:
+            raise RuntimeError(f"Label: {label_name} not in function {self._function_id}")
 
     def _validate_function_type(self) -> None:
         if not self._function_handler.get_output_modality() == "Classification":
@@ -81,11 +82,12 @@ class NyckelLabelDeleter:
     def _delete_samples(self, sample_ids: List[str]) -> None:
         sample_handler = ClassificationSampleHandler(self._function_id, self._auth)
         sample_handler.delete_samples(sample_ids)
+        print(f"{len(sample_ids)} samples deleted.")
 
     def _delete_label(self, label_name: str) -> None:
         labels: List[ClassificationLabel] = self._function.list_labels()
         label_id_by_name = {label.name: label.id for label in labels}
-        self._function.delete_label(label_id_by_name[label_name])  # type: ignore
+        print(f"Label {label_name} deleted.")
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})

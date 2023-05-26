@@ -31,7 +31,6 @@ class ClassificationSampleHandler:
         self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable, chunk_size: int = 500
     ) -> List[ClassificationPrediction]:
         self._refresh_auth_token()
-        print(f"Invoking {len(sample_data_list)} text samples to {self._url_handler.train_page} ...")
         predictions: List[ClassificationPrediction] = list()
         for chunk in chunkify_list(sample_data_list, 500):
             bodies = [{"data": sample_data_transformer(sample_data)} for sample_data in chunk]
@@ -52,8 +51,9 @@ class ClassificationSampleHandler:
     def create_samples(
         self, samples: ClassificationSampleList, sample_data_transformer: Callable, chunk_size: int = 500
     ) -> List[str]:
+        if len(samples) == 0:
+            return []
         self._refresh_auth_token()
-        print(f"Posting {len(samples)} samples to {self._url_handler.train_page} ...")
         sample_ids: List[str] = list()
         for samples_chunk in chunkify_list(samples, chunk_size):
             sample_ids.extend(self._create_samples_chunk(samples_chunk, sample_data_transformer))
@@ -90,14 +90,14 @@ class ClassificationSampleHandler:
         endpoint = self._url_handler.api_endpoint(path=f"samples/{strip_nyckel_prefix(sample_id)}")
         response = self._session.delete(endpoint)
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        print(f"Sample {sample_id} deleted.")
 
     def delete_samples(self, sample_ids: List[str]) -> None:
+        if len(sample_ids) == 0:
+            return None
         self._refresh_auth_token()
         sample_ids = [strip_nyckel_prefix(sample_id) for sample_id in sample_ids]
         parallel_deleter = ParallelDeleter(self._session, self._url_handler.api_endpoint(path="samples"))
         parallel_deleter(sample_ids)
-        print(f"{len(sample_ids)} samples deleted.")
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})

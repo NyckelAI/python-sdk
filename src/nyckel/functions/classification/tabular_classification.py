@@ -148,7 +148,6 @@ class TabularClassificationFunction(ClassificationFunction):
                     new_fields.append(TabularFunctionField(name=field_name, type="Text"))
 
         if len(new_fields) > 0:
-            print(f"Creating {len(new_fields)} new fields for {self._url_handler.train_page} ...")
             self._field_handler.create_fields(new_fields)
 
     def _sample_from_dict(
@@ -204,7 +203,6 @@ class TabularFieldHandler:
 
     def create_fields(self, fields: List[TabularFunctionField]) -> List[str]:
         self._refresh_auth_token()
-        print(f"Posting {len(fields)} fields to {self._url_handler.train_page} ...")
         bodies = [{"name": field.name, "type": field.type} for field in fields]
         url = self._url_handler.api_endpoint(path="fields")
         responses = ParallelPoster(self._session, url)(bodies)
@@ -239,7 +237,6 @@ class TabularFieldHandler:
         self._refresh_auth_token()
         response = self._session.delete(self._url_handler.api_endpoint(path=f"fields/{field_id}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        print(f"Field {field_id} deleted.")
 
     def _field_from_dict(self, field_dict: Dict) -> TabularFunctionField:
         return TabularFunctionField(

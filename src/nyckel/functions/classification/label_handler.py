@@ -18,8 +18,9 @@ class ClassificationLabelHandler:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
+        if len(labels) == 0:
+            return []
         self._refresh_auth_token()
-        print(f"Posting {len(labels)} labels to {self._url_handler.train_page} ...")
         bodies = [
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels
         ]
@@ -60,14 +61,14 @@ class ClassificationLabelHandler:
         self._refresh_auth_token()
         response = self._session.delete(self._url_handler.api_endpoint(path=f"labels/{strip_nyckel_prefix(label_id)}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        print(f"Label {label_id} deleted.")
 
     def delete_labels(self, label_ids: List[str]) -> None:
+        if len(label_ids) == 0:
+            return None
         self._refresh_auth_token()
         label_ids = [strip_nyckel_prefix(label_id) for label_id in label_ids]
         parallel_deleter = ParallelDeleter(self._session, self._url_handler.api_endpoint(path="labels"))
         parallel_deleter(label_ids)
-        print(f"{len(label_ids)} labels deleted.")
 
     def _label_from_dict(self, label_dict: Dict) -> ClassificationLabel:
         return ClassificationLabel(
