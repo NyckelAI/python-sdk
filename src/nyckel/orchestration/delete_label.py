@@ -8,10 +8,8 @@ from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationFunction,
     ClassificationFunctionURLHandler,
-    ClassificationLabel,
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
-from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.request_utils import get_session_that_retries, SequentialGetter
 
 
@@ -21,12 +19,13 @@ class NyckelLabelDeleter:
         self._auth = auth
         self._skip_confirmation = skip_confirmation
         self._function_handler = ClassificationFunctionHandler(self._function_id, self._auth)
+        self._function = self._load_function()
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
         self._refresh_auth_token()
 
     def delete_label_and_samples(self, label_name: str) -> None:
-        self._function = self._load_function()
+        self._refresh_auth_token()
         self._validate_label_name_exists(label_name)
         self._validate_function_type()
         samples_as_list_of_dicts = self._list_samples_for_label(label_name)
@@ -35,7 +34,6 @@ class NyckelLabelDeleter:
         self._delete_label(label_name)
 
     def _validate_label_name_exists(self, label_name: str) -> None:
-        self._refresh_auth_token()
         labels = self._function.list_labels()
         if not label_name in [label.name for label in labels]:
             raise RuntimeError(f"Label: {label_name} not in function {self._function_id}")
@@ -50,15 +48,14 @@ class NyckelLabelDeleter:
         if self._skip_confirmation:
             return None
         reply = input(
-            f"This will delete label: {label_name} AND the {sample_count} samples annotated with this label. Ok to proceed (y/n)? "
+            f"-> This will delete label: '{label_name}' and the {sample_count} samples annotated as '{label_name}'. Proceed (y/n)? "
         )
         if not reply == "y":
-            print("Ok. Aborting...")
+            print("-> Ok. Aborting...")
             sys.exit(0)
 
     def _list_samples_for_label(self, label_name: str) -> List[Dict]:
-        self._refresh_auth_token()
-        labels: List[ClassificationLabel] = self._function.list_labels()
+        labels = self._function.list_labels()
         label_id_by_name = {label.name: label.id for label in labels}
         url = self._url_handler.api_endpoint(
             path="samples", query_str=f"annotationLabelId={label_id_by_name[label_name]}"
@@ -80,14 +77,14 @@ class NyckelLabelDeleter:
         return FunctionType(self._function_id, self._auth)
 
     def _delete_samples(self, sample_ids: List[str]) -> None:
-        sample_handler = ClassificationSampleHandler(self._function_id, self._auth)
-        sample_handler.delete_samples(sample_ids)
-        print(f"{len(sample_ids)} samples deleted.")
+        self._function.delete_samples(sample_ids)
+        print(f"-> {len(sample_ids)} samples deleted.")
 
     def _delete_label(self, label_name: str) -> None:
-        labels: List[ClassificationLabel] = self._function.list_labels()
+        labels = self._function.list_labels()
         label_id_by_name = {label.name: label.id for label in labels}
-        print(f"Label {label_name} deleted.")
+        self._function.delete_label(label_id_by_name[label_name])  # type: ignore
+        print(f"-> Label '{label_name}' deleted.")
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})

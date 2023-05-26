@@ -25,7 +25,7 @@ class ParallelPoster:
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:
             index_by_future = {executor.submit(self._post_as_json, body): index for index, body in enumerate(bodies)}
-            for future in tqdm(concurrent.futures.as_completed(index_by_future)):
+            for future in tqdm(concurrent.futures.as_completed(index_by_future), desc=f"Posting to {self._endpoint}"):
                 index = index_by_future[future]
                 body = bodies[index]
                 response = future.result()
@@ -54,7 +54,9 @@ class ParallelDeleter:
             index_by_future = {
                 executor.submit(self._delete_one, asset_id): index for index, asset_id in enumerate(asset_ids)
             }
-            for future in tqdm(concurrent.futures.as_completed(index_by_future)):
+            for future in tqdm(
+                concurrent.futures.as_completed(index_by_future), desc=f"Deleting from {self._endpoint}"
+            ):
                 index = index_by_future[future]
                 asset_id = asset_ids[index]
                 response = future.result()

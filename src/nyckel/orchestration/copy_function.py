@@ -45,7 +45,7 @@ class NyckelFunctionDuplicator:
         if self._skip_confirmation:
             return None
         reply = input(
-            f"Ready to copy function: [name: {self._function_handler.get_name()}, id: {self._from_function_id}, label-count: {self._function_handler.label_count}, sample-count: {self._function_handler.sample_count}]. Ok to proceed (y/n)? "
+            f"-> This will copy function: [name: {self._function_handler.get_name()}, id: {self._from_function_id}, label-count: {self._function_handler.label_count}, sample-count: {self._function_handler.sample_count}]. Ok (y/n)? "
         )
         if not reply == "y":
             print("Ok. Aborting...")

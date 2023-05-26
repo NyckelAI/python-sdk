@@ -18,7 +18,7 @@ class ClassificationFunctionHandler:
         assert response.status_code == 200, f"Something went wrong when creating function: {response.text}"
         prefixed_function_id = response.json()["id"]
         function_id = strip_nyckel_prefix(prefixed_function_id)
-        print(f"Created function {name} with id: {function_id}")
+        print(f"-> Created function {name} with id: {function_id}")
         return function_id
 
     def __init__(self, function_id: str, auth: OAuth2Renewer):

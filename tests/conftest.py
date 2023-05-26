@@ -154,6 +154,6 @@ def user_has_project(user: OAuth2Renewer):
 def create_project_for_user(user: OAuth2Renewer):
     session = requests.Session()
     session.headers.update({"authorization": "Bearer " + user.token})
-    print("Creating project for user")
+    print("-> Creating project for user")
     response = session.post(f"{user.server_url}/v0.9/projects", json={"name": "my_project"})
     assert response.status_code == 200
