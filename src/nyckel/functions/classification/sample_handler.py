@@ -1,7 +1,6 @@
 import time
 from typing import Callable, Dict, List, Union
 
-
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationFunctionURLHandler,
@@ -12,7 +11,6 @@ from nyckel.functions.classification.classification import (
 )
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, get_session_that_retries
-from nyckel.utils import chunkify_list
 
 ClassificationSampleList = Union[
     List[TextClassificationSample], List[TabularClassificationSample], List[ImageClassificationSample]
@@ -31,30 +29,29 @@ class ClassificationSampleHandler:
         self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable, chunk_size: int = 500
     ) -> List[ClassificationPrediction]:
         self._refresh_auth_token()
-        predictions: List[ClassificationPrediction] = list()
-        for chunk in chunkify_list(sample_data_list, 500):
-            bodies = [{"data": sample_data_transformer(sample_data)} for sample_data in chunk]
-            predictions.extend(self._invoke_chunk(bodies))
-        return predictions
 
-    def _invoke_chunk(self, invoke_bodies: List[Dict]) -> List[ClassificationPrediction]:
+        bodies = [{"data": sample_data} for sample_data in sample_data_list]
         endpoint = self._url_handler.api_endpoint(path="invoke")
-        response_list = ParallelPoster(self._session, endpoint)(invoke_bodies)
-        return [
+
+        def body_transformer(body: Dict) -> Dict:
+            body["data"] = sample_data_transformer(body["data"])
+            return body
+
+        poster = ParallelPoster(self._session, endpoint, desc="Invoking samples", body_transformer=body_transformer)
+        response_list = poster(bodies)
+        predictions = [
             ClassificationPrediction(
                 label_name=response.json()["labelName"],
                 confidence=response.json()["confidence"],
             )
             for response in response_list
         ]
+        return predictions
 
     def create_samples(
         self, samples: ClassificationSampleList, sample_data_transformer: Callable, chunk_size: int = 500
     ) -> List[str]:
-        if len(samples) == 0:
-            return []
         self._refresh_auth_token()
-        sample_ids: List[str] = list()
 
         bodies = []
         for sample in samples:
@@ -63,15 +60,15 @@ class ClassificationSampleHandler:
                 body["annotation"] = {"labelName": sample.annotation.label_name}
             bodies.append(body)
 
+        endpoint = self._url_handler.api_endpoint(path="samples")
+
         def body_transformer(body: Dict) -> Dict:
             body["data"] = sample_data_transformer(body["data"])
             return body
 
-        endpoint = self._url_handler.api_endpoint(path="samples")
         poster = ParallelPoster(self._session, endpoint, desc="Posting samples", body_transformer=body_transformer)
-        responses = poster(bodies)
-        sample_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
-
+        response_list = poster(bodies)
+        sample_ids = [strip_nyckel_prefix(response.json()["id"]) for response in response_list]
         return sample_ids
 
     def read_sample(self, sample_id: str) -> Dict:
