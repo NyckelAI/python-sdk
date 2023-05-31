@@ -42,6 +42,7 @@ def auth_test_user() -> OAuth2Renewer:
 @pytest.fixture
 def text_classification_function(auth_test_user: OAuth2Renewer):
     func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+    time.sleep(1)
     yield func
     func.delete()
 
@@ -69,6 +70,7 @@ def text_classification_function_with_content(auth_test_user: OAuth2Renewer):
 @pytest.fixture
 def image_classification_function(auth_test_user: OAuth2Renewer):
     func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+    time.sleep(1)
     yield func
     func.delete()
 
@@ -96,6 +98,7 @@ def image_classification_function_with_content(auth_test_user: OAuth2Renewer):
 @pytest.fixture
 def tabular_classification_function(auth_test_user: OAuth2Renewer):
     func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+    time.sleep(1)
     yield func
     func.delete()
 
