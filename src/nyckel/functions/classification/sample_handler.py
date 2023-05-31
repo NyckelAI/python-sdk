@@ -55,21 +55,23 @@ class ClassificationSampleHandler:
             return []
         self._refresh_auth_token()
         sample_ids: List[str] = list()
-        for samples_chunk in chunkify_list(samples, chunk_size):
-            sample_ids.extend(self._create_samples_chunk(samples_chunk, sample_data_transformer))
-        return sample_ids
 
-    def _create_samples_chunk(self, samples: ClassificationSampleList, sample_data_transformer: Callable) -> List[str]:
         bodies = []
         for sample in samples:
-            body = {"data": sample_data_transformer(sample.data), "externalId": sample.external_id}
+            body = {"data": sample.data, "externalId": sample.external_id}
             if sample.annotation:
                 body["annotation"] = {"labelName": sample.annotation.label_name}
             bodies.append(body)
 
+        def body_transformer(body: Dict) -> Dict:
+            body["data"] = sample_data_transformer(body["data"])
+            return body
+
         endpoint = self._url_handler.api_endpoint(path="samples")
-        responses = ParallelPoster(self._session, endpoint)(bodies)
+        poster = ParallelPoster(self._session, endpoint, desc="Posting samples", body_transformer=body_transformer)
+        responses = poster(bodies)
         sample_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
+
         return sample_ids
 
     def read_sample(self, sample_id: str) -> Dict:

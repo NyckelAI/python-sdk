@@ -2,6 +2,8 @@ import numbers
 import time
 from typing import Dict, List
 
+from tqdm import tqdm
+
 from nyckel import OAuth2Renewer
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
@@ -81,7 +83,7 @@ class TabularClassificationFunction(ClassificationFunction):
         return self._label_handler.create_labels(labels)
 
     def list_labels(self) -> List[ClassificationLabel]:
-        return self._label_handler.list_labels()
+        return self._label_handler.list_labels(self.label_count)
 
     def read_label(self, label_id: str) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
@@ -101,9 +103,11 @@ class TabularClassificationFunction(ClassificationFunction):
 
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         self._refresh_auth_token()
-        samples_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="samples"))()
+        samples_dict_list = SequentialGetter(
+            self._session, self._url_handler.api_endpoint(path="samples?batchSize=1000")
+        )(tqdm(total=self.sample_count, ncols=80, desc="Listing samples"))
 
-        labels = self._label_handler.list_labels()
+        labels = self._label_handler.list_labels(None)
         fields = self._field_handler.list_fields()
 
         label_name_by_id = {label.id: label.name for label in labels}
@@ -114,7 +118,7 @@ class TabularClassificationFunction(ClassificationFunction):
     def read_sample(self, sample_id: str) -> TabularClassificationSample:
         sample_as_dict = self._sample_handler.read_sample(sample_id)
 
-        labels = self._label_handler.list_labels()
+        labels = self._label_handler.list_labels(None)
         fields = self._field_handler.list_fields()
 
         label_name_by_id = {label.id: label.name for label in labels}
@@ -208,15 +212,23 @@ class TabularFieldHandler:
         responses = ParallelPoster(self._session, url)(bodies)
         field_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
-        # Before returning, make sure the assets are available via the API.
-        new_fields_available_via_api = False
-        while not new_fields_available_via_api:
-            print("Waiting to confirm fields assets are available...")
-            time.sleep(0.5)
-            fields_retrieved = self.list_fields()
-            new_fields_available_via_api = set([l.name for l in fields]).issubset([l.name for l in fields_retrieved])
+        self._confirm_new_fields_available(fields)
 
         return field_ids
+
+    def _confirm_new_fields_available(self, new_fields: List[TabularFunctionField]) -> None:
+        # Before returning, make sure the assets are available via the API.
+        new_fields_available_via_api = False
+        timeout_seconds = 5
+        t0 = time.time()
+        while not new_fields_available_via_api:
+            if time.time() - t0 > timeout_seconds:
+                raise ValueError("Something went wrong when posting labels.")
+            time.sleep(0.5)
+            fields_retrieved = self.list_fields()
+            new_fields_available_via_api = set([l.name for l in new_fields]).issubset(
+                [l.name for l in fields_retrieved]
+            )
 
     def list_fields(self) -> List[TabularFunctionField]:
         self._refresh_auth_token()

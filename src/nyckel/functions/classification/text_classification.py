@@ -1,6 +1,7 @@
 from typing import Dict, List
 
-from nyckel.auth import OAuth2Renewer
+from tqdm import tqdm
+
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
@@ -10,12 +11,11 @@ from nyckel.functions.classification.classification import (
     ClassificationPrediction,
     TextClassificationSample,
 )
-
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import get_session_that_retries, SequentialGetter
+from nyckel.request_utils import SequentialGetter, get_session_that_retries
 
 
 class TextClassificationFunction(ClassificationFunction):
@@ -77,8 +77,11 @@ class TextClassificationFunction(ClassificationFunction):
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
         return self._label_handler.create_labels(labels)
 
-    def list_labels(self) -> List[ClassificationLabel]:
-        return self._label_handler.list_labels()
+    def list_labels(self, mute: bool = False) -> List[ClassificationLabel]:
+        if mute:
+            return self._label_handler.list_labels(None)
+        else:
+            return self._label_handler.list_labels(self.label_count)
 
     def read_label(self, label_id: str) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
@@ -98,15 +101,19 @@ class TextClassificationFunction(ClassificationFunction):
     def list_samples(self) -> List[TextClassificationSample]:  # type: ignore
         self._refresh_auth_token()
 
-        labels = self._label_handler.list_labels()
+        samples_dict_list = SequentialGetter(
+            self._session, self._url_handler.api_endpoint(path="samples?batchSize=1000")
+        )(tqdm(total=self.sample_count, ncols=80, desc="Listing samples"))
+
+        labels = self._label_handler.list_labels(None)
         label_name_by_id = {label.id: label.name for label in labels}
-        samples_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="samples"))()
+
         return [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]  # type: ignore
 
     def read_sample(self, sample_id: str) -> TextClassificationSample:
         sample_dict = self._sample_handler.read_sample(sample_id)
 
-        labels = self._label_handler.list_labels()
+        labels = self._label_handler.list_labels(None)
         label_name_by_id = {strip_nyckel_prefix(label.id): label.name for label in labels}  # type: ignore
 
         return self._sample_from_dict(sample_dict, label_name_by_id)  # type: ignore

@@ -35,12 +35,11 @@ def test_end_to_end(tabular_classification_function):
     assert len(fields) == 2
     assert set([field.name for field in fields]) == set(["firstname", "lastname"])
     time.sleep(2)
-    print(func.list_samples())
     assert len(func.list_samples()) == 4
     assert len(func.list_labels()) == 2
 
     while not func.has_trained_model():
-        print("No trained model yet. Sleeping 1 sec...")
+        print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
 
     prediction = func({"firstname": "Eric", "lastname": "Ebony"})
