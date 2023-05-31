@@ -77,11 +77,8 @@ class TextClassificationFunction(ClassificationFunction):
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
         return self._label_handler.create_labels(labels)
 
-    def list_labels(self, mute: bool = False) -> List[ClassificationLabel]:
-        if mute:
-            return self._label_handler.list_labels(None)
-        else:
-            return self._label_handler.list_labels(self.label_count)
+    def list_labels(self) -> List[ClassificationLabel]:
+        return self._label_handler.list_labels(self.label_count)
 
     def read_label(self, label_id: str) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
