@@ -17,7 +17,7 @@ from nyckel.functions.classification.image_classification import ImageEncoder
 from PIL import Image
 
 
-def make_random_image(size=100):
+def make_random_image(size=10):
     imarray = np.random.rand(size, size, 3) * 255
     img = Image.fromarray(imarray.astype("uint8")).convert("RGB")
     return ImageEncoder().image_to_base64(img)
@@ -43,7 +43,7 @@ def auth_test_user() -> OAuth2Renewer:
 def text_classification_function(auth_test_user: OAuth2Renewer):
     func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
     yield func
-    func.delete()
+    # func.delete()
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def text_classification_function_with_content(auth_test_user: OAuth2Renewer):
 def image_classification_function(auth_test_user: OAuth2Renewer):
     func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
     yield func
-    func.delete()
+    # func.delete()
 
 
 @pytest.fixture
@@ -97,7 +97,7 @@ def image_classification_function_with_content(auth_test_user: OAuth2Renewer):
 def tabular_classification_function(auth_test_user: OAuth2Renewer):
     func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
     yield func
-    func.delete()
+    # func.delete()
 
 
 @pytest.fixture
