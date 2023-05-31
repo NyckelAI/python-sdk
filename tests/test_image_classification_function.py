@@ -63,7 +63,7 @@ def test_end_to_end(image_classification_function):
     func.create_samples(samples)
 
     while not func.has_trained_model():
-        print("No trained model yet. Sleeping 1 sec...")
+        print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
 
     assert isinstance(func(make_random_image()), ClassificationPrediction)

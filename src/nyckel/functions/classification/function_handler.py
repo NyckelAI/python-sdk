@@ -115,7 +115,7 @@ class ClassificationFunctionHandler:
         endpoint = self._url_handler.api_endpoint()
         response = self._session.delete(endpoint)
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-        print(f"Function {self._url_handler.train_page} deleted.")
+        print(f"-> Function {self._url_handler.train_page} deleted.")
 
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})

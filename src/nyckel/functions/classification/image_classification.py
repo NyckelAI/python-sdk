@@ -2,7 +2,7 @@ import base64
 import os
 from io import BytesIO
 from typing import Dict, List, Tuple
-
+from tqdm import tqdm
 import requests
 from PIL import Image
 
@@ -88,7 +88,7 @@ class ImageClassificationFunction(ClassificationFunction):
         return self._label_handler.create_labels(labels)
 
     def list_labels(self) -> List[ClassificationLabel]:
-        return self._label_handler.list_labels()
+        return self._label_handler.list_labels(self.label_count)
 
     def read_label(self, label_id: str) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
@@ -107,9 +107,12 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def list_samples(self) -> List[ImageClassificationSample]:  # type: ignore
         self._refresh_auth_token()
-        samples_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="samples"))()
 
-        labels = self._label_handler.list_labels()
+        samples_dict_list = SequentialGetter(
+            self._session, self._url_handler.api_endpoint(path="samples?batchSize=1000")
+        )(tqdm(total=self.sample_count, ncols=80, desc="Listing samples"))
+
+        labels = self._label_handler.list_labels(None)
         label_name_by_id = {label.id: label.name for label in labels}
 
         return [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]
@@ -117,7 +120,7 @@ class ImageClassificationFunction(ClassificationFunction):
     def read_sample(self, sample_id: str) -> ImageClassificationSample:
         sample_dict = self._sample_handler.read_sample(sample_id)
 
-        labels = self._label_handler.list_labels()
+        labels = self._label_handler.list_labels(None)
         label_name_by_id = {label.id: label.name for label in labels}
 
         return self._sample_from_dict(sample_dict, label_name_by_id)

@@ -1,5 +1,5 @@
 import concurrent.futures
-from typing import Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import requests
 from requests.adapters import HTTPAdapter, Retry
@@ -9,23 +9,33 @@ from nyckel.config import NBR_CONCURRENT_REQUESTS
 
 
 class ParallelPoster:
-    def __init__(self, session: requests.Session, endpoint: str):
+    def __init__(
+        self,
+        session: requests.Session,
+        endpoint: str,
+        desc: Optional[str] = None,
+        body_transformer: Callable = lambda x: x,
+    ):
         self._session = session
         self._endpoint = endpoint
+        self._desc = desc
+        self._body_transformer = body_transformer
 
     def _post_as_json(self, data: Dict) -> requests.Response:
-        response = self._session.post(self._endpoint, json=data)
+        response = self._session.post(self._endpoint, json=self._body_transformer(data))
         return response
 
     def __call__(self, bodies: List[Dict]) -> List[requests.Response]:
         if len(bodies) == 0:
             return []
         responses = [requests.Response()] * len(bodies)
-        n_workers = min(len(bodies), NBR_CONCURRENT_REQUESTS)
+        n_workers = max(min(len(bodies), NBR_CONCURRENT_REQUESTS), 1)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:
             index_by_future = {executor.submit(self._post_as_json, body): index for index, body in enumerate(bodies)}
-            for future in tqdm(concurrent.futures.as_completed(index_by_future), desc=f"Posting to {self._endpoint}"):
+            for future in tqdm(
+                concurrent.futures.as_completed(index_by_future), total=len(bodies), desc=self._desc, ncols=80
+            ):
                 index = index_by_future[future]
                 body = bodies[index]
                 response = future.result()
@@ -73,7 +83,7 @@ class SequentialGetter:
         self._session = session
         self._endpoint = endpoint
 
-    def __call__(self) -> List[Dict]:
+    def __call__(self, progress_bar: Optional[tqdm] = None) -> List[Dict]:
         base_url, slug = self._get_base_url()
 
         resp = self._session.get(base_url + slug)
@@ -81,13 +91,19 @@ class SequentialGetter:
             raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
 
         resource_list = resp.json()
+        if not "next" in resp.links:
+            if progress_bar:
+                progress_bar.update(len(resource_list))
 
         while "next" in resp.links:
             slug = resp.links["next"]["url"]
             resp = self._session.get(base_url + slug)
             if not resp.status_code == 200:
                 raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
-            resource_list.extend(resp.json())
+            this_resource_list = resp.json()
+            resource_list.extend(this_resource_list)
+            if progress_bar:
+                progress_bar.update(len(this_resource_list))
 
         return resource_list
 

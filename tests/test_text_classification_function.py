@@ -57,7 +57,7 @@ def test_end_to_end(text_classification_function):
     func.create_samples(samples)
 
     while not func.has_trained_model():
-        print("No trained model yet. Sleeping 1 sec...")
+        print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
 
     assert isinstance(func("Howdy"), ClassificationPrediction)

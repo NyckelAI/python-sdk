@@ -1,5 +1,7 @@
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
+
+from tqdm import tqdm
 
 from nyckel import OAuth2Renewer
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler, ClassificationLabel
@@ -18,29 +20,37 @@ class ClassificationLabelHandler:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
-        if len(labels) == 0:
-            return []
         self._refresh_auth_token()
         bodies = [
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels
         ]
-        responses = ParallelPoster(self._session, self._url_handler.api_endpoint(path="labels"))(bodies)
+        responses = ParallelPoster(self._session, self._url_handler.api_endpoint(path="labels"), desc="Posting labels")(
+            bodies
+        )
 
         label_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
-
-        # Before returning, make sure the assets are available via the API.
-        label_names_post_complete = False
-        while not label_names_post_complete:
-            print("Waiting to confirm label assets are available...")
-            time.sleep(0.5)
-            labels_retrieved = self.list_labels()
-            label_names_post_complete = set([l.name for l in labels]).issubset([l.name for l in labels_retrieved])
-
+        self._confirm_new_labels_available(labels)
         return label_ids
 
-    def list_labels(self) -> List[ClassificationLabel]:
+    def _confirm_new_labels_available(self, new_labels: List[ClassificationLabel]) -> None:
+        # Before returning, make sure the assets are available via the API.
+        label_names_post_complete = False
+        timeout_seconds = 5
+        t0 = time.time()
+        while not label_names_post_complete:
+            if time.time() - t0 > timeout_seconds:
+                raise ValueError("Something went wrong when posting labels.")
+            time.sleep(0.5)
+            labels_retrieved = self.list_labels(label_count=None)
+            label_names_post_complete = set([l.name for l in new_labels]).issubset([l.name for l in labels_retrieved])
+
+    def list_labels(self, label_count: Optional[int]) -> List[ClassificationLabel]:
+        if label_count:
+            progress_bar = tqdm(total=label_count, ncols=80, desc="Listing labels")
+        else:
+            progress_bar = None
         self._refresh_auth_token()
-        labels_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="labels"))()
+        labels_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="labels"))(progress_bar)
         labels = [self._label_from_dict(entry) for entry in labels_dict_list]
         return labels
 
