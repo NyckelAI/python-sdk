@@ -16,6 +16,9 @@ class ParallelPoster:
         desc: Optional[str] = None,
         body_transformer: Callable = lambda x: x,
     ):
+        """last input 'body_transformer' intended for image functions,
+        where we want to resize and such at the very last instance before posting.
+        This is to avoid blowing up the memory for large sets of images to post."""
         self._session = session
         self._endpoint = endpoint
         self._desc = desc
