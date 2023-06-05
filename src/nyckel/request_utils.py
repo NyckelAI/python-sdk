@@ -100,9 +100,8 @@ class SequentialGetter:
             raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
 
         resource_list = resp.json()
-        if not "next" in resp.links:
-            if progress_bar is not None:
-                progress_bar.update(len(resource_list))
+        if progress_bar is not None:
+            progress_bar.update(len(resource_list))
 
         while "next" in resp.links:
             slug = resp.links["next"]["url"]

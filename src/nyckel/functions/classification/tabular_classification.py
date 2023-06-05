@@ -99,7 +99,19 @@ class TabularClassificationFunction(ClassificationFunction):
 
     def create_samples(self, samples: List[TabularClassificationSample]) -> List[str]:  # type: ignore
         self._create_fields_as_needed(samples)
+        existing_fields = self._field_handler.list_fields()
+        field_id_by_name = {field.name: field.id for field in existing_fields}
+        samples = [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in samples]  # type: ignore
         return self._sample_handler.create_samples(samples, lambda x: x)
+
+    def _switch_field_names_to_field_ids(
+        self, sample: TabularClassificationSample, field_id_by_name: Dict[str, str]
+    ) -> TabularClassificationSample:
+        field_names = list(sample.data.keys())
+        for field_name in field_names:
+            field_value = sample.data.pop(field_name)
+            sample.data[field_id_by_name[field_name]] = field_value
+        return sample
 
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         self._refresh_auth_token()
@@ -232,7 +244,9 @@ class TabularFieldHandler:
 
     def list_fields(self) -> List[TabularFunctionField]:
         self._refresh_auth_token()
-        fields_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="fields"))()
+        fields_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="fields"))(
+            tqdm(ncols=80, desc="Listing fields")
+        )
         return [self._field_from_dict(entry) for entry in fields_dict_list]
 
     def read_field(self, field_id: str) -> TabularFunctionField:
