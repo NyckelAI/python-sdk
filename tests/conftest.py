@@ -49,6 +49,7 @@ def text_classification_function(auth_test_user: OAuth2Renewer):
 @pytest.fixture
 def text_classification_function_with_content(auth_test_user: OAuth2Renewer):
     func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+    time.sleep(1)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
@@ -76,6 +77,7 @@ def image_classification_function(auth_test_user: OAuth2Renewer):
 @pytest.fixture
 def image_classification_function_with_content(auth_test_user: OAuth2Renewer):
     func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+    time.sleep(1)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
@@ -103,6 +105,7 @@ def tabular_classification_function(auth_test_user: OAuth2Renewer):
 @pytest.fixture
 def tabular_classification_function_with_content(auth_test_user: OAuth2Renewer):
     func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+    time.sleep(1)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
