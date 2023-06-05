@@ -51,9 +51,15 @@ class ParallelPoster:
 
 
 class ParallelDeleter:
-    def __init__(self, session: requests.Session, endpoint: str):
+    def __init__(
+        self,
+        session: requests.Session,
+        endpoint: str,
+        desc: Optional[str] = None,
+    ):
         self._session = session
         self._endpoint = endpoint
+        self._desc = desc
 
     def _delete_one(self, asset_id: str) -> requests.Response:
         response = self._session.delete(f"{self._endpoint}/{asset_id}")
@@ -68,7 +74,7 @@ class ParallelDeleter:
                 executor.submit(self._delete_one, asset_id): index for index, asset_id in enumerate(asset_ids)
             }
             for future in tqdm(
-                concurrent.futures.as_completed(index_by_future), desc=f"Deleting from {self._endpoint}"
+                concurrent.futures.as_completed(index_by_future), total=len(asset_ids), desc=self._desc, ncols=80
             ):
                 index = index_by_future[future]
                 asset_id = asset_ids[index]
@@ -95,7 +101,7 @@ class SequentialGetter:
 
         resource_list = resp.json()
         if not "next" in resp.links:
-            if progress_bar:
+            if progress_bar is not None:
                 progress_bar.update(len(resource_list))
 
         while "next" in resp.links:
@@ -105,7 +111,7 @@ class SequentialGetter:
                 raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
             this_resource_list = resp.json()
             resource_list.extend(this_resource_list)
-            if progress_bar:
+            if progress_bar is not None:
                 progress_bar.update(len(this_resource_list))
 
         return resource_list

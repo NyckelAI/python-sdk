@@ -95,7 +95,9 @@ class ClassificationSampleHandler:
             return None
         self._refresh_auth_token()
         sample_ids = [strip_nyckel_prefix(sample_id) for sample_id in sample_ids]
-        parallel_deleter = ParallelDeleter(self._session, self._url_handler.api_endpoint(path="samples"))
+        parallel_deleter = ParallelDeleter(
+            self._session, self._url_handler.api_endpoint(path="samples"), desc="Deleting samples"
+        )
         parallel_deleter(sample_ids)
 
     def _refresh_auth_token(self) -> None:

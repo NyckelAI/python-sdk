@@ -7,6 +7,7 @@ from .functions.classification.classification import (
     ClassificationPrediction,  # noqa: F401
     ClassificationLabel,  # noqa: F401
     ClassificationAnnotation,  # noqa: F401
+    ClassificationFunction,  # noqa: F401
 )
 from .functions.classification.text_classification import TextClassificationFunction  # noqa: F401
 from .functions.classification.image_classification import ImageClassificationFunction  # noqa: F401

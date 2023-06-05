@@ -1,16 +1,22 @@
 import sys
 from typing import Dict, List, Type
 
-import fire  # type:ignore
+import fire
+from tqdm import tqdm  # type:ignore
 
-from nyckel import ImageClassificationFunction, TabularClassificationFunction, TextClassificationFunction
+from nyckel import (
+    ClassificationFunction,
+    ClassificationLabel,
+    ImageClassificationFunction,
+    TabularClassificationFunction,
+    TextClassificationFunction,
+)
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
-    ClassificationFunction,
     ClassificationFunctionURLHandler,
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
-from nyckel.request_utils import get_session_that_retries, SequentialGetter
+from nyckel.request_utils import SequentialGetter, get_session_that_retries
 
 
 class NyckelLabelDeleter:
@@ -22,21 +28,21 @@ class NyckelLabelDeleter:
         self._function = self._load_function()
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
-        self._refresh_auth_token()
 
     def delete_label_and_samples(self, label_name: str) -> None:
         self._refresh_auth_token()
-        self._validate_label_name_exists(label_name)
+        function_labels = self._validate_label_name_exists(label_name)
         self._validate_function_type()
-        samples_as_list_of_dicts = self._list_samples_for_label(label_name)
+        samples_as_list_of_dicts = self._list_samples_for_label(label_name, function_labels)
         self._request_user_confirmation(len(samples_as_list_of_dicts), label_name)
         self._delete_samples([sample["id"] for sample in samples_as_list_of_dicts])
-        self._delete_label(label_name)
+        self._delete_label(label_name, function_labels)
 
-    def _validate_label_name_exists(self, label_name: str) -> None:
+    def _validate_label_name_exists(self, label_name: str) -> List[ClassificationLabel]:
         labels = self._function.list_labels()
         if not label_name in [label.name for label in labels]:
             raise RuntimeError(f"Label: {label_name} not in function {self._function_id}")
+        return labels
 
     def _validate_function_type(self) -> None:
         if not self._function_handler.get_output_modality() == "Classification":
@@ -54,13 +60,12 @@ class NyckelLabelDeleter:
             print("-> Ok. Aborting...")
             sys.exit(0)
 
-    def _list_samples_for_label(self, label_name: str) -> List[Dict]:
-        labels = self._function.list_labels()
-        label_id_by_name = {label.name: label.id for label in labels}
+    def _list_samples_for_label(self, label_name: str, function_labels: List[ClassificationLabel]) -> List[Dict]:
+        label_id_by_name = {label.name: label.id for label in function_labels}
         url = self._url_handler.api_endpoint(
             path="samples", query_str=f"annotationLabelId={label_id_by_name[label_name]}"
         )
-        samples_list_dict = SequentialGetter(self._session, url)()
+        samples_list_dict = SequentialGetter(self._session, url)(tqdm(ncols=80, desc="Listing samples"))
         return samples_list_dict
 
     def _get_function_type(self) -> Type[ClassificationFunction]:
@@ -80,9 +85,8 @@ class NyckelLabelDeleter:
         self._function.delete_samples(sample_ids)
         print(f"-> {len(sample_ids)} samples deleted.")
 
-    def _delete_label(self, label_name: str) -> None:
-        labels = self._function.list_labels()
-        label_id_by_name = {label.name: label.id for label in labels}
+    def _delete_label(self, label_name: str, function_labels: List[ClassificationLabel]) -> None:
+        label_id_by_name = {label.name: label.id for label in function_labels}
         self._function.delete_label(label_id_by_name[label_name])  # type: ignore
         print(f"-> Label '{label_name}' deleted.")
 
