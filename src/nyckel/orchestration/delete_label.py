@@ -1,20 +1,14 @@
 import sys
-from typing import Dict, List, Type
+from typing import Dict, List
 
-import fire
-from tqdm import tqdm  # type:ignore
+import fire  # type: ignore
+from tqdm import tqdm
 
 from nyckel import (
-    ClassificationFunction,
     ClassificationLabel,
-    ImageClassificationFunction,
-    TabularClassificationFunction,
-    TextClassificationFunction,
 )
-from nyckel.auth import OAuth2Renewer
-from nyckel.functions.classification.classification import (
-    ClassificationFunctionURLHandler,
-)
+from nyckel import OAuth2Renewer, ClassificationFunctionFactory
+from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.request_utils import SequentialGetter, get_session_that_retries
 
@@ -25,7 +19,7 @@ class NyckelLabelDeleter:
         self._auth = auth
         self._skip_confirmation = skip_confirmation
         self._function_handler = ClassificationFunctionHandler(self._function_id, self._auth)
-        self._function = self._load_function()
+        self._function = ClassificationFunctionFactory.load(function_id, auth)
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
         self._session = get_session_that_retries()
 
@@ -67,19 +61,6 @@ class NyckelLabelDeleter:
         )
         samples_list_dict = SequentialGetter(self._session, url)(tqdm(ncols=80, desc="Listing samples"))
         return samples_list_dict
-
-    def _get_function_type(self) -> Type[ClassificationFunction]:
-        function_handler = ClassificationFunctionHandler(self._function_id, self._auth)
-        input_modality = function_handler.get_input_modality()
-        if input_modality == "Text":
-            return TextClassificationFunction
-        if input_modality == "Image":
-            return ImageClassificationFunction
-        return TabularClassificationFunction
-
-    def _load_function(self) -> ClassificationFunction:
-        FunctionType = self._get_function_type()
-        return FunctionType(self._function_id, self._auth)
 
     def _delete_samples(self, sample_ids: List[str]) -> None:
         self._function.delete_samples(sample_ids)

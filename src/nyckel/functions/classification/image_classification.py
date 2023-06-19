@@ -17,6 +17,7 @@ from nyckel.functions.classification.classification import (
 )
 
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
+from nyckel.functions.classification import factory
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
@@ -39,11 +40,15 @@ class ImageClassificationFunction(ClassificationFunction):
         self._encoder = ImageEncoder()
         self._session = get_session_that_retries()
         self._refresh_auth_token()
-        self._function_handler.validate_function("Image")
+        assert self._function_handler.get_input_modality() == "Image"
+
+    @classmethod
+    def new(cls, name: str, auth: OAuth2Renewer) -> "ImageClassificationFunction":
+        return factory.ClassificationFunctionFactory.new(name, "Image", auth)  # type: ignore
 
     @classmethod
     def create_function(cls, name: str, auth: OAuth2Renewer) -> "ImageClassificationFunction":
-        return ImageClassificationFunction(ClassificationFunctionHandler.create_function(name, "Image", auth), auth)
+        return cls.new(name, auth)
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -70,6 +75,10 @@ class ImageClassificationFunction(ClassificationFunction):
     @property
     def train_page(self) -> str:
         return self._url_handler.train_page
+
+    @property
+    def input_modality(self) -> str:
+        return "Image"
 
     def get_name(self) -> str:
         return self._function_handler.get_name()

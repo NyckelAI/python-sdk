@@ -1,11 +1,13 @@
 import sys
 import time
 from datetime import datetime
-from typing import Type
 
 import fire  # type:ignore
 
-from nyckel import ImageClassificationFunction, OAuth2Renewer, TabularClassificationFunction, TextClassificationFunction
+from nyckel import (
+    OAuth2Renewer,
+    ClassificationFunctionFactory,
+)
 from nyckel.functions.classification.classification import ClassificationFunction
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.request_utils import get_session_that_retries
@@ -33,14 +35,6 @@ class NyckelFunctionDuplicator:
         if not self._function_handler.get_input_modality() in ["Text", "Image", "Tabular"]:
             raise ValueError(f"Unknown output type {self._function_handler.get_input_modality()}")
 
-    def _get_function_type(self) -> Type[ClassificationFunction]:
-        input_modality = self._function_handler.get_input_modality()
-        if input_modality == "Text":
-            return TextClassificationFunction
-        if input_modality == "Image":
-            return ImageClassificationFunction
-        return TabularClassificationFunction
-
     def _request_user_confirmation(self) -> None:
         if self._skip_confirmation:
             return None
@@ -53,12 +47,13 @@ class NyckelFunctionDuplicator:
 
     def _make_copy(self) -> ClassificationFunction:
         print(f"-> Reading labels and samples from {self._from_function_id}")
-        FunctionType = self._get_function_type()
-        from_function = FunctionType(self._from_function_id, self._auth)
+        from_function = ClassificationFunctionFactory.load(self._from_function_id, self._auth)
         labels = from_function.list_labels()
         samples = from_function.list_samples()
 
-        to_function = FunctionType.create_function(self.new_function_name, self._auth)
+        to_function = ClassificationFunctionFactory.new(
+            self.new_function_name, from_function.input_modality, self._auth
+        )
 
         print(f"-> Adding labels and samples to {to_function.function_id}")
         to_function.create_labels(labels)
