@@ -1,5 +1,7 @@
 from .auth import OAuth2Renewer  # noqa: F401
 
+from .functions.classification.factory import ClassificationFunctionFactory  # noqa: F401
+
 from .functions.classification.classification import (
     TextClassificationSample,  # noqa: F401
     ImageClassificationSample,  # noqa: F401

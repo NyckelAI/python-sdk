@@ -12,6 +12,7 @@ from nyckel.functions.classification.classification import (
     TextClassificationSample,
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
+from nyckel.functions.classification import factory
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
@@ -29,11 +30,16 @@ class TextClassificationFunction(ClassificationFunction):
         self._sample_handler = ClassificationSampleHandler(function_id, auth)
         self._session = get_session_that_retries()
         self._refresh_auth_token()
-        self._function_handler.validate_function("Text")
+
+        assert self._function_handler.get_input_modality() == "Text"
+
+    @classmethod
+    def new(cls, name: str, auth: OAuth2Renewer) -> "TextClassificationFunction":
+        return factory.ClassificationFunctionFactory.new(name, "Text", auth)  # type:ignore
 
     @classmethod
     def create_function(cls, name: str, auth: OAuth2Renewer) -> "TextClassificationFunction":
-        return TextClassificationFunction(ClassificationFunctionHandler.create_function(name, "Text", auth), auth)
+        return cls.new(name, auth)
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -60,6 +66,10 @@ class TextClassificationFunction(ClassificationFunction):
     @property
     def train_page(self) -> str:
         return self._url_handler.train_page
+
+    @property
+    def input_modality(self) -> str:
+        return "Text"
 
     def get_name(self) -> str:
         return self._function_handler.get_name()

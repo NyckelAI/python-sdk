@@ -64,7 +64,7 @@ ClassificationSample = Union[TextClassificationSample, ImageClassificationSample
 class ClassificationFunction(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def create_function(cls, name: str, auth: OAuth2Renewer) -> "ClassificationFunction":
+    def new(cls, name: str, auth: OAuth2Renewer) -> "ClassificationFunction":
         pass
 
     @abc.abstractmethod
@@ -94,6 +94,11 @@ class ClassificationFunction(abc.ABC):
     @property
     @abc.abstractmethod
     def train_page(self) -> str:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def input_modality(self) -> str:
         pass
 
     @abc.abstractmethod
