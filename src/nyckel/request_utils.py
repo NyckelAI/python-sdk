@@ -42,7 +42,7 @@ class ParallelPoster:
                 index = index_by_future[future]
                 body = bodies[index]
                 response = future.result()
-                if not response.status_code == 200:
+                if not response.status_code in [200, 409]:
                     raise ValueError(
                         f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}"
                     )
