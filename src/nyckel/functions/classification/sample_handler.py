@@ -1,6 +1,8 @@
 import time
 from typing import Callable, Dict, List, Union
 
+from tqdm import tqdm
+
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationFunctionURLHandler,
@@ -8,9 +10,10 @@ from nyckel.functions.classification.classification import (
     ImageClassificationSample,
     TabularClassificationSample,
     TextClassificationSample,
+    ClassificationSample,
 )
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelDeleter, ParallelPoster, get_session_that_retries
+from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
 
 ClassificationSampleList = Union[
     List[TextClassificationSample], List[TabularClassificationSample], List[ImageClassificationSample]
@@ -26,7 +29,7 @@ class ClassificationSampleHandler:
         self._refresh_auth_token()
 
     def invoke(
-        self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable, chunk_size: int = 500
+        self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
     ) -> List[ClassificationPrediction]:
         self._refresh_auth_token()
 
@@ -48,9 +51,7 @@ class ClassificationSampleHandler:
         ]
         return predictions
 
-    def create_samples(
-        self, samples: ClassificationSampleList, sample_data_transformer: Callable, chunk_size: int = 500
-    ) -> List[str]:
+    def create_samples(self, samples: ClassificationSampleList, sample_data_transformer: Callable) -> List[str]:
         self._refresh_auth_token()
 
         bodies = []
@@ -86,6 +87,26 @@ class ClassificationSampleHandler:
                 f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} from {self._url_handler.train_page}"
             )
         return response.json()
+
+    def list_samples(self, sample_count: int) -> List[Dict]:
+        self._refresh_auth_token()
+
+        samples_dict_list = SequentialGetter(
+            self._session, self._url_handler.api_endpoint(path="samples?batchSize=1000")
+        )(tqdm(total=sample_count, ncols=80, desc="Listing samples"))
+
+        return samples_dict_list
+
+    def update_annotation(self, sample: ClassificationSample) -> None:
+        self._refresh_auth_token()
+        url = self._url_handler.api_endpoint(path=f"samples/{sample.id}/annotation")
+        if sample.annotation:
+            body = {"labelName": sample.annotation.label_name}
+            response = self._session.put(url, json=body)
+            assert response.status_code == 200, f"Update failed with {response.status_code=}, {response.text=}"
+        else:
+            response = self._session.delete(url)
+            assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
 
     def delete_sample(self, sample_id: str) -> None:
         self._refresh_auth_token()

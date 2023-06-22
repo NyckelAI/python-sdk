@@ -151,7 +151,7 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def update_sample(self, sample: ClassificationSample) -> ClassificationSample:
+    def update_annotation(self, sample: ClassificationSample) -> None:
         pass
 
     @abc.abstractmethod
