@@ -123,11 +123,7 @@ class TabularClassificationFunction(ClassificationFunction):
         return sample
 
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
-        self._refresh_auth_token()
-        samples_dict_list = SequentialGetter(
-            self._session, self._url_handler.api_endpoint(path="samples?batchSize=1000")
-        )(tqdm(total=self.sample_count, ncols=80, desc="Listing samples"))
-
+        samples_dict_list = self._sample_handler.list_samples(self.sample_count)
         labels = self._label_handler.list_labels(None)
         fields = self._field_handler.list_fields()
 
@@ -147,8 +143,8 @@ class TabularClassificationFunction(ClassificationFunction):
 
         return self._sample_from_dict(sample_as_dict, label_name_by_id, field_name_by_id)  # type: ignore
 
-    def update_sample(self, sample: TabularClassificationSample) -> TabularClassificationSample:  # type: ignore
-        raise NotImplementedError
+    def update_annotation(self, sample: TabularClassificationSample) -> None:  # type: ignore
+        self._sample_handler.update_annotation(sample)
 
     def delete_sample(self, sample_id: str) -> None:
         self._sample_handler.delete_sample(sample_id)

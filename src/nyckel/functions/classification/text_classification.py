@@ -1,6 +1,5 @@
 from typing import Dict, List
 
-from tqdm import tqdm
 
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
@@ -16,7 +15,7 @@ from nyckel.functions.classification import factory
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import SequentialGetter, get_session_that_retries
+from nyckel.request_utils import get_session_that_retries
 
 
 class TextClassificationFunction(ClassificationFunction):
@@ -106,13 +105,9 @@ class TextClassificationFunction(ClassificationFunction):
         return self._sample_handler.create_samples(samples, lambda x: x)
 
     def list_samples(self) -> List[TextClassificationSample]:  # type: ignore
-        self._refresh_auth_token()
-
-        samples_dict_list = SequentialGetter(
-            self._session, self._url_handler.api_endpoint(path="samples?batchSize=1000")
-        )(tqdm(total=self.sample_count, ncols=80, desc="Listing samples"))
-
+        samples_dict_list = self._sample_handler.list_samples(self.sample_count)
         labels = self._label_handler.list_labels(None)
+
         label_name_by_id = {label.id: label.name for label in labels}
 
         return [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]  # type: ignore
@@ -125,8 +120,8 @@ class TextClassificationFunction(ClassificationFunction):
 
         return self._sample_from_dict(sample_dict, label_name_by_id)  # type: ignore
 
-    def update_sample(self, sample: TextClassificationSample) -> TextClassificationSample:  # type: ignore
-        raise NotImplementedError
+    def update_annotation(self, sample: TextClassificationSample) -> None:  # type: ignore
+        self._sample_handler.update_annotation(sample)
 
     def delete_sample(self, sample_id: str) -> None:
         self._sample_handler.delete_sample(sample_id)
