@@ -37,6 +37,7 @@ def test_update_annotation(text_classification_function):
     # Create assets and make sure the annotation is set correctly.
     func.create_labels(labels_to_create)
     sample_id = func.create_samples([sample])[0]
+    time.sleep(1)
     sample = func.read_sample(sample_id)
     assert sample.annotation.label_name == "Nice"
 
