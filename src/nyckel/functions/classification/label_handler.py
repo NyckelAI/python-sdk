@@ -42,7 +42,9 @@ class ClassificationLabelHandler:
                 raise ValueError("Something went wrong when posting labels.")
             time.sleep(0.5)
             labels_retrieved = self.list_labels(label_count=None)
-            label_names_post_complete = set([l.name for l in new_labels]).issubset([l.name for l in labels_retrieved])
+            label_names_post_complete = set([label.name for label in new_labels]).issubset(
+                [label.name for label in labels_retrieved]
+            )
 
     def list_labels(self, label_count: Optional[int]) -> List[ClassificationLabel]:
         if label_count:
@@ -59,7 +61,8 @@ class ClassificationLabelHandler:
         response = self._session.get(self._url_handler.api_endpoint(path=f"labels/{label_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
-                f"Unable to fetch label {label_id} from {self._url_handler.train_page} {response.text=} {response.status_code=}"
+                f"Unable to fetch label {label_id} from {self._url_handler.train_page} {response.text=} "
+                f"{response.status_code=}"
             )
         label_dict = response.json()
         return self._label_from_dict(label_dict)

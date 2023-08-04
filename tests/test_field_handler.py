@@ -1,10 +1,10 @@
 import time
 
-from nyckel.functions.classification.classification import TabularFunctionField
-from nyckel.functions.classification.tabular_classification import TabularFieldHandler
+from nyckel import OAuth2Renewer, TabularClassificationFunction
+from nyckel.functions.classification.tabular_classification import TabularFieldHandler, TabularFunctionField
 
 
-def test_fields(tabular_classification_function, auth_test_user):
+def test_fields(tabular_classification_function: TabularClassificationFunction, auth_test_user: OAuth2Renewer) -> None:
     func = tabular_classification_function
     # Just borrow the function_id and create a TabularFieldHandler directly to test it.
     fields_handler = TabularFieldHandler(func.function_id, auth_test_user)

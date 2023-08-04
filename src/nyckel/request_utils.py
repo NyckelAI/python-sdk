@@ -42,7 +42,7 @@ class ParallelPoster:
                 index = index_by_future[future]
                 body = bodies[index]
                 response = future.result()
-                if not response.status_code in [200, 409]:
+                if response.status_code not in [200, 409]:
                     raise ValueError(
                         f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}"
                     )
@@ -81,7 +81,8 @@ class ParallelDeleter:
                 response = future.result()
                 if not response.status_code == 200:
                     raise ValueError(
-                        f"Error when deleting asset: {self._endpoint}/{asset_id}. {response.status_code=} {response.text=}"
+                        f"Error when deleting asset: {self._endpoint}/{asset_id}. {response.status_code=} "
+                        f"{response.text=}"
                     )
                 responses[index] = response
         return responses

@@ -2,10 +2,12 @@ import base64
 import os
 from io import BytesIO
 from typing import Dict, List, Tuple
+
 import requests
 from PIL import Image
 
 from nyckel.auth import OAuth2Renewer
+from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
     ClassificationFunction,
@@ -14,9 +16,7 @@ from nyckel.functions.classification.classification import (
     ClassificationPrediction,
     ImageClassificationSample,
 )
-
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
-from nyckel.functions.classification import factory
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
@@ -163,7 +163,8 @@ class ImageClassificationFunction(ClassificationFunction):
     def _sample_data_to_body(self, sample_data: str) -> str:
         """Encodes the sample data as a URL or dataURI as appropriate."""
         if self._is_nyckel_owned_url(sample_data):
-            # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified. So just point back to that URL.
+            # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified.
+            # In that case, we just point back to that URL.
             # This overrides the force_resize input and ensures that the image doesn't get recoded twice.
             return sample_data
         else:

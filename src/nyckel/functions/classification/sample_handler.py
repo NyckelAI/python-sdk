@@ -7,10 +7,10 @@ from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationFunctionURLHandler,
     ClassificationPrediction,
+    ClassificationSample,
     ImageClassificationSample,
     TabularClassificationSample,
     TextClassificationSample,
-    ClassificationSample,
 )
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
@@ -84,7 +84,8 @@ class ClassificationSampleHandler:
             response = self._session.get(self._url_handler.api_endpoint(path=f"samples/{sample_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
-                f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} from {self._url_handler.train_page}"
+                f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} "
+                f"from {self._url_handler.train_page}"
             )
         return response.json()
 

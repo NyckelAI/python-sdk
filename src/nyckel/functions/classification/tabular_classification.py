@@ -5,7 +5,7 @@ from typing import Dict, List
 from tqdm import tqdm
 
 from nyckel import OAuth2Renewer
-from nyckel.auth import OAuth2Renewer
+from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
     ClassificationFunction,
@@ -16,7 +16,6 @@ from nyckel.functions.classification.classification import (
     TabularFunctionField,
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
-from nyckel.functions.classification import factory
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
@@ -106,11 +105,11 @@ class TabularClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[str]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(self, samples: List[TabularClassificationSample]) -> List[str]:  # type: ignore
+    def create_samples(self, samples: List[TabularClassificationSample]) -> List[str]:  # type: ignore # noqa: E501
         self._create_fields_as_needed(samples)
         existing_fields = self._field_handler.list_fields()
         field_id_by_name = {field.name: field.id for field in existing_fields}
-        samples = [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in samples]  # type: ignore
+        samples = [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in samples]  # type: ignore # noqa: E501
         return self._sample_handler.create_samples(samples, lambda x: x)
 
     def _switch_field_names_to_field_ids(
@@ -130,7 +129,7 @@ class TabularClassificationFunction(ClassificationFunction):
         label_name_by_id = {label.id: label.name for label in labels}
         field_name_by_id = {field.id: field.name for field in fields}  # type: ignore
 
-        return [self._sample_from_dict(entry, label_name_by_id, field_name_by_id) for entry in samples_dict_list]  # type: ignore
+        return [self._sample_from_dict(entry, label_name_by_id, field_name_by_id) for entry in samples_dict_list]  # type: ignore # noqa: E501
 
     def read_sample(self, sample_id: str) -> TabularClassificationSample:
         sample_as_dict = self._sample_handler.read_sample(sample_id)
@@ -243,8 +242,8 @@ class TabularFieldHandler:
                 raise ValueError("Something went wrong when posting labels.")
             time.sleep(0.5)
             fields_retrieved = self.list_fields()
-            new_fields_available_via_api = set([l.name for l in new_fields]).issubset(
-                [l.name for l in fields_retrieved]
+            new_fields_available_via_api = set([label.name for label in new_fields]).issubset(
+                [label.name for label in fields_retrieved]
             )
 
     def list_fields(self) -> List[TabularFunctionField]:
@@ -260,7 +259,8 @@ class TabularFieldHandler:
         response = self._session.get(url)
         if not response.status_code == 200:
             raise RuntimeError(
-                f"Unable to fetch field {field_id} from {self._url_handler.train_page} {response.text=} {response.status_code=}"
+                f"Unable to fetch field {field_id} from {self._url_handler.train_page} "
+                f"{response.text=} {response.status_code=}"
             )
         return self._field_from_dict(response.json())
 

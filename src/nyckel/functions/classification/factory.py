@@ -1,10 +1,8 @@
 import time
 
 from nyckel.auth import OAuth2Renewer
+from nyckel.functions.classification import image_classification, tabular_classification, text_classification
 from nyckel.functions.classification.classification import ClassificationFunction
-from nyckel.functions.classification import text_classification
-from nyckel.functions.classification import image_classification
-from nyckel.functions.classification import tabular_classification
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import get_session_that_retries
