@@ -1,14 +1,23 @@
 {
-    "python.formatting.provider": "none",
-    "python.formatting.blackArgs": [
-        "--line-length",
-        "120"
-    ],
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": true
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
     },
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+        "source.sortImports": true,
+    },
+    "editor.formatOnSave": true,
+    "mypy.configFile": "pyproject.toml",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/.ropeproject": true,
+        "**/.idea": true,
+    },
     "cSpell.words": [
         "chunkify",
         "Gruezi",
@@ -18,7 +27,4 @@
         "pytest",
         "tqdm"
     ],
-    "mypy.targets": [
-        "src"
-    ]
 }

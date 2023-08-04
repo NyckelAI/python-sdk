@@ -1,22 +1,22 @@
-import time
 import os
-import pytest
+import time
+
 import numpy as np
+import pytest
+from conftest import get_test_user, make_random_image
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
     ClassificationPrediction,
-    ImageClassificationSample,
     ImageClassificationFunction,
+    ImageClassificationSample,
 )
 from nyckel.functions.classification.image_classification import ImageDecoder
-import numpy as np
-from conftest import get_test_user, make_random_image
 
 user = get_test_user()
 
 
-def test_samples(image_classification_function):
+def test_samples(image_classification_function: ImageClassificationFunction) -> None:
     func: ImageClassificationFunction = image_classification_function
     label = ClassificationLabel(name="Nice")
     func.create_labels([label])
@@ -46,7 +46,7 @@ def test_samples(image_classification_function):
     assert len(samples_back) == 1
 
 
-def test_end_to_end(image_classification_function):
+def test_end_to_end(image_classification_function: ImageClassificationFunction) -> None:
     func: ImageClassificationFunction = image_classification_function
 
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
@@ -79,7 +79,7 @@ def test_end_to_end(image_classification_function):
     user.server_url == "http://localhost:5000",
     reason="Integrity of image on copy is only implemented for images hosted on S3.",
 )
-def test_image_integrity_on_copy(image_classification_function):
+def test_image_integrity_on_copy(image_classification_function: ImageClassificationFunction) -> None:
     func: ImageClassificationFunction = image_classification_function
     local_filepath = os.path.abspath("tests/flower.jpg")
 

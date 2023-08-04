@@ -2,11 +2,11 @@ import sys
 import time
 from datetime import datetime
 
-import fire  # type:ignore
+import fire
 
 from nyckel import (
-    OAuth2Renewer,
     ClassificationFunctionFactory,
+    OAuth2Renewer,
 )
 from nyckel.functions.classification.classification import ClassificationFunction
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
@@ -32,14 +32,16 @@ class NyckelFunctionDuplicator:
     def _validate_function_type(self) -> None:
         if not self._function_handler.get_output_modality() == "Classification":
             raise ValueError("Can only copy Classification functions.")
-        if not self._function_handler.get_input_modality() in ["Text", "Image", "Tabular"]:
+        if self._function_handler.get_input_modality() not in ["Text", "Image", "Tabular"]:
             raise ValueError(f"Unknown output type {self._function_handler.get_input_modality()}")
 
     def _request_user_confirmation(self) -> None:
         if self._skip_confirmation:
             return None
         reply = input(
-            f"-> This will copy function: [name: {self._function_handler.get_name()}, id: {self._from_function_id}, label-count: {self._function_handler.label_count}, sample-count: {self._function_handler.sample_count}]. Ok (y/n)? "
+            f"-> This will copy function: [name: {self._function_handler.get_name()}, id: {self._from_function_id}, "
+            f"label-count: {self._function_handler.label_count}, sample-count: {self._function_handler.sample_count}]. "
+            f"Ok (y/n)? "
         )
         if not reply == "y":
             print("-> Ok. Aborting...")

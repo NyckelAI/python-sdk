@@ -4,11 +4,12 @@ from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
     ClassificationPrediction,
+    TextClassificationFunction,
     TextClassificationSample,
 )
 
 
-def test_samples(text_classification_function):
+def test_samples(text_classification_function: TextClassificationFunction) -> None:
     func = text_classification_function
     # func = TextClassificationFunction.create_function("[TEST TEXT CLASSIFICATION SAMPLES]", auth_test_user)
     label = ClassificationLabel(name="Nice")
@@ -40,7 +41,7 @@ def test_samples(text_classification_function):
     assert samples_back[0].data == "hello"
 
 
-def test_end_to_end(text_classification_function):
+def test_end_to_end(text_classification_function: TextClassificationFunction) -> None:
     func = text_classification_function
 
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]

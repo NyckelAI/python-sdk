@@ -5,40 +5,40 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/nyckel"]
 
-
 [project]
 name = "nyckel"
-version = "0.0.47"
-authors = [
-  { name="Oscar Beijbom", email="oscar@nyckel.com" },
-]
+version = "0.0.48"
+authors = [{ name = "Oscar Beijbom", email = "oscar@nyckel.com" }]
 description = "Python package for the Nyckel API"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 dependencies = [
   "tqdm>=4.0.0",
   "requests>=2.10.0",
   "pillow>=8.0.0",
-  "fire>=0.4.0"
+  "fire>=0.4.0",
 ]
-
 
 [project.urls]
 "Homepage" = "https://github.com/NyckelAI/python-sdk"
 
 [tool.ruff]
 line-length = 120
-select = [
-    "F401",
-    "F403",
-]
+select = ["E", "F", "I"]
+
+[tool.black]
+line-length = 120
 
 [tool.mypy]
 python_version = "3.9"
 disallow_untyped_defs = true
 warn_return_any = false
+
+[[tool.mypy.overrides]]
+module = ['fire']
+ignore_missing_imports = true

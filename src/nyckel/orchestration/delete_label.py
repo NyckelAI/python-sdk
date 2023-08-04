@@ -5,9 +5,10 @@ import fire  # type: ignore
 from tqdm import tqdm
 
 from nyckel import (
+    ClassificationFunctionFactory,
     ClassificationLabel,
+    OAuth2Renewer,
 )
-from nyckel import OAuth2Renewer, ClassificationFunctionFactory
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.request_utils import SequentialGetter, get_session_that_retries
@@ -34,21 +35,22 @@ class NyckelLabelDeleter:
 
     def _validate_label_name_exists(self, label_name: str) -> List[ClassificationLabel]:
         labels = self._function.list_labels()
-        if not label_name in [label.name for label in labels]:
+        if label_name not in [label.name for label in labels]:
             raise RuntimeError(f"Label: {label_name} not in function {self._function_id}")
         return labels
 
     def _validate_function_type(self) -> None:
         if not self._function_handler.get_output_modality() == "Classification":
             raise ValueError("Can only copy Classification functions.")
-        if not self._function_handler.get_input_modality() in ["Text", "Image", "Tabular"]:
+        if self._function_handler.get_input_modality() not in ["Text", "Image", "Tabular"]:
             raise ValueError(f"Unknown output type {self._function_handler.get_input_modality()}")
 
     def _request_user_confirmation(self, sample_count: int, label_name: str) -> None:
         if self._skip_confirmation:
             return None
         reply = input(
-            f"-> This will delete label: '{label_name}' and the {sample_count} samples annotated as '{label_name}'. Proceed (y/n)? "
+            f"-> This will delete label: '{label_name}' and the {sample_count} samples annotated as '{label_name}'. "
+            f"Proceed (y/n)? "
         )
         if not reply == "y":
             print("-> Ok. Aborting...")

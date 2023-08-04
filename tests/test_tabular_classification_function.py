@@ -1,15 +1,16 @@
-from nyckel import (
-    TabularClassificationFunction,
-    ClassificationLabel,
-    TabularClassificationSample,
-    ClassificationAnnotation,
-    ClassificationPrediction,
-)
 import time
+
 import pytest
+from nyckel import (
+    ClassificationAnnotation,
+    ClassificationLabel,
+    ClassificationPrediction,
+    TabularClassificationFunction,
+    TabularClassificationSample,
+)
 
 
-def test_end_to_end(tabular_classification_function):
+def test_end_to_end(tabular_classification_function: TabularClassificationFunction) -> None:
     func: TabularClassificationFunction = tabular_classification_function
 
     func.create_labels([ClassificationLabel(name="happy"), ClassificationLabel(name="sad")])
@@ -17,13 +18,13 @@ def test_end_to_end(tabular_classification_function):
     func.create_samples(
         [
             TabularClassificationSample(
-                data={"firstname": "Adam", "lastname": "Adame"}, annotation=ClassificationAnnotation(label_name="happy")
+                data={"firstname": "Adam", "lastname": "Art"}, annotation=ClassificationAnnotation(label_name="happy")
             ),
             TabularClassificationSample(
-                data={"firstname": "Bo", "lastname": "Boden"}, annotation=ClassificationAnnotation(label_name="happy")
+                data={"firstname": "Bo", "lastname": "Busy"}, annotation=ClassificationAnnotation(label_name="happy")
             ),
             TabularClassificationSample(
-                data={"firstname": "Caren", "lastname": "Carrot"}, annotation=ClassificationAnnotation(label_name="sad")
+                data={"firstname": "Carl", "lastname": "Carrot"}, annotation=ClassificationAnnotation(label_name="sad")
             ),
             TabularClassificationSample(
                 data={"firstname": "Dick", "lastname": "Denali"}, annotation=ClassificationAnnotation(label_name="sad")
@@ -51,7 +52,7 @@ def test_end_to_end(tabular_classification_function):
     assert isinstance(predictions[0], ClassificationPrediction)
 
 
-def test_field_creation(tabular_classification_function):
+def test_field_creation(tabular_classification_function: TabularClassificationFunction) -> None:
     func: TabularClassificationFunction = tabular_classification_function
 
     func.create_samples([TabularClassificationSample(data={"firstname": "Adam"})])
