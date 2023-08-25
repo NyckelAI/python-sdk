@@ -69,7 +69,6 @@ class ClassificationSampleHandler:
 
         poster = ParallelPoster(self._session, endpoint, desc="Posting samples", body_transformer=body_transformer)
         response_list = poster(bodies)
-        sample_ids = []
         sample_ids = [
             strip_nyckel_prefix(response.json()["id"]) for response in response_list if response.status_code == 200
         ]

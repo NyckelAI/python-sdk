@@ -239,7 +239,7 @@ class TabularFieldHandler:
         t0 = time.time()
         while not new_fields_available_via_api:
             if time.time() - t0 > timeout_seconds:
-                raise ValueError("Something went wrong when posting labels.")
+                raise ValueError("Something went wrong when posting fields.")
             time.sleep(0.5)
             fields_retrieved = self.list_fields()
             new_fields_available_via_api = set([label.name for label in new_fields]).issubset(
