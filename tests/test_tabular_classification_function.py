@@ -1,4 +1,5 @@
 import time
+import warnings
 
 import pytest
 from nyckel import (
@@ -65,6 +66,7 @@ def test_field_creation(tabular_classification_function: TabularClassificationFu
     age_field = [field for field in fields if field.name == "age"][0]
     assert age_field.type == "Number"
 
-    with pytest.raises(ValueError):
-        # Can't assign a Text value to a Number field.
-        func.create_samples([TabularClassificationSample(data={"age": "Twelve"})])
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    # Can't assign a Text value to a Number field. This sample will not be created.
+    assert len(func.create_samples([TabularClassificationSample(data={"age": "Twelve"})])) == 0
+    warnings.filterwarnings("default", category=FutureWarning)
