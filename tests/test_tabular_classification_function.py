@@ -1,7 +1,6 @@
 import time
 import warnings
 
-import pytest
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
