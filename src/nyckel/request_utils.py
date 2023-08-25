@@ -1,4 +1,6 @@
 import concurrent.futures
+import warnings
+from json import JSONDecodeError
 from typing import Callable, Dict, List, Optional, Tuple
 
 import requests
@@ -43,8 +45,9 @@ class ParallelPoster:
                 body = bodies[index]
                 response = future.result()
                 if response.status_code not in [200, 409]:
-                    raise ValueError(
-                        f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}"
+                    warnings.warn(
+                        f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}",
+                        RuntimeWarning,
                     )
                 responses[index] = response
         return responses
@@ -109,7 +112,11 @@ class SequentialGetter:
             resp = self._session.get(base_url + slug)
             if not resp.status_code == 200:
                 raise RuntimeError(f"GET from {base_url+slug} failed with {resp.status_code}, {resp.text}.")
-            this_resource_list = resp.json()
+            try:
+                this_resource_list = resp.json()
+            except JSONDecodeError as e:
+                print(f"Failed to decode json from {base_url+slug}")
+                raise e
             resource_list.extend(this_resource_list)
             if progress_bar is not None:
                 progress_bar.update(len(this_resource_list))
