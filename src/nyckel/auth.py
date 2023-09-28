@@ -25,6 +25,12 @@ class OAuth2Renewer:
             self._renew_token()
         return self._bearer_token
 
+    def get_authenticated_session(self) -> requests.Session:
+        # Initializes a new session and adds authentication headers.
+        session = requests.Session()
+        session.headers.update({"Authorization": f"Bearer {self.token}"})
+        return session
+
     def _renew_token(self) -> None:
         RENEW_MARGIN_SECONDS = 10 * 60
 
