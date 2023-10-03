@@ -5,17 +5,21 @@ from typing import Iterator
 import numpy as np
 import pytest
 import requests
-from nyckel import ImageClassificationFunction, OAuth2Renewer, TabularClassificationFunction, TextClassificationFunction
-from nyckel.functions.classification.classification import (
+from PIL import Image
+
+from nyckel import (
     ClassificationAnnotation,
     ClassificationFunction,
     ClassificationLabel,
+    ImageClassificationFunction,
     ImageClassificationSample,
+    OAuth2Renewer,
+    TabularClassificationFunction,
     TabularClassificationSample,
+    TextClassificationFunction,
     TextClassificationSample,
 )
 from nyckel.functions.classification.image_classification import ImageEncoder
-from PIL import Image
 
 
 def make_random_image(size: int = 100) -> str:
