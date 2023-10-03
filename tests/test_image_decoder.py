@@ -1,8 +1,9 @@
 import os
 from io import BytesIO
 
-from nyckel.functions.classification.image_classification import ImageDecoder, ImageEncoder
 from PIL import Image
+
+from nyckel.functions.classification.image_classification import ImageDecoder, ImageEncoder
 
 image_url = "https://www.nyckel.com/blog/images/taimi-case-study-header-image.png"
 

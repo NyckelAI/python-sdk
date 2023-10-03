@@ -68,7 +68,14 @@ class ClassificationLabelHandler:
         return self._label_from_dict(label_dict)
 
     def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
-        raise NotImplementedError
+        assert label.id, "label to be updated must have the id field set"
+        self._refresh_auth_token()
+        response = self._session.put(
+            self._url_handler.api_endpoint(path=f"labels/{strip_nyckel_prefix(label.id)}"),
+            json={"name": label.name, "description": label.description, "metadata": label.metadata},
+        )
+        assert response.status_code == 200, f"Update failed with {response.status_code=}, {response.text=}"
+        return label
 
     def delete_label(self, label_id: str) -> None:
         self._refresh_auth_token()

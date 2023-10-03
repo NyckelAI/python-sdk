@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pytest
 from conftest import get_test_user, make_random_image
+
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,

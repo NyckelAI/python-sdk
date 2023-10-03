@@ -1,9 +1,6 @@
 import time
 
-from nyckel import (
-    ClassificationLabel,
-)
-from nyckel.functions.classification.text_classification import TextClassificationFunction
+from nyckel import ClassificationLabel, TextClassificationFunction
 
 
 def test_labels(text_classification_function: TextClassificationFunction) -> None:
@@ -41,6 +38,20 @@ def test_labels(text_classification_function: TextClassificationFunction) -> Non
         labels = func.list_labels()
     assert len(labels) == 1
     assert labels[0].name == "Nice"
+
+
+def test_update_label(text_classification_function: TextClassificationFunction) -> None:
+    func = text_classification_function
+    label = ClassificationLabel(name="Old name")
+    label_id = func.create_labels([label])[0]
+    label_back = func.read_label(label_id)
+    assert label_back.name == "Old name"
+
+    label = ClassificationLabel(name="New name", id=label_id)
+    func.update_label(label)
+    time.sleep(1)
+    label_back = func.read_label(label_id)
+    assert label_back.name == "New name"
 
 
 def test_parallel_delete(text_classification_function_with_content: TextClassificationFunction) -> None:
