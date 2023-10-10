@@ -7,6 +7,7 @@ from .functions.classification.classification import (
     ClassificationSample,  # noqa: F401
     ImageClassificationSample,  # noqa: F401
     TabularClassificationSample,  # noqa: F401
+    TabularFunctionField,  # noqa: F401
     TextClassificationSample,  # noqa: F401
 )
 from .functions.classification.factory import ClassificationFunctionFactory  # noqa: F401

@@ -1,3 +1,1 @@
-::: nyckel.ImageClassificationSample
-
 ::: nyckel.ImageClassificationFunction
