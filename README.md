@@ -27,7 +27,7 @@ func.add_samples([
     ('This is a nice comment', 'not toxic'),
     ('Hello friend', 'not toxic'),
     ('This is a bad comment', 'toxic'),
-    ('Who dis; go away!', 'toxic'),
+    ('Who is this? Go away!', 'toxic'),
 ])
 
 # Nyckel trains and deploys your model in a few seconds...
