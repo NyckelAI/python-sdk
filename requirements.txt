@@ -16,3 +16,8 @@ ruff==0.0.265
 types-requests==2.28.11.4
 types-tqdm==4.65.0.1
 types-Pillow==9.5.0.4
+
+# Docs
+mkdocs==1.5.3
+mkdocs-material==9.4.5
+mkdocstrings-python==1.7.1

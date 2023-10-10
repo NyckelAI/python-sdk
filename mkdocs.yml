@@ -1,0 +1,31 @@
+site_name: Nyckel
+site_url: https://www.nyckel.com
+nav:
+  - Home: index.md
+  - Image Classification: image_classification.md
+theme: 
+  name: 'material'
+
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          line_length: 100
+          members_order: source
+          show_root_heading: true
+          show_if_no_docstring: true
+          show_signature_annotations: true
+          signature_crossrefs: true
+          separate_signature: true
+          filters:
+            - "!^_"
+            - "^__"
+            - "!^__str__"
+            - "!^__repr__"
+          show_source: false
+          show_bases: false
+          show_docstring_attributes: true
+
+    
