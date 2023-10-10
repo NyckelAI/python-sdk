@@ -1,29 +1,9 @@
 # Welcome to Nyckel
 
-Nyckel is a Custom Classifiaction API. It allows you to train, deploy and invoke custom [text](text_classification.md), [image](image_classification.md) and tabular(tabular_classification.md) classification functions.
+Nyckel is a Custom Classifiaction API. It allows you to train, deploy and invoke custom [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification functions.
 
-For example, here is how you train, deploy and invoke a text classification function.
+## Get started
 
-```python
-from nyckel import OAuth2Renewer, TextClassificationFunction
-
-# Get credentials from https://www.nyckel.com/console/keys
-user = OAuth2Renewer(client_id=..., client_secret=...)
-
-# Create a new text classification function.
-func = TextClassificationFunction.new(user=user, name='IsToxic')
-
-# Provide a few examples.
-func.add_samples([
-    ('This is a nice comment', 'not toxic'),
-    ('Hello friend', 'not toxic'),
-    ('This is a bad comment', 'toxic'),
-    ('Who dis; go away!', 'toxic'),
-])
-
-# Nyckel trains and deploys your model in a few seconds...
-# ...and you can start classifying text right away!
-
-# Classify a new piece of text.
-label = func('Text to be classified')
-```
+* Visit [Nyckel](https://www.nyckel.com) and sign up for a free account.
+* Check out out [Quickstart](quickstart.md) to get oriented.
+* Check out the SDK for [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification.
