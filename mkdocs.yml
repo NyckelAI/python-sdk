@@ -1,8 +1,13 @@
 site_name: Nyckel
 site_url: https://www.nyckel.com
 nav:
-  - Home: index.md
-  - Image Classification: image_classification.md
+  - Guides:
+    - Quickstart: quickstart.md
+  - Reference:
+    - Image Classification: image_classification.md
+    - Text Classification: text_classification.md
+    - Tabular Classification: tabular_classification.md
+    - DataClasses: data_classes.md
 theme: 
   name: 'material'
 
