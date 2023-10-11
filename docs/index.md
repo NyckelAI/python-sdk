@@ -1,6 +1,6 @@
 # Welcome to Nyckel
 
-Nyckel is a Custom Classifiaction API. It allows you to train, deploy and invoke custom [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification functions.
+Nyckel is a Custom Classification API. It allows you to train, deploy and invoke custom [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification functions.
 
 ## Get started
 
