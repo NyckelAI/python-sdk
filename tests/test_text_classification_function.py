@@ -1,5 +1,7 @@
 import time
+from typing import Tuple, Union
 
+import pytest
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
@@ -7,6 +9,24 @@ from nyckel import (
     TextClassificationFunction,
     TextClassificationSample,
 )
+
+duck_typed_text_samples = [
+    TextClassificationSample(data="Hi neighbor!", annotation=ClassificationAnnotation(label_name="Nice")),
+    ("Hi neighbor!", "Nice"),
+    "Hi neighbor!",
+]
+
+
+@pytest.mark.parametrize("duck_typed_sample", duck_typed_text_samples)
+def test_duck_typed_samples(
+    text_classification_function: TextClassificationFunction,
+    duck_typed_sample: Union[TextClassificationSample, Tuple[str, str], str],
+) -> None:
+    text_classification_function.create_samples([duck_typed_sample])
+    time.sleep(1)
+    samples = text_classification_function.list_samples()
+    assert len(samples) == 1
+    assert samples[0].data == "Hi neighbor!"
 
 
 def test_samples(text_classification_function: TextClassificationFunction) -> None:

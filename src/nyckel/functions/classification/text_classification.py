@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple, Union
 
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification import factory
@@ -100,8 +100,30 @@ class TextClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[str]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(self, samples: List[TextClassificationSample]) -> List[str]:  # type: ignore
-        return self._sample_handler.create_samples(samples, lambda x: x)
+    def create_samples(self, samples: List[Union[TextClassificationSample, Tuple[str, str], str]]) -> List[str]:  # type: ignore
+        """Create samples in the function.
+
+        Args:
+            samples: List of samples as defined by TextClassificationSample, Tuple[str, str] or str.
+
+                \nIf Tuple[str, str], the first string should be the sample data and the second the label name
+
+                If str, the sample data is the string and the sample is added without a label.
+        """
+        typed_samples: List[TextClassificationSample] = []
+        for sample in samples:
+            if isinstance(sample, str):
+                typed_samples.append(TextClassificationSample(data=sample))
+            elif isinstance(sample, tuple):
+                typed_samples.append(
+                    TextClassificationSample(data=sample[0], annotation=ClassificationAnnotation(label_name=sample[1]))
+                )
+            elif isinstance(sample, TextClassificationSample):
+                typed_samples.append(sample)
+            else:
+                raise ValueError(f"Unknown sample type: {type(sample)}")
+        self._create_labels_if_needed(typed_samples)
+        return self._sample_handler.create_samples(typed_samples, lambda x: x)
 
     def list_samples(self) -> List[TextClassificationSample]:  # type: ignore
         samples_dict_list = self._sample_handler.list_samples(self.sample_count)
@@ -155,3 +177,14 @@ class TextClassificationFunction(ClassificationFunction):
             annotation=annotation,
             prediction=prediction,
         )
+
+    def _create_labels_if_needed(self, samples: list[TextClassificationSample]) -> None:
+        labels = self._label_handler.list_labels(None)
+        label_names = {label.name for label in labels}
+        labels_to_be_created: list[ClassificationLabel] = []
+        for sample in samples:
+            if sample.annotation and sample.annotation.label_name not in label_names:
+                label_names.add(sample.annotation.label_name)
+                labels_to_be_created.append(ClassificationLabel(name=sample.annotation.label_name))
+        if len(labels_to_be_created) > 0:
+            self._label_handler.create_labels(labels_to_be_created)
