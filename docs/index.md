@@ -5,5 +5,5 @@ Nyckel is a Custom Classification API. It allows you to train, deploy and invoke
 ## Get started
 
 * Visit [Nyckel](https://www.nyckel.com) and sign up for a free account.
-* Check out out [Quickstart](quickstart.md) to get oriented.
-* Check out the SDK for [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification.
+* Check out the [Quickstart](quickstart.md) to get oriented.
+* Explore the SDK for [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification.
