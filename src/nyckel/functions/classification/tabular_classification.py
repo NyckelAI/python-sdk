@@ -190,7 +190,7 @@ class TabularClassificationFunction(ClassificationFunction):
         if len(new_fields) > 0:
             self._field_handler.create_fields(new_fields)
 
-    def _create_labels_as_needed(self, samples: list[TabularClassificationSample]) -> None:
+    def _create_labels_as_needed(self, samples: List[TabularClassificationSample]) -> None:
         existing_labels = self._label_handler.list_labels(None)
         existing_label_names = {label.name for label in existing_labels}
         new_label_names = {sample.annotation.label_name for sample in samples if sample.annotation}
