@@ -7,7 +7,7 @@ packages = ["src/nyckel"]
 
 [project]
 name = "nyckel"
-version = "0.0.56"
+version = "0.0.57"
 authors = [{ name = "Oscar Beijbom", email = "oscar@nyckel.com" }]
 description = "Python package for the Nyckel API"
 readme = "README.md"
