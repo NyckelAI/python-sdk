@@ -1,7 +1,7 @@
 import base64
 import os
 from io import BytesIO
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import requests
 from PIL import Image
@@ -110,8 +110,41 @@ class ImageClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[str]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(self, samples: List[ImageClassificationSample]) -> List[str]:  # type: ignore
-        return self._sample_handler.create_samples(samples, self._sample_data_to_body)
+    def create_samples(
+        self,
+        samples: List[  # type: ignore
+            Union[ImageClassificationSample, Tuple[str, str], Tuple[Image.Image, str], str, Image.Image]
+        ],
+    ) -> List[str]:
+        typed_samples: List[ImageClassificationSample] = []
+        for sample in samples:
+            if isinstance(sample, str):
+                typed_samples.append(ImageClassificationSample(data=sample))
+            elif isinstance(sample, Image.Image):
+                typed_samples.append(ImageClassificationSample(data=self._encoder.image_to_base64(sample)))
+            elif isinstance(sample, tuple) and isinstance(sample[0], str):
+                image_str, label_name = sample
+                typed_samples.append(
+                    ImageClassificationSample(
+                        data=image_str, annotation=ClassificationAnnotation(label_name=label_name)
+                    )
+                )
+            elif isinstance(sample, tuple) and isinstance(sample[0], Image.Image):
+                image_pil, label_name = sample
+                typed_samples.append(
+                    ImageClassificationSample(
+                        data=self._encoder.image_to_base64(image_pil),
+                        annotation=ClassificationAnnotation(label_name=label_name),
+                    )
+                )
+            elif isinstance(sample, ImageClassificationSample):
+                typed_samples.append(sample)
+            else:
+                raise ValueError(f"Unknown sample type: {type(sample)}")
+
+        self._create_labels_as_needed(typed_samples)
+
+        return self._sample_handler.create_samples(typed_samples, self._sample_data_to_body)
 
     def list_samples(self) -> List[ImageClassificationSample]:  # type: ignore
         samples_dict_list = self._sample_handler.list_samples(self.sample_count)
@@ -209,6 +242,15 @@ class ImageClassificationFunction(ClassificationFunction):
             annotation=annotation,
             prediction=prediction,
         )
+
+    def _create_labels_as_needed(self, samples: list[ImageClassificationSample]) -> None:
+        existing_labels = self._label_handler.list_labels(None)
+        existing_label_names = {label.name for label in existing_labels}
+        new_label_names = {sample.annotation.label_name for sample in samples if sample.annotation}
+        missing_label_names = new_label_names - existing_label_names
+        missing_labels = [ClassificationLabel(name=label_name) for label_name in missing_label_names]
+        if len(missing_labels) > 0:
+            self._label_handler.create_labels(missing_labels)
 
 
 class ImageDecoder:

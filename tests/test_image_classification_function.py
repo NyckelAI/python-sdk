@@ -1,10 +1,10 @@
 import os
 import time
+from typing import Tuple, Union
 
 import numpy as np
 import pytest
 from conftest import get_test_user, make_random_image
-
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
@@ -13,6 +13,7 @@ from nyckel import (
     ImageClassificationSample,
 )
 from nyckel.functions.classification.image_classification import ImageDecoder
+from PIL import Image
 
 user = get_test_user()
 
@@ -94,3 +95,32 @@ def test_image_integrity_on_copy(image_classification_function: ImageClassificat
 
     decoder = ImageDecoder()
     assert np.array_equal(np.array(decoder.to_image(first_sample.data)), np.array(decoder.to_image(second_sample.data)))
+
+
+post_sample_parameter_examples = [
+    ImageClassificationSample(
+        data=os.path.abspath("tests/flower.jpg"), annotation=ClassificationAnnotation(label_name="Nice")
+    ),
+    (os.path.abspath("tests/flower.jpg"), "Nice"),
+    (Image.open(os.path.abspath("tests/flower.jpg")), "Nice"),
+    os.path.abspath("tests/flower.jpg"),
+    Image.open(os.path.abspath("tests/flower.jpg")),
+]
+
+
+@pytest.mark.parametrize("post_samples_input", post_sample_parameter_examples)
+def test_post_sample_overloading(
+    image_classification_function: ImageClassificationFunction,
+    post_samples_input: Union[ImageClassificationSample, Tuple[str, str], Tuple[Image.Image, str], str, Image.Image],
+) -> None:
+    image_classification_function.create_samples([post_samples_input])
+    time.sleep(1)
+    samples = image_classification_function.list_samples()
+    assert len(samples) == 1
+
+    decoder = ImageDecoder()
+    returned_image = decoder.to_image(samples[0].data)
+    original_image = Image.open(os.path.abspath("tests/flower.jpg"))
+
+    assert returned_image.size == original_image.size
+    # TODO: test that the image content is the same. It's tricky b/c Nyckel re-codes the image when the sample is created.
