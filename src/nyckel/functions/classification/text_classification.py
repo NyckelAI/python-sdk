@@ -9,6 +9,7 @@ from nyckel.functions.classification.classification import (
     ClassificationLabel,
     ClassificationPrediction,
     TextClassificationSample,
+    TextSampleData,
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
@@ -100,15 +101,13 @@ class TextClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[str]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(self, samples: List[Union[TextClassificationSample, Tuple[str, str], str]]) -> List[str]:  # type: ignore
+    def create_samples(
+        self, samples: List[Union[TextClassificationSample, Tuple[TextSampleData, str], TextSampleData]]  # type: ignore
+    ) -> List[str]:
         """Create samples in the function.
 
         Args:
-            samples: List of samples as defined by TextClassificationSample, Tuple[str, str] or str.
-
-                \nIf Tuple[str, str], the first string should be the sample data and the second the label name
-
-                If str, the sample data is the string and the sample is added without a label.
+            samples: List of samples as defined by TextClassificationSample, Tuple[str, str] or str. If Tuple[str, str], the first string should be the sample data and the second the label name. If str, the sample data is the string and the sample is added without a label.
         """
         typed_samples: List[TextClassificationSample] = []
         for sample in samples:
@@ -122,7 +121,7 @@ class TextClassificationFunction(ClassificationFunction):
                 typed_samples.append(sample)
             else:
                 raise ValueError(f"Unknown sample type: {type(sample)}")
-        self._create_labels_if_needed(typed_samples)
+        self._create_labels_as_needed(typed_samples)
         return self._sample_handler.create_samples(typed_samples, lambda x: x)
 
     def list_samples(self) -> List[TextClassificationSample]:  # type: ignore
@@ -178,13 +177,11 @@ class TextClassificationFunction(ClassificationFunction):
             prediction=prediction,
         )
 
-    def _create_labels_if_needed(self, samples: list[TextClassificationSample]) -> None:
-        labels = self._label_handler.list_labels(None)
-        label_names = {label.name for label in labels}
-        labels_to_be_created: list[ClassificationLabel] = []
-        for sample in samples:
-            if sample.annotation and sample.annotation.label_name not in label_names:
-                label_names.add(sample.annotation.label_name)
-                labels_to_be_created.append(ClassificationLabel(name=sample.annotation.label_name))
-        if len(labels_to_be_created) > 0:
-            self._label_handler.create_labels(labels_to_be_created)
+    def _create_labels_as_needed(self, samples: List[TextClassificationSample]) -> None:
+        existing_labels = self._label_handler.list_labels(None)
+        existing_label_names = {label.name for label in existing_labels}
+        new_label_names = {sample.annotation.label_name for sample in samples if sample.annotation}
+        missing_label_names = new_label_names - existing_label_names
+        missing_labels = [ClassificationLabel(name=label_name) for label_name in missing_label_names]
+        if len(missing_labels) > 0:
+            self._label_handler.create_labels(missing_labels)
