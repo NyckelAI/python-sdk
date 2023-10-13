@@ -9,6 +9,7 @@ from .functions.classification.classification import (
     TabularClassificationSample,  # noqa: F401
     TabularFunctionField,  # noqa: F401
     TextClassificationSample,  # noqa: F401
+    TextSampleData,  # noqa: F401
 )
 from .functions.classification.factory import ClassificationFunctionFactory  # noqa: F401
 from .functions.classification.image_classification import ImageClassificationFunction  # noqa: F401

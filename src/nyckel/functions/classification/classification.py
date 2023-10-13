@@ -4,6 +4,8 @@ from typing import Dict, List, Optional, Union
 
 from nyckel import OAuth2Renewer
 
+TextSampleData = str
+
 
 @dataclass
 class ClassificationLabel:

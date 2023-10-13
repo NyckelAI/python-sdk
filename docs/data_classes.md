@@ -1,3 +1,8 @@
+::: nyckel.TextSampleData
+    options:
+        show_source: true
+        members: false
+
 ::: nyckel.ClassificationLabel
     options:
         show_source: true
