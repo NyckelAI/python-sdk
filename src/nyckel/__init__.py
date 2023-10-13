@@ -7,8 +7,10 @@ from .functions.classification.classification import (
     ClassificationPrediction,  # noqa: F401
     ClassificationSample,  # noqa: F401
     ImageClassificationSample,  # noqa: F401
+    ImageSampleData,  # noqa: F401
     TabularClassificationSample,  # noqa: F401
     TabularFunctionField,  # noqa: F401
+    TabularSampleData,  # noqa: F401
     TextClassificationSample,  # noqa: F401
     TextSampleData,  # noqa: F401
 )
