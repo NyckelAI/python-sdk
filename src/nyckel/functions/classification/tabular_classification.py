@@ -1,6 +1,6 @@
 import numbers
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
@@ -105,12 +105,32 @@ class TabularClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[str]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(self, samples: List[TabularClassificationSample]) -> List[str]:  # type: ignore # noqa: E501
-        self._create_fields_as_needed(samples)
+    def create_samples(self, samples: List[Union[TabularClassificationSample, Tuple[Dict, str], Dict]]) -> List[str]:  # type: ignore # noqa: E501
+        if len(samples) == 0:
+            return []
+
+        typed_samples: List[TabularClassificationSample] = []
+        for sample in samples:
+            if isinstance(sample, TabularClassificationSample):
+                typed_samples.append(sample)
+            elif isinstance(sample, tuple):
+                data_dict, label_name = sample
+                typed_samples.append(
+                    TabularClassificationSample(
+                        data=data_dict, annotation=ClassificationAnnotation(label_name=label_name)
+                    )
+                )
+            elif isinstance(sample, dict):
+                typed_samples.append(TabularClassificationSample(data=sample))
+            else:
+                raise ValueError(f"Unknown sample type: {type(sample)}")
+
+        self._create_labels_as_needed(typed_samples)
+        self._create_fields_as_needed(typed_samples)
         existing_fields = self._field_handler.list_fields()
         field_id_by_name = {field.name: field.id for field in existing_fields}
-        samples = [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in samples]  # type: ignore # noqa: E501
-        return self._sample_handler.create_samples(samples, lambda x: x)
+        samples = [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in typed_samples]  # type: ignore # noqa: E501
+        return self._sample_handler.create_samples(typed_samples, lambda x: x)
 
     def _switch_field_names_to_field_ids(
         self, sample: TabularClassificationSample, field_id_by_name: Dict[str, str]
@@ -169,6 +189,15 @@ class TabularClassificationFunction(ClassificationFunction):
 
         if len(new_fields) > 0:
             self._field_handler.create_fields(new_fields)
+
+    def _create_labels_as_needed(self, samples: list[TabularClassificationSample]) -> None:
+        existing_labels = self._label_handler.list_labels(None)
+        existing_label_names = {label.name for label in existing_labels}
+        new_label_names = {sample.annotation.label_name for sample in samples if sample.annotation}
+        missing_label_names = new_label_names - existing_label_names
+        missing_labels = [ClassificationLabel(name=label_name) for label_name in missing_label_names]
+        if len(missing_labels) > 0:
+            self._label_handler.create_labels(missing_labels)
 
     def _sample_from_dict(
         self, sample_dict: Dict, label_name_by_id: Dict[str, str], field_name_by_id: Dict[str, str]

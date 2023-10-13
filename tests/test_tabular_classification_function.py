@@ -1,6 +1,8 @@
 import time
 import warnings
+from typing import Dict, Tuple, Union
 
+import pytest
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
@@ -69,3 +71,24 @@ def test_field_creation(tabular_classification_function: TabularClassificationFu
     # Can't assign a Text value to a Number field. This sample will not be created.
     assert len(func.create_samples([TabularClassificationSample(data={"age": "Twelve"})])) == 0
     warnings.filterwarnings("default", category=FutureWarning)
+
+
+post_sample_parameter_examples = [
+    TabularClassificationSample(
+        data={"firstname": "Adam", "lastname": "Abrams"}, annotation=ClassificationAnnotation(label_name="Person")
+    ),
+    ({"firstname": "Adam", "lastname": "Abrams"}, "Person"),
+    {"firstname": "Adam", "lastname": "Abrams"},
+]
+
+
+@pytest.mark.parametrize("post_samples_input", post_sample_parameter_examples)
+def test_post_sample_overloading(
+    tabular_classification_function: TabularClassificationFunction,
+    post_samples_input: Union[TabularClassificationSample, Tuple[Dict, str], Dict],
+) -> None:
+    tabular_classification_function.create_samples([post_samples_input])
+    time.sleep(1)
+    samples = tabular_classification_function.list_samples()
+    assert len(samples) == 1
+    assert samples[0].data == {"firstname": "Adam", "lastname": "Abrams"}
