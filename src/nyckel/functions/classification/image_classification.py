@@ -243,7 +243,7 @@ class ImageClassificationFunction(ClassificationFunction):
             prediction=prediction,
         )
 
-    def _create_labels_as_needed(self, samples: list[ImageClassificationSample]) -> None:
+    def _create_labels_as_needed(self, samples: List[ImageClassificationSample]) -> None:
         existing_labels = self._label_handler.list_labels(None)
         existing_label_names = {label.name for label in existing_labels}
         new_label_names = {sample.annotation.label_name for sample in samples if sample.annotation}
