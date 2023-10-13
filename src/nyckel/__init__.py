@@ -1,4 +1,5 @@
 from .auth import OAuth2Renewer  # noqa: F401
+from .data_classes import NyckelId  # noqa: F401
 from .functions.classification.classification import (
     ClassificationAnnotation,  # noqa: F401
     ClassificationFunction,  # noqa: F401

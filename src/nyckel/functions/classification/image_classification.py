@@ -6,6 +6,7 @@ from typing import Dict, List, Tuple, Union
 import requests
 from PIL import Image
 
+from nyckel import NyckelId
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
@@ -15,6 +16,8 @@ from nyckel.functions.classification.classification import (
     ClassificationLabel,
     ClassificationPrediction,
     ImageClassificationSample,
+    ImageSampleData,
+    LabelName,
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
@@ -60,7 +63,7 @@ class ImageClassificationFunction(ClassificationFunction):
         return self.invoke([sample_data])[0]
 
     @property
-    def function_id(self) -> str:
+    def function_id(self) -> NyckelId:
         return self._function_id
 
     @property
@@ -86,62 +89,43 @@ class ImageClassificationFunction(ClassificationFunction):
     def metrics(self) -> Dict:
         return self._function_handler.get_metrics()
 
-    def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
+    def invoke(self, sample_data_list: List[ImageSampleData]) -> List[ClassificationPrediction]:
         return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body)
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
 
-    def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
+    def create_labels(self, labels: List[ClassificationLabel]) -> List[NyckelId]:
         return self._label_handler.create_labels(labels)
 
     def list_labels(self) -> List[ClassificationLabel]:
         return self._label_handler.list_labels(self.label_count)
 
-    def read_label(self, label_id: str) -> ClassificationLabel:
+    def read_label(self, label_id: NyckelId) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
 
     def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         return self._label_handler.update_label(label)
 
-    def delete_label(self, label_id: str) -> None:
+    def delete_label(self, label_id: NyckelId) -> None:
         return self._label_handler.delete_label(label_id)
 
-    def delete_labels(self, label_ids: List[str]) -> None:
+    def delete_labels(self, label_ids: List[NyckelId]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
     def create_samples(
         self,
         samples: List[  # type: ignore
-            Union[ImageClassificationSample, Tuple[str, str], Tuple[Image.Image, str], str, Image.Image]
+            Union[
+                ImageClassificationSample,
+                Tuple[Image.Image, LabelName],
+                Image.Image,
+                Tuple[ImageSampleData, LabelName],
+                ImageSampleData,
+            ]
         ],
-    ) -> List[str]:
-        typed_samples: List[ImageClassificationSample] = []
-        for sample in samples:
-            if isinstance(sample, str):
-                typed_samples.append(ImageClassificationSample(data=sample))
-            elif isinstance(sample, Image.Image):
-                typed_samples.append(ImageClassificationSample(data=self._encoder.image_to_base64(sample)))
-            elif isinstance(sample, tuple) and isinstance(sample[0], str):
-                image_str, label_name = sample
-                typed_samples.append(
-                    ImageClassificationSample(
-                        data=image_str, annotation=ClassificationAnnotation(label_name=label_name)
-                    )
-                )
-            elif isinstance(sample, tuple) and isinstance(sample[0], Image.Image):
-                image_pil, label_name = sample
-                typed_samples.append(
-                    ImageClassificationSample(
-                        data=self._encoder.image_to_base64(image_pil),
-                        annotation=ClassificationAnnotation(label_name=label_name),
-                    )
-                )
-            elif isinstance(sample, ImageClassificationSample):
-                typed_samples.append(sample)
-            else:
-                raise ValueError(f"Unknown sample type: {type(sample)}")
-
+    ) -> List[NyckelId]:
+        typed_samples = self._wrangle_post_samples_input(samples)
         self._create_labels_as_needed(typed_samples)
 
         return self._sample_handler.create_samples(typed_samples, self._sample_data_to_body)
@@ -154,7 +138,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
         return [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]
 
-    def read_sample(self, sample_id: str) -> ImageClassificationSample:
+    def read_sample(self, sample_id: NyckelId) -> ImageClassificationSample:
         sample_dict = self._sample_handler.read_sample(sample_id)
 
         labels = self._label_handler.list_labels(None)
@@ -165,10 +149,10 @@ class ImageClassificationFunction(ClassificationFunction):
     def update_annotation(self, sample: ImageClassificationSample) -> None:  # type: ignore
         self._sample_handler.update_annotation(sample)
 
-    def delete_sample(self, sample_id: str) -> None:
+    def delete_sample(self, sample_id: NyckelId) -> None:
         self._sample_handler.delete_sample(sample_id)
 
-    def delete_samples(self, sample_ids: List[str]) -> None:
+    def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)
 
     def delete(self) -> None:
@@ -242,6 +226,45 @@ class ImageClassificationFunction(ClassificationFunction):
             annotation=annotation,
             prediction=prediction,
         )
+
+    def _wrangle_post_samples_input(
+        self,
+        samples: List[  # type: ignore
+            Union[
+                ImageClassificationSample,
+                Tuple[Image.Image, LabelName],
+                Image.Image,
+                Tuple[ImageSampleData, LabelName],
+                ImageSampleData,
+            ]
+        ],
+    ) -> List[ImageClassificationSample]:
+        typed_samples: List[ImageClassificationSample] = []
+        for sample in samples:
+            if isinstance(sample, str):
+                typed_samples.append(ImageClassificationSample(data=sample))
+            elif isinstance(sample, Image.Image):
+                typed_samples.append(ImageClassificationSample(data=self._encoder.image_to_base64(sample)))
+            elif isinstance(sample, tuple) and isinstance(sample[0], str):
+                image_str, label_name = sample
+                typed_samples.append(
+                    ImageClassificationSample(
+                        data=image_str, annotation=ClassificationAnnotation(label_name=label_name)
+                    )
+                )
+            elif isinstance(sample, tuple) and isinstance(sample[0], Image.Image):
+                image_pil, label_name = sample
+                typed_samples.append(
+                    ImageClassificationSample(
+                        data=self._encoder.image_to_base64(image_pil),
+                        annotation=ClassificationAnnotation(label_name=label_name),
+                    )
+                )
+            elif isinstance(sample, ImageClassificationSample):
+                typed_samples.append(sample)
+            else:
+                raise ValueError(f"Unknown sample type: {type(sample)}")
+        return typed_samples
 
     def _create_labels_as_needed(self, samples: List[ImageClassificationSample]) -> None:
         existing_labels = self._label_handler.list_labels(None)

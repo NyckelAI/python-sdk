@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
-from nyckel import OAuth2Renewer
+from nyckel import NyckelId, OAuth2Renewer
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
@@ -12,8 +12,10 @@ from nyckel.functions.classification.classification import (
     ClassificationFunctionURLHandler,
     ClassificationLabel,
     ClassificationPrediction,
+    LabelName,
     TabularClassificationSample,
     TabularFunctionField,
+    TabularSampleData,
 )
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
@@ -23,7 +25,7 @@ from nyckel.request_utils import ParallelPoster, SequentialGetter, get_session_t
 
 
 class TabularClassificationFunction(ClassificationFunction):
-    def __init__(self, function_id: str, auth: OAuth2Renewer) -> None:
+    def __init__(self, function_id: NyckelId, auth: OAuth2Renewer) -> None:
         self._function_id = function_id
         self._auth = auth
 
@@ -81,50 +83,35 @@ class TabularClassificationFunction(ClassificationFunction):
     def metrics(self) -> Dict:
         return self._function_handler.get_metrics()
 
-    def invoke(self, sample_data_list: List[Dict]) -> List[ClassificationPrediction]:  # type: ignore
+    def invoke(self, sample_data_list: List[TabularSampleData]) -> List[ClassificationPrediction]:  # type: ignore
         return self._sample_handler.invoke(sample_data_list, lambda x: x)
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
 
-    def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
+    def create_labels(self, labels: List[ClassificationLabel]) -> List[NyckelId]:
         return self._label_handler.create_labels(labels)
 
     def list_labels(self) -> List[ClassificationLabel]:
         return self._label_handler.list_labels(self.label_count)
 
-    def read_label(self, label_id: str) -> ClassificationLabel:
+    def read_label(self, label_id: NyckelId) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
 
     def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         return self._label_handler.update_label(label)
 
-    def delete_label(self, label_id: str) -> None:
+    def delete_label(self, label_id: NyckelId) -> None:
         return self._label_handler.delete_label(label_id)
 
-    def delete_labels(self, label_ids: List[str]) -> None:
+    def delete_labels(self, label_ids: List[NyckelId]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(self, samples: List[Union[TabularClassificationSample, Tuple[Dict, str], Dict]]) -> List[str]:  # type: ignore # noqa: E501
+    def create_samples(self, samples: List[Union[TabularClassificationSample, Tuple[TabularSampleData, LabelName], TabularSampleData]]) -> List[NyckelId]:  # type: ignore # noqa: E501
         if len(samples) == 0:
             return []
 
-        typed_samples: List[TabularClassificationSample] = []
-        for sample in samples:
-            if isinstance(sample, TabularClassificationSample):
-                typed_samples.append(sample)
-            elif isinstance(sample, tuple):
-                data_dict, label_name = sample
-                typed_samples.append(
-                    TabularClassificationSample(
-                        data=data_dict, annotation=ClassificationAnnotation(label_name=label_name)
-                    )
-                )
-            elif isinstance(sample, dict):
-                typed_samples.append(TabularClassificationSample(data=sample))
-            else:
-                raise ValueError(f"Unknown sample type: {type(sample)}")
-
+        typed_samples = self._wrangle_post_samples_input(samples)
         self._create_labels_as_needed(typed_samples)
         self._create_fields_as_needed(typed_samples)
         existing_fields = self._field_handler.list_fields()
@@ -151,7 +138,7 @@ class TabularClassificationFunction(ClassificationFunction):
 
         return [self._sample_from_dict(entry, label_name_by_id, field_name_by_id) for entry in samples_dict_list]  # type: ignore # noqa: E501
 
-    def read_sample(self, sample_id: str) -> TabularClassificationSample:
+    def read_sample(self, sample_id: NyckelId) -> TabularClassificationSample:
         sample_as_dict = self._sample_handler.read_sample(sample_id)
 
         labels = self._label_handler.list_labels(None)
@@ -165,14 +152,35 @@ class TabularClassificationFunction(ClassificationFunction):
     def update_annotation(self, sample: TabularClassificationSample) -> None:  # type: ignore
         self._sample_handler.update_annotation(sample)
 
-    def delete_sample(self, sample_id: str) -> None:
+    def delete_sample(self, sample_id: NyckelId) -> None:
         self._sample_handler.delete_sample(sample_id)
 
-    def delete_samples(self, sample_ids: List[str]) -> None:
+    def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)
 
     def delete(self) -> None:
         self._function_handler.delete()
+
+    def _wrangle_post_samples_input(
+        self,
+        samples: List[Union[TabularClassificationSample, Tuple[TabularSampleData, LabelName], TabularSampleData]],
+    ) -> List[TabularClassificationSample]:  # type: ignore # noqa: E501
+        typed_samples: List[TabularClassificationSample] = []
+        for sample in samples:
+            if isinstance(sample, TabularClassificationSample):
+                typed_samples.append(sample)
+            elif isinstance(sample, tuple):
+                data_dict, label_name = sample
+                typed_samples.append(
+                    TabularClassificationSample(
+                        data=data_dict, annotation=ClassificationAnnotation(label_name=label_name)
+                    )
+                )
+            elif isinstance(sample, dict):
+                typed_samples.append(TabularClassificationSample(data=sample))
+            else:
+                raise ValueError(f"Unknown sample type: {type(sample)}")
+        return typed_samples
 
     def _create_fields_as_needed(self, samples: List[TabularClassificationSample]) -> None:
         existing_fields = self._field_handler.list_fields()
@@ -240,7 +248,7 @@ class TabularClassificationFunction(ClassificationFunction):
 
 
 class TabularFieldHandler:
-    def __init__(self, function_id: str, auth: OAuth2Renewer):
+    def __init__(self, function_id: NyckelId, auth: OAuth2Renewer):
         self._function_id = function_id
         self._auth = auth
         self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
@@ -250,7 +258,7 @@ class TabularFieldHandler:
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
-    def create_fields(self, fields: List[TabularFunctionField]) -> List[str]:
+    def create_fields(self, fields: List[TabularFunctionField]) -> List[NyckelId]:
         self._refresh_auth_token()
         bodies = [{"name": field.name, "type": field.type} for field in fields]
         url = self._url_handler.api_endpoint(path="fields")
@@ -282,7 +290,7 @@ class TabularFieldHandler:
         )
         return [self._field_from_dict(entry) for entry in fields_dict_list]
 
-    def read_field(self, field_id: str) -> TabularFunctionField:
+    def read_field(self, field_id: NyckelId) -> TabularFunctionField:
         self._refresh_auth_token()
         url = self._url_handler.api_endpoint(path=f"fields/{field_id}")
         response = self._session.get(url)
@@ -293,7 +301,7 @@ class TabularFieldHandler:
             )
         return self._field_from_dict(response.json())
 
-    def delete_field(self, field_id: str) -> None:
+    def delete_field(self, field_id: NyckelId) -> None:
         self._refresh_auth_token()
         response = self._session.delete(self._url_handler.api_endpoint(path=f"fields/{field_id}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
