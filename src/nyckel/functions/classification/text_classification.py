@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple, Union
 
+from nyckel import NyckelId
 from nyckel.auth import OAuth2Renewer
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
@@ -8,6 +9,7 @@ from nyckel.functions.classification.classification import (
     ClassificationFunctionURLHandler,
     ClassificationLabel,
     ClassificationPrediction,
+    LabelName,
     TextClassificationSample,
     TextSampleData,
 )
@@ -19,7 +21,7 @@ from nyckel.request_utils import get_session_that_retries
 
 
 class TextClassificationFunction(ClassificationFunction):
-    def __init__(self, function_id: str, auth: OAuth2Renewer):
+    def __init__(self, function_id: NyckelId, auth: OAuth2Renewer):
         self._function_id = function_id
         self._auth = auth
 
@@ -77,51 +79,36 @@ class TextClassificationFunction(ClassificationFunction):
     def metrics(self) -> Dict:
         return self._function_handler.get_metrics()
 
-    def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
+    def invoke(self, sample_data_list: List[TextSampleData]) -> List[ClassificationPrediction]:
         return self._sample_handler.invoke(sample_data_list, lambda x: x)
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
 
-    def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
+    def create_labels(self, labels: List[ClassificationLabel]) -> List[NyckelId]:
         return self._label_handler.create_labels(labels)
 
     def list_labels(self) -> List[ClassificationLabel]:
         return self._label_handler.list_labels(self.label_count)
 
-    def read_label(self, label_id: str) -> ClassificationLabel:
+    def read_label(self, label_id: NyckelId) -> ClassificationLabel:
         return self._label_handler.read_label(label_id)
 
     def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         return self._label_handler.update_label(label)
 
-    def delete_label(self, label_id: str) -> None:
+    def delete_label(self, label_id: NyckelId) -> None:
         return self._label_handler.delete_label(label_id)
 
-    def delete_labels(self, label_ids: List[str]) -> None:
+    def delete_labels(self, label_ids: List[NyckelId]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
     def create_samples(
-        self, samples: List[Union[TextClassificationSample, Tuple[TextSampleData, str], TextSampleData]]  # type: ignore
-    ) -> List[str]:
-        """Create samples in the function.
-
-        Args:
-            samples: List of samples as defined by TextClassificationSample, Tuple[str, str] or str. If Tuple[str, str], the first string should be the sample data and the second the label name. If str, the sample data is the string and the sample is added without a label.
-        """
-        typed_samples: List[TextClassificationSample] = []
-        for sample in samples:
-            if isinstance(sample, str):
-                typed_samples.append(TextClassificationSample(data=sample))
-            elif isinstance(sample, tuple):
-                typed_samples.append(
-                    TextClassificationSample(data=sample[0], annotation=ClassificationAnnotation(label_name=sample[1]))
-                )
-            elif isinstance(sample, TextClassificationSample):
-                typed_samples.append(sample)
-            else:
-                raise ValueError(f"Unknown sample type: {type(sample)}")
+        self, samples: List[Union[TextClassificationSample, Tuple[TextSampleData, LabelName], TextSampleData]]  # type: ignore  # noqa: E501
+    ) -> List[NyckelId]:
+        typed_samples = self._wrangle_post_samples_input(samples)
         self._create_labels_as_needed(typed_samples)
+
         return self._sample_handler.create_samples(typed_samples, lambda x: x)
 
     def list_samples(self) -> List[TextClassificationSample]:  # type: ignore
@@ -132,7 +119,7 @@ class TextClassificationFunction(ClassificationFunction):
 
         return [self._sample_from_dict(entry, label_name_by_id) for entry in samples_dict_list]  # type: ignore
 
-    def read_sample(self, sample_id: str) -> TextClassificationSample:
+    def read_sample(self, sample_id: NyckelId) -> TextClassificationSample:
         sample_dict = self._sample_handler.read_sample(sample_id)
 
         labels = self._label_handler.list_labels(None)
@@ -143,10 +130,10 @@ class TextClassificationFunction(ClassificationFunction):
     def update_annotation(self, sample: TextClassificationSample) -> None:  # type: ignore
         self._sample_handler.update_annotation(sample)
 
-    def delete_sample(self, sample_id: str) -> None:
+    def delete_sample(self, sample_id: NyckelId) -> None:
         self._sample_handler.delete_sample(sample_id)
 
-    def delete_samples(self, sample_ids: List[str]) -> None:
+    def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)
 
     def delete(self) -> None:
@@ -155,7 +142,7 @@ class TextClassificationFunction(ClassificationFunction):
     def _refresh_auth_token(self) -> None:
         self._session.headers.update({"authorization": "Bearer " + self._auth.token})
 
-    def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict[str, str]) -> TextClassificationSample:
+    def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict[NyckelId, str]) -> TextClassificationSample:
         if "annotation" in sample_dict:
             annotation = ClassificationAnnotation(
                 label_name=label_name_by_id[strip_nyckel_prefix(sample_dict["annotation"]["labelId"])],
@@ -176,6 +163,23 @@ class TextClassificationFunction(ClassificationFunction):
             annotation=annotation,
             prediction=prediction,
         )
+
+    def _wrangle_post_samples_input(
+        self, samples: List[Union[TextClassificationSample, Tuple[TextSampleData, LabelName], TextSampleData]]
+    ) -> List[TextClassificationSample]:
+        typed_samples: List[TextClassificationSample] = []
+        for sample in samples:
+            if isinstance(sample, str):
+                typed_samples.append(TextClassificationSample(data=sample))
+            elif isinstance(sample, tuple):
+                typed_samples.append(
+                    TextClassificationSample(data=sample[0], annotation=ClassificationAnnotation(label_name=sample[1]))
+                )
+            elif isinstance(sample, TextClassificationSample):
+                typed_samples.append(sample)
+            else:
+                raise ValueError(f"Unknown sample type: {type(sample)}")
+        return typed_samples
 
     def _create_labels_as_needed(self, samples: List[TextClassificationSample]) -> None:
         existing_labels = self._label_handler.list_labels(None)

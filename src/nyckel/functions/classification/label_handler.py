@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 from tqdm import tqdm
 
-from nyckel import OAuth2Renewer
+from nyckel import NyckelId, OAuth2Renewer
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler, ClassificationLabel
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
@@ -56,7 +56,7 @@ class ClassificationLabelHandler:
         labels = [self._label_from_dict(entry) for entry in labels_dict_list]
         return labels
 
-    def read_label(self, label_id: str) -> ClassificationLabel:
+    def read_label(self, label_id: NyckelId) -> ClassificationLabel:
         self._refresh_auth_token()
         response = self._session.get(self._url_handler.api_endpoint(path=f"labels/{label_id}"))
         if not response.status_code == 200:
@@ -77,7 +77,7 @@ class ClassificationLabelHandler:
         assert response.status_code == 200, f"Update failed with {response.status_code=}, {response.text=}"
         return label
 
-    def delete_label(self, label_id: str) -> None:
+    def delete_label(self, label_id: NyckelId) -> None:
         self._refresh_auth_token()
         response = self._session.delete(self._url_handler.api_endpoint(path=f"labels/{strip_nyckel_prefix(label_id)}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"

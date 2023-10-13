@@ -2,14 +2,22 @@ import abc
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
-from nyckel import OAuth2Renewer
+from nyckel import NyckelId, OAuth2Renewer
 
 TextSampleData = str
+
+ImageSampleData = str  # DataUri, Url, or local filepath.
+
+TabularFieldValue = Union[str, int]
+TabularFieldKey = str
+TabularSampleData = Dict[TabularFieldKey, TabularFieldValue]
+
+LabelName = str
 
 
 @dataclass
 class ClassificationLabel:
-    name: str
+    name: LabelName
     id: Optional[str] = None
     description: Optional[str] = None
     metadata: Optional[Dict[str, str]] = None
@@ -17,7 +25,7 @@ class ClassificationLabel:
 
 @dataclass
 class ClassificationPrediction:
-    label_name: str
+    label_name: LabelName
     confidence: float
 
 
@@ -29,14 +37,17 @@ class ClassificationAnnotation:
 @dataclass
 class TabularFunctionField:
     name: str
-    type: str
-    id: Optional[str] = None
+    type: str  # "Number" or "Text"
+    id: Optional[NyckelId] = None
+
+    def __post_init__(self) -> None:
+        assert self.type in ["Number", "Text"]
 
 
 @dataclass
 class ImageClassificationSample:
-    data: str  # DataUri, Url, or local filepath.
-    id: Optional[str] = None
+    data: ImageSampleData
+    id: Optional[NyckelId] = None
     external_id: Optional[str] = None
     annotation: Optional[ClassificationAnnotation] = None
     prediction: Optional[ClassificationPrediction] = None
@@ -44,8 +55,8 @@ class ImageClassificationSample:
 
 @dataclass
 class TextClassificationSample:
-    data: str
-    id: Optional[str] = None
+    data: TextSampleData
+    id: Optional[NyckelId] = None
     external_id: Optional[str] = None
     annotation: Optional[ClassificationAnnotation] = None
     prediction: Optional[ClassificationPrediction] = None
@@ -53,8 +64,8 @@ class TextClassificationSample:
 
 @dataclass
 class TabularClassificationSample:
-    data: Dict[str, Union[str, int]]  # Maps from field name (str) to field data (str or int)
-    id: Optional[str] = None
+    data: TabularSampleData
+    id: Optional[NyckelId] = None
     external_id: Optional[str] = None
     annotation: Optional[ClassificationAnnotation] = None
     prediction: Optional[ClassificationPrediction] = None
@@ -80,7 +91,7 @@ class ClassificationFunction(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def function_id(self) -> str:
+    def function_id(self) -> NyckelId:
         pass
 
     @property
@@ -117,7 +128,7 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
+    def create_labels(self, labels: List[ClassificationLabel]) -> List[NyckelId]:
         pass
 
     @abc.abstractmethod
@@ -125,7 +136,7 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def read_label(self, label_id: str) -> ClassificationLabel:
+    def read_label(self, label_id: NyckelId) -> ClassificationLabel:
         pass
 
     @abc.abstractmethod
@@ -133,15 +144,15 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def delete_label(self, label_id: str) -> None:
+    def delete_label(self, label_id: NyckelId) -> None:
         pass
 
     @abc.abstractmethod
-    def delete_labels(self, label_ids: List[str]) -> None:
+    def delete_labels(self, label_ids: List[NyckelId]) -> None:
         pass
 
     @abc.abstractmethod
-    def create_samples(self, samples: List[ClassificationSample]) -> List[str]:
+    def create_samples(self, samples: List[ClassificationSample]) -> List[NyckelId]:
         pass
 
     @abc.abstractmethod
@@ -149,7 +160,7 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def read_sample(self, sample_id: str) -> ClassificationSample:
+    def read_sample(self, sample_id: NyckelId) -> ClassificationSample:
         pass
 
     @abc.abstractmethod
@@ -157,11 +168,11 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def delete_sample(self, sample_id: str) -> None:
+    def delete_sample(self, sample_id: NyckelId) -> None:
         pass
 
     @abc.abstractmethod
-    def delete_samples(self, sample_ids: List[str]) -> None:
+    def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         pass
 
     @abc.abstractmethod
@@ -171,7 +182,7 @@ class ClassificationFunction(abc.ABC):
 
 
 class ClassificationFunctionURLHandler:
-    def __init__(self, function_id: str, server_url: str):
+    def __init__(self, function_id: NyckelId, server_url: str):
         self._function_id = function_id
         self._server_url = server_url
 
