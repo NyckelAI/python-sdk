@@ -10,6 +10,8 @@ nav:
     - DataClasses: data_classes.md
 theme: 
   name: 'material'
+  features:
+    - content.code.copy
 
 plugins:
 - search
@@ -33,4 +35,11 @@ plugins:
           show_bases: false
           show_docstring_attributes: true
 
-    
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

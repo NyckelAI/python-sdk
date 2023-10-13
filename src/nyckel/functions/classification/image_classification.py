@@ -59,7 +59,7 @@ class ImageClassificationFunction(ClassificationFunction):
         status_string = f"Name: {self.get_name()}, id: {self.function_id}, url: {self.train_page}"
         return status_string
 
-    def __call__(self, sample_data: str) -> ClassificationPrediction:
+    def __call__(self, sample_data: ImageSampleData) -> ClassificationPrediction:
         return self.invoke([sample_data])[0]
 
     @property

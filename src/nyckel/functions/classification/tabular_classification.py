@@ -53,7 +53,7 @@ class TabularClassificationFunction(ClassificationFunction):
         status_string = f"Name: {self.get_name()}, id: {self.function_id}, url: {self.train_page}"
         return status_string
 
-    def __call__(self, sample_data: Dict) -> ClassificationPrediction:  # type: ignore
+    def __call__(self, sample_data: TabularSampleData) -> ClassificationPrediction:  # type: ignore
         return self.invoke([sample_data])[0]
 
     @property

@@ -2,7 +2,7 @@
 
 Use the Nyckel SDK to train, deploy and invoke a text classification function.
 
-```python
+``` py
 from nyckel import OAuth2Renewer, TextClassificationFunction
 
 # Get credentials from https://www.nyckel.com/console/keys
