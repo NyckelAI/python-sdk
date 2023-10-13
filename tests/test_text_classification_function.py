@@ -10,19 +10,19 @@ from nyckel import (
     TextClassificationSample,
 )
 
-duck_typed_text_samples = [
+post_sample_parameter_examples = [
     TextClassificationSample(data="Hi neighbor!", annotation=ClassificationAnnotation(label_name="Nice")),
     ("Hi neighbor!", "Nice"),
     "Hi neighbor!",
 ]
 
 
-@pytest.mark.parametrize("duck_typed_sample", duck_typed_text_samples)
-def test_duck_typed_samples(
+@pytest.mark.parametrize("post_samples_input", post_sample_parameter_examples)
+def test_post_sample_overloading(
     text_classification_function: TextClassificationFunction,
-    duck_typed_sample: Union[TextClassificationSample, Tuple[str, str], str],
+    post_samples_input: Union[TextClassificationSample, Tuple[str, str], str],
 ) -> None:
-    text_classification_function.create_samples([duck_typed_sample])
+    text_classification_function.create_samples([post_samples_input])
     time.sleep(1)
     samples = text_classification_function.list_samples()
     assert len(samples) == 1
