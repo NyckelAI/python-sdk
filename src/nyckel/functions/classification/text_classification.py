@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple, Union
 
-from nyckel import NyckelId, OAuth2Renewer
+from nyckel import NyckelId, User
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
@@ -31,36 +31,36 @@ class TextClassificationFunction(ClassificationFunction):
 
     func = TextClassificationFunction.new("IsToxic", user)
     func.create_samples([
-        ('This is a nice comment', 'not toxic'),
-        ('Hello friend', 'not toxic'),
-        ('This is a bad comment', 'toxic'),
-        ('Who is this? Go away!', 'toxic'),
+        ("This is a nice comment", "Not toxic"),
+        ("Hello friend", "Not toxic"),
+        ("This is a bad comment', "Toxic"),
+        ("Who is this? Go away!", "Toxic"),
     ])
 
     prediction = func("This example is fantastic!")
     ```
     """
 
-    def __init__(self, function_id: NyckelId, auth: OAuth2Renewer):
+    def __init__(self, function_id: NyckelId, user: User):
         self._function_id = function_id
-        self._auth = auth
+        self._user = user
 
-        self._function_handler = ClassificationFunctionHandler(function_id, auth)
-        self._label_handler = ClassificationLabelHandler(function_id, auth)
-        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
-        self._sample_handler = ClassificationSampleHandler(function_id, auth)
+        self._function_handler = ClassificationFunctionHandler(function_id, user)
+        self._label_handler = ClassificationLabelHandler(function_id, user)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
+        self._sample_handler = ClassificationSampleHandler(function_id, user)
         self._session = get_session_that_retries()
         self._refresh_auth_token()
 
         assert self._function_handler.get_input_modality() == "Text"
 
     @classmethod
-    def new(cls, name: str, auth: OAuth2Renewer) -> "TextClassificationFunction":
-        return factory.ClassificationFunctionFactory.new(name, "Text", auth)  # type:ignore
+    def new(cls, name: str, user: User) -> "TextClassificationFunction":
+        return factory.ClassificationFunctionFactory.new(name, "Text", user)  # type:ignore
 
     @classmethod
-    def create_function(cls, name: str, auth: OAuth2Renewer) -> "TextClassificationFunction":
-        return cls.new(name, auth)
+    def create_function(cls, name: str, user: User) -> "TextClassificationFunction":
+        return cls.new(name, user)
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -160,7 +160,7 @@ class TextClassificationFunction(ClassificationFunction):
         self._function_handler.delete()
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
     def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict[NyckelId, str]) -> TextClassificationSample:
         if "annotation" in sample_dict:

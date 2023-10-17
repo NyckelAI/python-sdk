@@ -37,7 +37,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     func = ImageClassificationFunction.new("IsCatOrDog", user)
     func.create_samples([
-        ("cat1.jpg"," "cat"),
+        ("cat1.jpg", "cat"),
         ("cat2.jpg", "cat"),
         ("dog1.jpg", "dog"),
         ("dog2.jpg", "dog")

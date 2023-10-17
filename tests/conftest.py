@@ -5,21 +5,20 @@ from typing import Iterator
 import numpy as np
 import pytest
 import requests
-from PIL import Image
-
 from nyckel import (
     ClassificationAnnotation,
     ClassificationFunction,
     ClassificationLabel,
     ImageClassificationFunction,
     ImageClassificationSample,
-    OAuth2Renewer,
     TabularClassificationFunction,
     TabularClassificationSample,
     TextClassificationFunction,
     TextClassificationSample,
+    User,
 )
 from nyckel.functions.classification.image_classification import ImageEncoder
+from PIL import Image
 
 
 def make_random_image(size: int = 100) -> str:
@@ -36,7 +35,7 @@ def hold_until_list_samples_available(function: ClassificationFunction, expected
 
 
 @pytest.fixture
-def auth_test_user() -> Iterator[OAuth2Renewer]:
+def auth_test_user() -> Iterator[User]:
     user = get_test_user()
     assert_user_has_access(user)
     if not user_has_project(user):
@@ -45,14 +44,14 @@ def auth_test_user() -> Iterator[OAuth2Renewer]:
 
 
 @pytest.fixture
-def text_classification_function(auth_test_user: OAuth2Renewer) -> Iterator[TextClassificationFunction]:
+def text_classification_function(auth_test_user: User) -> Iterator[TextClassificationFunction]:
     func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
 
 
 @pytest.fixture
-def text_classification_function_with_content(auth_test_user: OAuth2Renewer) -> Iterator[TextClassificationFunction]:
+def text_classification_function_with_content(auth_test_user: User) -> Iterator[TextClassificationFunction]:
     func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
@@ -72,14 +71,14 @@ def text_classification_function_with_content(auth_test_user: OAuth2Renewer) -> 
 
 
 @pytest.fixture
-def image_classification_function(auth_test_user: OAuth2Renewer) -> Iterator[ImageClassificationFunction]:
+def image_classification_function(auth_test_user: User) -> Iterator[ImageClassificationFunction]:
     func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
 
 
 @pytest.fixture
-def image_classification_function_with_content(auth_test_user: OAuth2Renewer) -> Iterator[ImageClassificationFunction]:
+def image_classification_function_with_content(auth_test_user: User) -> Iterator[ImageClassificationFunction]:
     func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
@@ -99,7 +98,7 @@ def image_classification_function_with_content(auth_test_user: OAuth2Renewer) ->
 
 
 @pytest.fixture
-def tabular_classification_function(auth_test_user: OAuth2Renewer) -> Iterator[TabularClassificationFunction]:
+def tabular_classification_function(auth_test_user: User) -> Iterator[TabularClassificationFunction]:
     func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
@@ -107,7 +106,7 @@ def tabular_classification_function(auth_test_user: OAuth2Renewer) -> Iterator[T
 
 @pytest.fixture
 def tabular_classification_function_with_content(
-    auth_test_user: OAuth2Renewer,
+    auth_test_user: User,
 ) -> Iterator[TabularClassificationFunction]:
     func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
@@ -127,27 +126,27 @@ def tabular_classification_function_with_content(
     func.delete()
 
 
-def get_test_user() -> OAuth2Renewer:
+def get_test_user() -> User:
     if "NYCKEL_PYTHON_SDK_CLIENT_SECRET" in os.environ:
-        auth = OAuth2Renewer(
+        user = User(
             client_id="python-sdk-test",
             client_secret=os.environ["NYCKEL_PYTHON_SDK_CLIENT_SECRET"],
             server_url="https://www.nyckel-staging.com",
         )
     else:
-        auth = OAuth2Renewer(
+        user = User(
             client_id="python-sdk-test",
             client_secret="secret",
             server_url="http://localhost:5000",
         )
-    return auth
+    return user
 
 
-def assert_user_has_access(user: OAuth2Renewer) -> None:
+def assert_user_has_access(user: User) -> None:
     user.token
 
 
-def user_has_project(user: OAuth2Renewer) -> bool:
+def user_has_project(user: User) -> bool:
     session = requests.Session()
     session.headers.update({"authorization": "Bearer " + user.token})
     response = session.get(f"{user.server_url}/v0.9/projects")
@@ -155,7 +154,7 @@ def user_has_project(user: OAuth2Renewer) -> bool:
     return len(response.json()) > 0
 
 
-def create_project_for_user(user: OAuth2Renewer) -> None:
+def create_project_for_user(user: User) -> None:
     session = requests.Session()
     session.headers.update({"authorization": "Bearer " + user.token})
     print("-> Creating project for user")

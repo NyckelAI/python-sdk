@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
-from nyckel import NyckelId, OAuth2Renewer
+from nyckel import NyckelId, User
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
@@ -37,7 +37,7 @@ class TabularClassificationFunction(ClassificationFunction):
 
     func = TabularClassificationFunction.new("InterestedProspect", user)
     func.create_samples([
-        ({"Name": "Adam Adams", "Response": "Thanks for reaching out -- I'd love to chat"}, "Interested"),
+        ({"Name": "Adam Adams", "Response": "Thanks for reaching out. I'd love to chat"}, "Interested"),
         ({"Name": "Bo Berg", "Response": "Sure! Can you tell me a bit more?"}, "Interested"),
         ({"Name": "Charles Carter", "Response": "No thanks, I don't need a Classification API"}, "Not Interested"),
         ({"Name": "Devin Duncan", "Response": "Nope. Please stop bugging me."}, "Not Interested"),
@@ -47,26 +47,26 @@ class TabularClassificationFunction(ClassificationFunction):
     ```
     """
 
-    def __init__(self, function_id: NyckelId, auth: OAuth2Renewer) -> None:
+    def __init__(self, function_id: NyckelId, user: User) -> None:
         self._function_id = function_id
-        self._auth = auth
+        self._user = user
 
-        self._function_handler = ClassificationFunctionHandler(function_id, auth)
-        self._label_handler = ClassificationLabelHandler(function_id, auth)
-        self._field_handler = TabularFieldHandler(function_id, auth)
-        self._sample_handler = ClassificationSampleHandler(function_id, auth)
-        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+        self._function_handler = ClassificationFunctionHandler(function_id, user)
+        self._label_handler = ClassificationLabelHandler(function_id, user)
+        self._field_handler = TabularFieldHandler(function_id, user)
+        self._sample_handler = ClassificationSampleHandler(function_id, user)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
         self._session = get_session_that_retries()
         self._refresh_auth_token()
         assert self._function_handler.get_input_modality() == "Tabular"
 
     @classmethod
-    def new(cls, name: str, auth: OAuth2Renewer) -> "TabularClassificationFunction":
-        return factory.ClassificationFunctionFactory.new(name, "Tabular", auth)  # type: ignore
+    def new(cls, name: str, user: User) -> "TabularClassificationFunction":
+        return factory.ClassificationFunctionFactory.new(name, "Tabular", user)  # type: ignore
 
     @classmethod
-    def create_function(cls, name: str, auth: OAuth2Renewer) -> "TabularClassificationFunction":
-        return cls.new(name, auth)
+    def create_function(cls, name: str, user: User) -> "TabularClassificationFunction":
+        return cls.new(name, user)
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -266,19 +266,19 @@ class TabularClassificationFunction(ClassificationFunction):
         )
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
 
 class TabularFieldHandler:
-    def __init__(self, function_id: NyckelId, auth: OAuth2Renewer):
+    def __init__(self, function_id: NyckelId, user: User):
         self._function_id = function_id
-        self._auth = auth
-        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+        self._user = user
+        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
         self._session = get_session_that_retries()
         self._field_name_by_id: Dict = {}
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
     def create_fields(self, fields: List[TabularFunctionField]) -> List[NyckelId]:
         self._refresh_auth_token()

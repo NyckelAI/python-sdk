@@ -1,11 +1,11 @@
 import json
 
-from nyckel import ImageClassificationFunction, OAuth2Renewer, TabularClassificationFunction, TextClassificationFunction
+from nyckel import ImageClassificationFunction, TabularClassificationFunction, TextClassificationFunction, User
 from nyckel.orchestration import NyckelFunctionDuplicator
 
 
 def test_copy_image_function(
-    image_classification_function_with_content: ImageClassificationFunction, auth_test_user: OAuth2Renewer
+    image_classification_function_with_content: ImageClassificationFunction, auth_test_user: User
 ) -> None:
     from_function: ImageClassificationFunction = image_classification_function_with_content
     to_function = NyckelFunctionDuplicator(from_function.function_id, auth_test_user, skip_confirmation=True)()
@@ -18,7 +18,7 @@ def test_copy_image_function(
 
 
 def test_copy_text_function(
-    text_classification_function_with_content: TextClassificationFunction, auth_test_user: OAuth2Renewer
+    text_classification_function_with_content: TextClassificationFunction, auth_test_user: User
 ) -> None:
     from_function: TextClassificationFunction = text_classification_function_with_content
     to_function = NyckelFunctionDuplicator(from_function.function_id, auth_test_user, skip_confirmation=True)()
@@ -29,7 +29,7 @@ def test_copy_text_function(
 
 
 def test_copy_tabular_function(
-    tabular_classification_function_with_content: TabularClassificationFunction, auth_test_user: OAuth2Renewer
+    tabular_classification_function_with_content: TabularClassificationFunction, auth_test_user: User
 ) -> None:
     from_function: TabularClassificationFunction = tabular_classification_function_with_content
     to_function = NyckelFunctionDuplicator(from_function.function_id, auth_test_user, skip_confirmation=True)()

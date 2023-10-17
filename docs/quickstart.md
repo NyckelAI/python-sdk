@@ -3,10 +3,10 @@
 Use the Nyckel SDK to train, deploy and invoke a text classification function.
 
 ``` py
-from nyckel import OAuth2Renewer, TextClassificationFunction
+from nyckel import User, TextClassificationFunction
 
 # Get credentials from https://www.nyckel.com/console/keys
-user = OAuth2Renewer(client_id=..., client_secret=...)
+user = User(client_id=..., client_secret=...)
 
 # Create a new text classification function.
 func = TextClassificationFunction.new(user=user, name='IsToxic')
