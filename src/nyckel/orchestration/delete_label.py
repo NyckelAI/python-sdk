@@ -7,7 +7,7 @@ from tqdm import tqdm
 from nyckel import (
     ClassificationFunctionFactory,
     ClassificationLabel,
-    OAuth2Renewer,
+    User,
 )
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
@@ -15,13 +15,13 @@ from nyckel.request_utils import SequentialGetter, get_session_that_retries
 
 
 class NyckelLabelDeleter:
-    def __init__(self, function_id: str, auth: OAuth2Renewer, skip_confirmation: bool = False):
+    def __init__(self, function_id: str, user: User, skip_confirmation: bool = False):
         self._function_id = function_id
-        self._auth = auth
+        self._user = user
         self._skip_confirmation = skip_confirmation
-        self._function_handler = ClassificationFunctionHandler(self._function_id, self._auth)
-        self._function = ClassificationFunctionFactory.load(function_id, auth)
-        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+        self._function_handler = ClassificationFunctionHandler(self._function_id, self._user)
+        self._function = ClassificationFunctionFactory.load(function_id, user)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
         self._session = get_session_that_retries()
 
     def delete_label_and_samples(self, label_name: str) -> None:
@@ -74,14 +74,14 @@ class NyckelLabelDeleter:
         print(f"-> Label '{label_name}' deleted.")
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
 
 def main(
     client_id: str, client_secret: str, function_id: str, label_name: str, server_url: str = "https://www.nyckel.com"
 ) -> None:
-    auth = OAuth2Renewer(client_id, client_secret, server_url)
-    label_deleter = NyckelLabelDeleter(function_id, auth)
+    user = User(client_id, client_secret, server_url)
+    label_deleter = NyckelLabelDeleter(function_id, user)
     label_deleter.delete_label_and_samples(label_name)
 
 

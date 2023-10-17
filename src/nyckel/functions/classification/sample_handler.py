@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
-from nyckel import OAuth2Renewer
+from nyckel import User
 from nyckel.functions.classification.classification import (
     ClassificationFunctionURLHandler,
     ClassificationPrediction,
@@ -21,11 +21,11 @@ ClassificationSampleList = Union[
 
 
 class ClassificationSampleHandler:
-    def __init__(self, function_id: str, auth: OAuth2Renewer):
+    def __init__(self, function_id: str, user: User):
         self._function_id = function_id
-        self._auth = auth
+        self._user = user
         self._session = get_session_that_retries()
-        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
         self._refresh_auth_token()
 
     def invoke(
@@ -146,4 +146,4 @@ class ClassificationSampleHandler:
         parallel_deleter(sample_ids)
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})

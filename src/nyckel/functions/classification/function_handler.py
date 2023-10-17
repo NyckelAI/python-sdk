@@ -1,16 +1,16 @@
 from typing import Dict
 
-from nyckel import OAuth2Renewer
+from nyckel import User
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.request_utils import get_session_that_retries
 
 
 class ClassificationFunctionHandler:
-    def __init__(self, function_id: str, auth: OAuth2Renewer):
+    def __init__(self, function_id: str, user: User):
         self._function_id = function_id
-        self._auth = auth
+        self._user = user
         self._session = get_session_that_retries()
-        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
         self.validate_access()
         assert self.get_output_modality() == "Classification"
 
@@ -35,14 +35,14 @@ class ClassificationFunctionHandler:
     def validate_access(self) -> None:
         self._refresh_auth_token()
 
-        url = f"{self._auth.server_url}/v1/functions/{self._function_id}"
+        url = f"{self._user.server_url}/v1/functions/{self._function_id}"
         response = self._session.get(url)
 
         if response.status_code == 401:
             raise ValueError(f"Invalid access tokens. Can't access {self._function_id}.")
         if response.status_code == 403:
             raise ValueError(
-                f"Can't access {self._function_id} using credentials with CLIENT_ID: {self._auth.client_id}."
+                f"Can't access {self._function_id} using credentials with CLIENT_ID: {self._user.client_id}."
             )
         elif not response.status_code == 200:
             raise ValueError(
@@ -51,7 +51,7 @@ class ClassificationFunctionHandler:
 
     def get_name(self) -> str:
         self._refresh_auth_token()
-        url = f"{self._auth.server_url}/v1/functions/{self._function_id}"
+        url = f"{self._user.server_url}/v1/functions/{self._function_id}"
         response = self._session.get(url)
         assert response.status_code == 200
         return response.json()["name"] if "name" in response.json() else "NewFunction"
@@ -94,4 +94,4 @@ class ClassificationFunctionHandler:
         print(f"-> Function {self._url_handler.train_page} deleted.")
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})

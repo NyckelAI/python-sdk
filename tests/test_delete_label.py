@@ -3,9 +3,9 @@ import time
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
-    OAuth2Renewer,
     TextClassificationFunction,
     TextClassificationSample,
+    User,
 )
 from nyckel.functions.classification.classification import ClassificationFunction
 from nyckel.orchestration import NyckelLabelDeleter
@@ -18,7 +18,7 @@ def hold_until_list_samples_available(function: ClassificationFunction, expected
         time.sleep(0.25)
 
 
-def test_simple(text_classification_function: TextClassificationFunction, auth_test_user: OAuth2Renewer) -> None:
+def test_simple(text_classification_function: TextClassificationFunction, auth_test_user: User) -> None:
     func: TextClassificationFunction = text_classification_function
 
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]

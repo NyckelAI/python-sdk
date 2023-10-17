@@ -6,7 +6,7 @@ import fire
 
 from nyckel import (
     ClassificationFunctionFactory,
-    OAuth2Renewer,
+    User,
 )
 from nyckel.functions.classification.classification import ClassificationFunction
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
@@ -14,9 +14,9 @@ from nyckel.request_utils import get_session_that_retries
 
 
 class NyckelFunctionDuplicator:
-    def __init__(self, from_function_id: str, auth: OAuth2Renewer, skip_confirmation: bool = False):
+    def __init__(self, from_function_id: str, user: User, skip_confirmation: bool = False):
         self._from_function_id = from_function_id
-        self._auth = auth
+        self._user = user
         self._skip_confirmation = skip_confirmation
         self._session = get_session_that_retries()
         self._function_handler: ClassificationFunctionHandler
@@ -24,7 +24,7 @@ class NyckelFunctionDuplicator:
     def __call__(self) -> ClassificationFunction:
         print(f"-> Starting copy process for {self._from_function_id} ...")
         self._refresh_auth_token()
-        self._function_handler = ClassificationFunctionHandler(self._from_function_id, self._auth)
+        self._function_handler = ClassificationFunctionHandler(self._from_function_id, self._user)
         self._validate_function_type()
         self._request_user_confirmation()
         return self._make_copy()
@@ -49,12 +49,12 @@ class NyckelFunctionDuplicator:
 
     def _make_copy(self) -> ClassificationFunction:
         print(f"-> Reading labels and samples from {self._from_function_id}")
-        from_function = ClassificationFunctionFactory.load(self._from_function_id, self._auth)
+        from_function = ClassificationFunctionFactory.load(self._from_function_id, self._user)
         labels = from_function.list_labels()
         samples = from_function.list_samples()
 
         to_function = ClassificationFunctionFactory.new(
-            self.new_function_name, from_function.input_modality, self._auth
+            self.new_function_name, from_function.input_modality, self._user
         )
 
         print(f"-> Adding labels and samples to {to_function.function_id}")
@@ -69,12 +69,12 @@ class NyckelFunctionDuplicator:
         return f"COPY OF {self._function_handler.get_name()} -- {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
 
 def main(client_id: str, client_secret: str, from_function_id: str, server_url: str = "https://www.nyckel.com") -> None:
-    auth = OAuth2Renewer(client_id, client_secret, server_url)
-    duplicator = NyckelFunctionDuplicator(from_function_id, auth)
+    user = User(client_id, client_secret, server_url)
+    duplicator = NyckelFunctionDuplicator(from_function_id, user)
     duplicator()
 
 

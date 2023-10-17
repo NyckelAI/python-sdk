@@ -2,7 +2,7 @@ import abc
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
-from nyckel import NyckelId, OAuth2Renewer
+from nyckel import NyckelId, User
 
 TextSampleData = str
 
@@ -81,11 +81,11 @@ ClassificationSample = Union[TextClassificationSample, ImageClassificationSample
 class ClassificationFunction(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def new(cls, name: str, auth: OAuth2Renewer) -> "ClassificationFunction":
+    def new(cls, name: str, user: User) -> "ClassificationFunction":
         pass
 
     @abc.abstractmethod
-    def __init__(self, function_id: str, auth: OAuth2Renewer):
+    def __init__(self, function_id: str, user: User):
         pass
 
     @abc.abstractmethod
