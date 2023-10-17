@@ -36,3 +36,29 @@ func.add_samples([
 # Classify a new piece of text.
 label = func('New text')
 ```
+
+## Contributors
+
+### Setup dev environment
+
+```bash
+pip install -r requirements/developers.txt
+```
+
+### Building docs locally
+
+Install packages
+
+```bash
+mkdocs==1.5.3
+mkdocs-material==9.4.5
+mkdocstrings==0.15.0
+```
+
+Run
+
+```bash
+mkdocs build
+```
+
+Note that the actual docs uses an [private repo](https://github.com/pawamoy-insiders/mkdocstrings-python) that allows cross-references for types.
