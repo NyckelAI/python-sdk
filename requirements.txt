@@ -20,4 +20,4 @@ types-Pillow==9.5.0.4
 # Docs
 mkdocs==1.5.3
 mkdocs-material==9.4.5
-mkdocstrings-python==1.7.1
+mkdocstrings-python @ git+https://github.com/pawamoy-insiders/mkdocstrings-python@260f5b814cfb5393d72df3068d47d825161f4b3e

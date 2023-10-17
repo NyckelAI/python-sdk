@@ -6,19 +6,19 @@ from typing import Dict, List, Tuple, Union
 import requests
 from PIL import Image
 
-from nyckel import NyckelId
-from nyckel.auth import OAuth2Renewer
-from nyckel.functions.classification import factory
-from nyckel.functions.classification.classification import (
+from nyckel import (
     ClassificationAnnotation,
     ClassificationFunction,
-    ClassificationFunctionURLHandler,
     ClassificationLabel,
     ClassificationPrediction,
     ImageClassificationSample,
     ImageSampleData,
     LabelName,
+    NyckelId,
+    User,
 )
+from nyckel.functions.classification import factory
+from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
@@ -27,17 +27,37 @@ from nyckel.request_utils import get_session_that_retries
 
 
 class ImageClassificationFunction(ClassificationFunction):
+    """
+    Example:
+
+    ```py
+    from nyckel import User, ImageClassificationFunction
+
+    user = User(client_id="...", client_secret="...")
+
+    func = ImageClassificationFunction.new("IsCatOrDog", user)
+    func.create_samples([
+        ("cat1.jpg"," "cat"),
+        ("cat2.jpg", "cat"),
+        ("dog1.jpg", "dog"),
+        ("dog2.jpg", "dog")
+    ])
+
+    prediction = func("cat_or_dog.jpg")
+    ```
+    """
+
     def __init__(
-        self, function_id: str, auth: OAuth2Renewer, target_largest_side: int = 1024, force_recode: bool = True
+        self, function_id: str, user: User, target_largest_side: int = 1024, force_recode: bool = True
     ) -> None:
         self._function_id = function_id
-        self._auth = auth
+        self._user = user
         self._target_largest_side = target_largest_side
         self._force_recode = force_recode  # Whether to resize & recode images before uploading them.
-        self._function_handler = ClassificationFunctionHandler(function_id, auth)
-        self._label_handler = ClassificationLabelHandler(function_id, auth)
-        self._url_handler = ClassificationFunctionURLHandler(function_id, auth.server_url)
-        self._sample_handler = ClassificationSampleHandler(function_id, auth)
+        self._function_handler = ClassificationFunctionHandler(function_id, user)
+        self._label_handler = ClassificationLabelHandler(function_id, user)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
+        self._sample_handler = ClassificationSampleHandler(function_id, user)
         self._decoder = ImageDecoder()
         self._encoder = ImageEncoder()
         self._session = get_session_that_retries()
@@ -45,12 +65,12 @@ class ImageClassificationFunction(ClassificationFunction):
         assert self._function_handler.get_input_modality() == "Image"
 
     @classmethod
-    def new(cls, name: str, auth: OAuth2Renewer) -> "ImageClassificationFunction":
-        return factory.ClassificationFunctionFactory.new(name, "Image", auth)  # type: ignore
+    def new(cls, name: str, user: User) -> "ImageClassificationFunction":
+        return factory.ClassificationFunctionFactory.new(name, "Image", user)  # type: ignore
 
     @classmethod
-    def create_function(cls, name: str, auth: OAuth2Renewer) -> "ImageClassificationFunction":
-        return cls.new(name, auth)
+    def create_function(cls, name: str, user: User) -> "ImageClassificationFunction":
+        return cls.new(name, user)
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -159,7 +179,7 @@ class ImageClassificationFunction(ClassificationFunction):
         self._function_handler.delete()
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._auth.token})
+        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
     def _resize_image(self, img: Image.Image) -> Image.Image:
         def get_new_width_height(width: int, height: int) -> Tuple[int, int]:

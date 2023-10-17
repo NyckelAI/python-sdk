@@ -1,6 +1,6 @@
 from typing import Dict
 
-from nyckel.auth import OAuth2Renewer
+from nyckel import OAuth2Renewer
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.request_utils import get_session_that_retries
 

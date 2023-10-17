@@ -3,7 +3,17 @@ import time
 import requests
 
 
-class OAuth2Renewer:
+class User:
+    """User authentication for Nyckel. Handles renewal of OAuth2 bearer token.
+
+    Example:
+
+        user = User(client_id="...", client_secret="...")
+        session = user.get_authenticated_session()
+        my_functions = session.get("https://www.nyckel.com/v1/functions")
+
+    """
+
     def __init__(self, client_id: str, client_secret: str, server_url: str = "https://www.nyckel.com"):
         self._client_id = client_id
         self._client_secret = client_secret
@@ -12,21 +22,16 @@ class OAuth2Renewer:
         self._bearer_token: str = ""
 
     @property
-    def client_id(self) -> str:
-        return self._client_id
-
-    @property
-    def server_url(self) -> str:
-        return self._server_url
-
-    @property
     def token(self) -> str:
         if time.time() > self._renew_at:
             self._renew_token()
         return self._bearer_token
 
+    @property
+    def server_url(self) -> str:
+        return self._server_url
+
     def get_authenticated_session(self) -> requests.Session:
-        # Initializes a new session and adds authentication headers.
         session = requests.Session()
         session.headers.update({"Authorization": f"Bearer {self.token}"})
         return session

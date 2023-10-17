@@ -1,7 +1,6 @@
 from typing import Dict, List, Tuple, Union
 
-from nyckel import NyckelId
-from nyckel.auth import OAuth2Renewer
+from nyckel import NyckelId, OAuth2Renewer
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import (
     ClassificationAnnotation,
@@ -21,6 +20,27 @@ from nyckel.request_utils import get_session_that_retries
 
 
 class TextClassificationFunction(ClassificationFunction):
+    """
+    Example:
+
+    ```py
+
+    from nyckel import User, TextClassificationFunction
+
+    user = User(client_id="...", client_secret="...")
+
+    func = TextClassificationFunction.new("IsToxic", user)
+    func.create_samples([
+        ('This is a nice comment', 'not toxic'),
+        ('Hello friend', 'not toxic'),
+        ('This is a bad comment', 'toxic'),
+        ('Who is this? Go away!', 'toxic'),
+    ])
+
+    prediction = func("This example is fantastic!")
+    ```
+    """
+
     def __init__(self, function_id: NyckelId, auth: OAuth2Renewer):
         self._function_id = function_id
         self._auth = auth

@@ -1,9 +1,9 @@
 import time
-from typing import Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
-from nyckel.auth import OAuth2Renewer
+from nyckel import OAuth2Renewer
 from nyckel.functions.classification.classification import (
     ClassificationFunctionURLHandler,
     ClassificationPrediction,
@@ -31,6 +31,22 @@ class ClassificationSampleHandler:
     def invoke(
         self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
     ) -> List[ClassificationPrediction]:
+        n_max_attempt = 10
+        for _ in range(n_max_attempt):
+            invoke_ok, response_list = self.attempt_invoke(sample_data_list, sample_data_transformer)
+            if invoke_ok:
+                return self.parse_predictions_response(response_list)
+            else:
+                if "No model available to invoke function" in response_list[0].text:
+                    print("Model not trained yet. Retrying...")
+                else:
+                    raise RuntimeError("Failed to invoke function. {response_list=}}")
+            time.sleep(5)
+        raise TimeoutError("Still no model after {n_max_attempt} attempts. Please try again later.")
+
+    def attempt_invoke(
+        self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
+    ) -> Tuple[bool, List[Any]]:
         self._refresh_auth_token()
 
         bodies = [{"data": sample_data} for sample_data in sample_data_list]
@@ -42,14 +58,19 @@ class ClassificationSampleHandler:
 
         poster = ParallelPoster(self._session, endpoint, desc="Invoking samples", body_transformer=body_transformer)
         response_list = poster(bodies)
-        predictions = [
+        if response_list[0].status_code in [200]:
+            return True, response_list
+        else:
+            return False, response_list
+
+    def parse_predictions_response(self, response_list: List[Any]) -> List[ClassificationPrediction]:
+        return [
             ClassificationPrediction(
                 label_name=response.json()["labelName"],
                 confidence=response.json()["confidence"],
             )
             for response in response_list
         ]
-        return predictions
 
     def create_samples(self, samples: ClassificationSampleList, sample_data_transformer: Callable) -> List[str]:
         self._refresh_auth_token()
