@@ -1,13 +1,16 @@
 site_name: Nyckel
 site_url: https://www.nyckel.com
 nav:
+  - Home:
+    - index.md
   - Guides:
     - Quickstart: quickstart.md
   - Reference:
     - Image Classification: image_classification.md
     - Text Classification: text_classification.md
     - Tabular Classification: tabular_classification.md
-    - DataClasses: data_classes.md
+    - User: user.md
+    - Shared: shared.md
 theme: 
   name: 'material'
   features:
@@ -31,9 +34,10 @@ plugins:
             - "^__"
             - "!^__str__"
             - "!^__repr__"
-          show_source: false
+          show_source: true
           show_bases: false
           show_docstring_attributes: true
+          heading_level: 3
 
 markdown_extensions:
   - pymdownx.highlight:

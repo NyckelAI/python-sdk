@@ -25,6 +25,28 @@ from nyckel.request_utils import ParallelPoster, SequentialGetter, get_session_t
 
 
 class TabularClassificationFunction(ClassificationFunction):
+
+    """
+    Example:
+
+    ```py
+
+    from nyckel import User, TabularClassificationFunction
+
+    user = User(client_id="...", client_secret="...")
+
+    func = TabularClassificationFunction.new("InterestedProspect", user)
+    func.create_samples([
+        ({"Name": "Adam Adams", "Response": "Thanks for reaching out -- I'd love to chat"}, "Interested"),
+        ({"Name": "Bo Berg", "Response": "Sure! Can you tell me a bit more?"}, "Interested"),
+        ({"Name": "Charles Carter", "Response": "No thanks, I don't need a Classification API"}, "Not Interested"),
+        ({"Name": "Devin Duncan", "Response": "Nope. Please stop bugging me."}, "Not Interested"),
+    ])
+
+    prediction = func({"Name": "Frank Fisher", "Response": "Yea, I'd love to try the Nyckel API!"})
+    ```
+    """
+
     def __init__(self, function_id: NyckelId, auth: OAuth2Renewer) -> None:
         self._function_id = function_id
         self._auth = auth

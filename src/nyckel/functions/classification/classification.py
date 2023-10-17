@@ -6,7 +6,10 @@ from nyckel import NyckelId, OAuth2Renewer
 
 TextSampleData = str
 
-ImageSampleData = str  # DataUri, Url, or local filepath.
+
+ImageSampleData = str
+"""DataUri, Url, or local filepath."""
+
 
 TabularFieldValue = Union[str, int]
 TabularFieldKey = str
@@ -37,7 +40,8 @@ class ClassificationAnnotation:
 @dataclass
 class TabularFunctionField:
     name: str
-    type: str  # "Number" or "Text"
+    type: str
+    """Type must be Number or Text"""
     id: Optional[NyckelId] = None
 
     def __post_init__(self) -> None:
