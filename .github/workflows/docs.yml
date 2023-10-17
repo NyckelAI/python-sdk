@@ -20,6 +20,6 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install git+https://github.com/pawamoy-insiders/mkdocstrings-python.git
+      - run: pip install git+https://github.com/NyckelAI/mkdocstrings-python.git
       - run: pip install mkdocs-material==9.4.5
       - run: mkdocs gh-deploy --force
