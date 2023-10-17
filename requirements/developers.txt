@@ -1,0 +1,15 @@
+-r program.txt
+
+# Testing
+pytest==7.3.1
+pytest-xdist==3.3.1
+numpy==1.24.3  # Used for some test asserts
+
+# Formatting
+black==23.3.0
+ruff==0.0.265
+
+# Typing
+types-requests==2.28.11.4
+types-tqdm==4.65.0.1
+types-Pillow==9.5.0.4
