@@ -56,8 +56,6 @@ class TabularClassificationFunction(ClassificationFunction):
         self._field_handler = TabularFieldHandler(function_id, user)
         self._sample_handler = ClassificationSampleHandler(function_id, user)
         self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
-        self._session = get_session_that_retries()
-        self._refresh_auth_token()
         assert self._function_handler.get_input_modality() == "Tabular"
 
     @classmethod
@@ -264,9 +262,6 @@ class TabularClassificationFunction(ClassificationFunction):
             annotation=annotation,
             prediction=prediction,
         )
-
-    def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
 
 class TabularFieldHandler:

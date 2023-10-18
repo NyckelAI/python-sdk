@@ -49,8 +49,6 @@ class TextClassificationFunction(ClassificationFunction):
         self._label_handler = ClassificationLabelHandler(function_id, user)
         self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
         self._sample_handler = ClassificationSampleHandler(function_id, user)
-        self._session = get_session_that_retries()
-        self._refresh_auth_token()
 
         assert self._function_handler.get_input_modality() == "Text"
 
@@ -158,9 +156,6 @@ class TextClassificationFunction(ClassificationFunction):
 
     def delete(self) -> None:
         self._function_handler.delete()
-
-    def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
     def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict[NyckelId, str]) -> TextClassificationSample:
         if "annotation" in sample_dict:
