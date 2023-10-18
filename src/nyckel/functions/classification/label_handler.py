@@ -3,8 +3,8 @@ from typing import Dict, List, Optional
 
 from tqdm import tqdm
 
-from nyckel import NyckelId, User
-from nyckel.functions.classification.classification import ClassificationFunctionURLHandler, ClassificationLabel
+from nyckel import ClassificationLabel, NyckelId, User
+from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
 
