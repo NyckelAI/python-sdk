@@ -1,8 +1,7 @@
 site_name: Nyckel
 site_url: https://www.nyckel.com
 nav:
-  - Home:
-    - index.md
+  - Home: index.md
   - Guides:
     - Quickstart: quickstart.md
   - Reference:

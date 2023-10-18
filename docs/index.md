@@ -1,8 +1,8 @@
-# Welcome to Nyckel
+# Nyckel Python SDK
 
-Nyckel is a Custom Classification API. It allows you to train, deploy and invoke custom [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification functions.
+[Nyckel](https://www.nyckel.com) is a Custom Classification API. It allows you to train, deploy and invoke custom [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification functions.
 
- ```py
+``` py
 from nyckel import User, TextClassificationFunction
 
 user = User(client_id="...", client_secret="...")
@@ -22,5 +22,4 @@ prediction = func("This example is fantastic!")
 
 * Visit [Nyckel](https://www.nyckel.com) and sign up for a free account
 * Install the SDK: `pip install nyckel`
-* Check out the [Quickstart](quickstart.md)
 * Explore the SDK for [text](text_classification.md), [image](image_classification.md) and [tabular](tabular_classification.md) classification
