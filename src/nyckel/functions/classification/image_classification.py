@@ -23,7 +23,6 @@ from nyckel.functions.classification.function_handler import ClassificationFunct
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import get_session_that_retries
 
 
 class ImageClassificationFunction(ClassificationFunction):
@@ -60,8 +59,6 @@ class ImageClassificationFunction(ClassificationFunction):
         self._sample_handler = ClassificationSampleHandler(function_id, user)
         self._decoder = ImageDecoder()
         self._encoder = ImageEncoder()
-        self._session = get_session_that_retries()
-        self._refresh_auth_token()
         assert self._function_handler.get_input_modality() == "Image"
 
     @classmethod
@@ -177,9 +174,6 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def delete(self) -> None:
         self._function_handler.delete()
-
-    def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._user.token})
 
     def _resize_image(self, img: Image.Image) -> Image.Image:
         def get_new_width_height(width: int, height: int) -> Tuple[int, int]:

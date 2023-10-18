@@ -35,7 +35,7 @@ class ClassificationFunctionHandler:
     def validate_access(self) -> None:
         self._refresh_auth_token()
 
-        url = f"{self._user.server_url}/v1/functions/{self._function_id}"
+        url = self._url_handler.api_endpoint()
         response = self._session.get(url)
 
         if response.status_code == 401:
@@ -51,7 +51,7 @@ class ClassificationFunctionHandler:
 
     def get_name(self) -> str:
         self._refresh_auth_token()
-        url = f"{self._user.server_url}/v1/functions/{self._function_id}"
+        url = self._url_handler.api_endpoint()
         response = self._session.get(url)
         assert response.status_code == 200
         return response.json()["name"] if "name" in response.json() else "NewFunction"

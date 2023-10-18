@@ -2,6 +2,8 @@ import time
 
 import requests
 
+from nyckel.request_utils import get_session_that_retries
+
 
 class User:
     """User authentication for Nyckel. Handles renewal of OAuth2 bearer token.
@@ -9,7 +11,7 @@ class User:
     Example:
 
         user = User(client_id="...", client_secret="...")
-        session = user.get_authenticated_session()
+        session = user.get_session()
         my_functions = session.get("https://www.nyckel.com/v1/functions")
 
     """
@@ -31,8 +33,9 @@ class User:
     def server_url(self) -> str:
         return self._server_url
 
-    def get_authenticated_session(self) -> requests.Session:
-        session = requests.Session()
+    def get_session(self) -> requests.Session:
+        """Returns a requests session with active bearer token header."""
+        session = get_session_that_retries()
         session.headers.update({"Authorization": f"Bearer {self.token}"})
         return session
 
