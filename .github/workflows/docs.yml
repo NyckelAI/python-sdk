@@ -7,12 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
       - name: Set PYTHONPATH
-        run: |
-          echo "PYTHONPATH=src" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=src" >> $GITHUB_ENV
       - uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.MKDOCSTRINGS_SSH_KEY }}
