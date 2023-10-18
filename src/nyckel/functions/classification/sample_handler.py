@@ -3,15 +3,15 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
-from nyckel import User
-from nyckel.functions.classification.classification import (
-    ClassificationFunctionURLHandler,
+from nyckel import (
     ClassificationPrediction,
     ClassificationSample,
     ImageClassificationSample,
     TabularClassificationSample,
     TextClassificationSample,
+    User,
 )
+from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
 
