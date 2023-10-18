@@ -4,19 +4,20 @@ from typing import Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
-from nyckel import NyckelId, User
-from nyckel.functions.classification import factory
-from nyckel.functions.classification.classification import (
+from nyckel import (
     ClassificationAnnotation,
     ClassificationFunction,
-    ClassificationFunctionURLHandler,
     ClassificationLabel,
     ClassificationPrediction,
     LabelName,
+    NyckelId,
     TabularClassificationSample,
     TabularFunctionField,
     TabularSampleData,
+    User,
 )
+from nyckel.functions.classification import factory
+from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler

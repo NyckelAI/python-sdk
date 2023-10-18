@@ -1,22 +1,22 @@
 from typing import Dict, List, Tuple, Union
 
-from nyckel import NyckelId, User
-from nyckel.functions.classification import factory
-from nyckel.functions.classification.classification import (
+from nyckel import (
     ClassificationAnnotation,
     ClassificationFunction,
-    ClassificationFunctionURLHandler,
     ClassificationLabel,
     ClassificationPrediction,
     LabelName,
+    NyckelId,
     TextClassificationSample,
     TextSampleData,
+    User,
 )
+from nyckel.functions.classification import factory
+from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import get_session_that_retries
 
 
 class TextClassificationFunction(ClassificationFunction):
