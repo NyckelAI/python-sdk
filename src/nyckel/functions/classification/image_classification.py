@@ -99,7 +99,8 @@ class ImageClassificationFunction(ClassificationFunction):
     def input_modality(self) -> str:
         return "Image"
 
-    def get_name(self) -> str:
+    @property
+    def name(self) -> str:
         return self._function_handler.get_name()
 
     @property
