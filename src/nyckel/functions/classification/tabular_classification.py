@@ -97,7 +97,8 @@ class TabularClassificationFunction(ClassificationFunction):
     def input_modality(self) -> str:
         return "Tabular"
 
-    def get_name(self) -> str:
+    @property
+    def name(self) -> str:
         return self._function_handler.get_name()
 
     @property

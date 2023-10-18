@@ -33,7 +33,7 @@ class TextClassificationFunction(ClassificationFunction):
     func.create_samples([
         ("This is a nice comment", "Not toxic"),
         ("Hello friend", "Not toxic"),
-        ("This is a bad comment', "Toxic"),
+        ("This is a bad comment", "Toxic"),
         ("Who is this? Go away!", "Toxic"),
     ])
 
@@ -90,7 +90,8 @@ class TextClassificationFunction(ClassificationFunction):
     def input_modality(self) -> str:
         return "Text"
 
-    def get_name(self) -> str:
+    @property
+    def name(self) -> str:
         return self._function_handler.get_name()
 
     @property
