@@ -23,5 +23,5 @@ func.add_samples([
 # ...and you can start classifying text right away!
 
 # Classify a new piece of text.
-label = func('New text')
+prediction = func("This example is fantastic!")
 ```
