@@ -39,7 +39,7 @@ class NyckelFunctionDuplicator:
         if self._skip_confirmation:
             return None
         reply = input(
-            f"-> This will copy function: [name: {self._function_handler.get_name()}, id: {self._from_function_id}, "
+            f"-> This will copy function: [name: {self._function_handler.name}, id: {self._from_function_id}, "
             f"label-count: {self._function_handler.label_count}, sample-count: {self._function_handler.sample_count}]. "
             f"Ok (y/n)? "
         )
