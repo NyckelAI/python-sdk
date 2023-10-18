@@ -10,7 +10,7 @@ nav:
     - Text Classification: text_classification.md
     - Tabular Classification: tabular_classification.md
     - User: user.md
-    - Shared: shared.md
+    - Data classes: data_classes.md
 theme: 
   name: 'material'
   features:
