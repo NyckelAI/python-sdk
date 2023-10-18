@@ -71,7 +71,7 @@ class TabularClassificationFunction(ClassificationFunction):
         return self.__repr__()
 
     def __repr__(self) -> str:
-        status_string = f"Name: {self.get_name()}, id: {self.function_id}, url: {self.train_page}"
+        status_string = f"Name: {self.name}, id: {self.function_id}, url: {self.train_page}"
         return status_string
 
     def __call__(self, sample_data: TabularSampleData) -> ClassificationPrediction:  # type: ignore
