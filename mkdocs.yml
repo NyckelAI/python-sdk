@@ -4,7 +4,7 @@ nav:
   - Home: index.md
   - Guides:
     - Quickstart: quickstart.md
-    - Copy: copy_function.md
+    - Copy function: copy_function.md
     - Delete label: delete_label.md
   - Reference:
     - Image Classification: image_classification.md
