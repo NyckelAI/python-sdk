@@ -11,7 +11,7 @@ func = TextClassificationFunction.new("IsToxic", user)
 func.create_samples([
     ("This is a nice comment", "Not toxic"),
     ("Hello friend", "Not toxic"),
-    ("This is a bad comment', "Toxic"),
+    ("This is a bad comment", "Toxic"),
     ("Who is this? Go away!", "Toxic"),
 ])
 
