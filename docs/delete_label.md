@@ -18,11 +18,11 @@ func = TextClassificationFunction("<function_id>", user)
 samples = func.list_samples()
 
 # Filter out the sample associated with the relevant label
-annotated_samples = [sample for sample in samples if sample.annotation]
-relevant_samples = [sample for sample in annotated_samples if sample.annotation.label_name == label_name]
+samples = [sample for sample in samples if sample.annotation]
+samples = [sample for sample in samples if sample.annotation.label_name == label_to_delete]
 
 # Delete the samples
-func.delete_samples([sample.id for sample in relevant_samples])
+func.delete_samples([sample.id for sample in samples])
 
 # Delete the label.
 label_id_by_name = {label.name: label.id for label in func.list_labels()}

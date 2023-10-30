@@ -6,6 +6,7 @@ nav:
     - Quickstart: quickstart.md
     - Copy function: copy_function.md
     - Delete label: delete_label.md
+    - Merge labels: merge_labels.md
   - Reference:
     - Image Classification: image_classification.md
     - Text Classification: text_classification.md
