@@ -6,8 +6,8 @@ This guide shows how to merge two labels leaving all samples associated with the
 from nyckel import User, TextClassificationFunction, ClassificationAnnotation, TextClassificationSample
 import time
 
-label_to_delete = "Not toxic"  # This is the label name of the label to be deleted
-label_to_keep = "Toxic"  # This is the label to which we want to assign samples from the first label
+label_to_delete = ""  # This is the label name of the label to be deleted
+label_to_keep = ""  # This is the label to which we want to assign samples from the first label
 
 # Initialize your user and function
 user = User(client_id="...", client_secret="...")
