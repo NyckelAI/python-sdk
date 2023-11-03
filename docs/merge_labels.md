@@ -34,5 +34,5 @@ assert len(samples) == 0, "Something went wrong. There are still samples associa
 
 # Delete the first label.
 label_id_by_name = {label.name: label.id for label in func.list_labels()}
-func.delete_label(label_id_by_name[label_to_delete])
+func.delete_labels([label_id_by_name[label_to_delete]])
 ```

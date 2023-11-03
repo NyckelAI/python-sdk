@@ -26,5 +26,5 @@ func.delete_samples([sample.id for sample in samples])
 
 # Delete the label.
 label_id_by_name = {label.name: label.id for label in func.list_labels()}
-func.delete_label(label_id_by_name[label_name])
+func.delete_labels([label_id_by_name[label_name]])
 ```

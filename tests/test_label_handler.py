@@ -30,7 +30,7 @@ def test_labels(text_classification_function: TextClassificationFunction) -> Non
     assert set([label.name for label in labels]) == set(["Nice", "Nicer"])
 
     # And delete label
-    func.delete_label(nicer_label_id)
+    func.delete_labels([nicer_label_id])
     labels = func.list_labels()
     if not len(labels) == 1:
         # Give the API a chance to catch up.

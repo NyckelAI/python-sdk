@@ -107,9 +107,6 @@ class TabularClassificationFunction(ClassificationFunction):
     def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         return self._label_handler.update_label(label)
 
-    def delete_label(self, label_id: NyckelId) -> None:
-        return self._label_handler.delete_label(label_id)
-
     def delete_labels(self, label_ids: List[NyckelId]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
@@ -157,9 +154,6 @@ class TabularClassificationFunction(ClassificationFunction):
 
     def update_annotation(self, sample: TabularClassificationSample) -> None:  # type: ignore
         self._sample_handler.update_annotation(sample)
-
-    def delete_sample(self, sample_id: NyckelId) -> None:
-        self._sample_handler.delete_sample(sample_id)
 
     def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)

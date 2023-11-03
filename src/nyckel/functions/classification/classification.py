@@ -139,10 +139,6 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def delete_label(self, label_id: NyckelId) -> None:
-        pass
-
-    @abc.abstractmethod
     def delete_labels(self, label_ids: List[NyckelId]) -> None:
         pass
 
@@ -160,10 +156,6 @@ class ClassificationFunction(abc.ABC):
 
     @abc.abstractmethod
     def update_annotation(self, sample: ClassificationSample) -> None:
-        pass
-
-    @abc.abstractmethod
-    def delete_sample(self, sample_id: NyckelId) -> None:
         pass
 
     @abc.abstractmethod

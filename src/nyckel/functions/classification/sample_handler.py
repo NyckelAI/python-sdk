@@ -129,12 +129,6 @@ class ClassificationSampleHandler:
             response = self._session.delete(url)
             assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
 
-    def delete_sample(self, sample_id: str) -> None:
-        self._refresh_auth_token()
-        endpoint = self._url_handler.api_endpoint(path=f"samples/{strip_nyckel_prefix(sample_id)}")
-        response = self._session.delete(endpoint)
-        assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-
     def delete_samples(self, sample_ids: List[str]) -> None:
         if len(sample_ids) == 0:
             return None
