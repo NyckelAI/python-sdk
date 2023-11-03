@@ -11,7 +11,7 @@ nav:
     - Image Classification: image_classification.md
     - Text Classification: text_classification.md
     - Tabular Classification: tabular_classification.md
-    - User: user.md
+    - Credentials: credentials.md
     - Data classes: data_classes.md
 theme: 
   name: 'material'

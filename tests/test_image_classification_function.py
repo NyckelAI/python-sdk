@@ -4,7 +4,7 @@ from typing import Tuple, Union
 
 import numpy as np
 import pytest
-from conftest import get_test_user, make_random_image
+from conftest import get_test_credentials, make_random_image
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
@@ -15,7 +15,7 @@ from nyckel import (
 from nyckel.functions.classification.image_classification import ImageDecoder
 from PIL import Image
 
-user = get_test_user()
+credentials = get_test_credentials()
 
 
 def test_samples(image_classification_function: ImageClassificationFunction) -> None:
@@ -78,7 +78,7 @@ def test_end_to_end(image_classification_function: ImageClassificationFunction) 
 
 
 @pytest.mark.skipif(
-    user.server_url == "http://localhost:5000",
+    credentials.server_url == "http://localhost:5000",
     reason="Integrity of image on copy is only implemented for images hosted on S3.",
 )
 def test_image_integrity_on_copy(image_classification_function: ImageClassificationFunction) -> None:

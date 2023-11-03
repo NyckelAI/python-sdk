@@ -6,10 +6,10 @@ from tqdm import tqdm
 from nyckel import (
     ClassificationPrediction,
     ClassificationSample,
+    Credentials,
     ImageClassificationSample,
     TabularClassificationSample,
     TextClassificationSample,
-    User,
 )
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
@@ -21,11 +21,11 @@ ClassificationSampleList = Union[
 
 
 class ClassificationSampleHandler:
-    def __init__(self, function_id: str, user: User):
+    def __init__(self, function_id: str, credentials: Credentials):
         self._function_id = function_id
-        self._user = user
+        self.credentials = credentials
         self._session = get_session_that_retries()
-        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
         self._refresh_auth_token()
 
     def invoke(
@@ -146,4 +146,4 @@ class ClassificationSampleHandler:
         parallel_deleter(sample_ids)
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._user.token})
+        self._session.headers.update({"authorization": "Bearer " + self.credentials.token})

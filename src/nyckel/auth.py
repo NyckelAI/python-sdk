@@ -5,13 +5,13 @@ import requests
 from nyckel.request_utils import get_session_that_retries
 
 
-class User:
-    """User authentication for Nyckel. Handles renewal of OAuth2 bearer token.
+class Credentials:
+    """API credentials for Nyckel. Handles renewal of OAuth2 bearer token.
 
     Example:
 
-        user = User(client_id="...", client_secret="...")
-        session = user.get_session()
+        credentials = Credentials(client_id="...", client_secret="...")
+        session = credentials.get_session()
         my_functions = session.get("https://www.nyckel.com/v1/functions")
 
     """

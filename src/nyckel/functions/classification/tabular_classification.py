@@ -9,12 +9,12 @@ from nyckel import (
     ClassificationFunction,
     ClassificationLabel,
     ClassificationPrediction,
+    Credentials,
     LabelName,
     NyckelId,
     TabularClassificationSample,
     TabularFunctionField,
     TabularSampleData,
-    User,
 )
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
@@ -32,11 +32,11 @@ class TabularClassificationFunction(ClassificationFunction):
 
     ```py
 
-    from nyckel import User, TabularClassificationFunction
+    from nyckel import Credentials, TabularClassificationFunction
 
-    user = User(client_id="...", client_secret="...")
+    credentials = Credentials(client_id="...", client_secret="...")
 
-    func = TabularClassificationFunction.create("InterestedProspect", user)
+    func = TabularClassificationFunction.create("InterestedProspect", credentials)
     func.create_samples([
         ({"Name": "Adam Adams", "Response": "Thanks for reaching out. I'd love to chat"}, "Interested"),
         ({"Name": "Bo Berg", "Response": "Sure! Can you tell me a bit more?"}, "Interested"),
@@ -48,20 +48,19 @@ class TabularClassificationFunction(ClassificationFunction):
     ```
     """
 
-    def __init__(self, function_id: NyckelId, user: User) -> None:
+    def __init__(self, function_id: NyckelId, credentials: Credentials) -> None:
         self._function_id = function_id
-        self._user = user
 
-        self._function_handler = ClassificationFunctionHandler(function_id, user)
-        self._label_handler = ClassificationLabelHandler(function_id, user)
-        self._field_handler = TabularFieldHandler(function_id, user)
-        self._sample_handler = ClassificationSampleHandler(function_id, user)
-        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
+        self._function_handler = ClassificationFunctionHandler(function_id, credentials)
+        self._label_handler = ClassificationLabelHandler(function_id, credentials)
+        self._field_handler = TabularFieldHandler(function_id, credentials)
+        self._sample_handler = ClassificationSampleHandler(function_id, credentials)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
         assert self._function_handler.get_input_modality() == "Tabular"
 
     @classmethod
-    def create(cls, name: str, user: User) -> "TabularClassificationFunction":
-        return factory.ClassificationFunctionFactory.create(name, "Tabular", user)  # type: ignore
+    def create(cls, name: str, credentials: Credentials) -> "TabularClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Tabular", credentials)  # type: ignore
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -260,15 +259,15 @@ class TabularClassificationFunction(ClassificationFunction):
 
 
 class TabularFieldHandler:
-    def __init__(self, function_id: NyckelId, user: User):
+    def __init__(self, function_id: NyckelId, credentials: Credentials):
         self._function_id = function_id
-        self._user = user
-        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
+        self.credentials = credentials
+        self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
         self._session = get_session_that_retries()
         self._field_name_by_id: Dict = {}
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._user.token})
+        self._session.headers.update({"authorization": "Bearer " + self.credentials.token})
 
     def create_fields(self, fields: List[TabularFunctionField]) -> List[NyckelId]:
         self._refresh_auth_token()

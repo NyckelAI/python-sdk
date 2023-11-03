@@ -1,6 +1,6 @@
 import time
 
-from nyckel import User
+from nyckel import Credentials
 from nyckel.functions.classification import image_classification, tabular_classification, text_classification
 from nyckel.functions.classification.classification import ClassificationFunction
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
@@ -16,15 +16,15 @@ class ClassificationFunctionFactory:
     }
 
     @classmethod
-    def load(self, function_id: str, user: User) -> ClassificationFunction:
-        function_handler = ClassificationFunctionHandler(function_id, user)
+    def load(self, function_id: str, credentials: Credentials) -> ClassificationFunction:
+        function_handler = ClassificationFunctionHandler(function_id, credentials)
         input_modality = function_handler.get_input_modality()
-        return self.function_type_by_input[input_modality](function_id, user)
+        return self.function_type_by_input[input_modality](function_id, credentials)
 
     @classmethod
-    def create(self, name: str, function_input: str, user: User) -> ClassificationFunction:
+    def create(self, name: str, function_input: str, credentials: Credentials) -> ClassificationFunction:
         def post_function() -> str:
-            url = f"{user.server_url}/v1/functions"
+            url = f"{credentials.server_url}/v1/functions"
             response = session.post(url, json={"input": function_input, "output": "Classification", "name": name})
             assert response.status_code == 200, f"Something went wrong when creating function: {response.text}"
             prefixed_function_id = response.json()["id"]
@@ -40,15 +40,15 @@ class ClassificationFunctionFactory:
                 if time.time() - t0 > timeout_seconds:
                     raise ValueError("Something went wrong when posting labels.")
                 time.sleep(0.25)
-                url = f"{user.server_url}/v1/functions/{function_id}"
+                url = f"{credentials.server_url}/v1/functions/{function_id}"
                 response = session.get(url)
                 function_is_available = response.status_code == 200
 
         session = get_session_that_retries()
-        session.headers.update({"authorization": "Bearer " + user.token})
+        session.headers.update({"authorization": "Bearer " + credentials.token})
 
         function_id = post_function()
         hold_until_available(function_id)
 
         print(f"-> Created function {name} with id: {function_id}")
-        return self.function_type_by_input[function_input](function_id, user)
+        return self.function_type_by_input[function_input](function_id, credentials)
