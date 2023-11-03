@@ -9,7 +9,7 @@ from nyckel import User, TextClassificationFunction
 user = User(client_id=..., client_secret=...)
 
 # Create a new text classification function.
-func = TextClassificationFunction.new(user=user, name='IsToxic')
+func = TextClassificationFunction.create(user=user, name='IsToxic')
 
 # Provide a few examples.
 func.add_samples([

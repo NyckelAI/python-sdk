@@ -29,7 +29,7 @@ class TextClassificationFunction(ClassificationFunction):
 
     user = User(client_id="...", client_secret="...")
 
-    func = TextClassificationFunction.new("IsToxic", user)
+    func = TextClassificationFunction.create("IsToxic", user)
     func.create_samples([
         ("This is a nice comment", "Not toxic"),
         ("Hello friend", "Not toxic"),
@@ -53,12 +53,8 @@ class TextClassificationFunction(ClassificationFunction):
         assert self._function_handler.get_input_modality() == "Text"
 
     @classmethod
-    def new(cls, name: str, user: User) -> "TextClassificationFunction":
-        return factory.ClassificationFunctionFactory.new(name, "Text", user)  # type:ignore
-
-    @classmethod
-    def create_function(cls, name: str, user: User) -> "TextClassificationFunction":
-        return cls.new(name, user)
+    def create(cls, name: str, user: User) -> "TextClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Text", user)  # type:ignore
 
     def __str__(self) -> str:
         return self.__repr__()

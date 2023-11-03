@@ -45,14 +45,14 @@ def auth_test_user() -> Iterator[User]:
 
 @pytest.fixture
 def text_classification_function(auth_test_user: User) -> Iterator[TextClassificationFunction]:
-    func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+    func = TextClassificationFunction.create("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
 
 
 @pytest.fixture
 def text_classification_function_with_content(auth_test_user: User) -> Iterator[TextClassificationFunction]:
-    func = TextClassificationFunction.create_function("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+    func = TextClassificationFunction.create("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
@@ -72,14 +72,14 @@ def text_classification_function_with_content(auth_test_user: User) -> Iterator[
 
 @pytest.fixture
 def image_classification_function(auth_test_user: User) -> Iterator[ImageClassificationFunction]:
-    func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+    func = ImageClassificationFunction.create("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
 
 
 @pytest.fixture
 def image_classification_function_with_content(auth_test_user: User) -> Iterator[ImageClassificationFunction]:
-    func = ImageClassificationFunction.create_function("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+    func = ImageClassificationFunction.create("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
@@ -99,7 +99,7 @@ def image_classification_function_with_content(auth_test_user: User) -> Iterator
 
 @pytest.fixture
 def tabular_classification_function(auth_test_user: User) -> Iterator[TabularClassificationFunction]:
-    func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+    func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
     yield func
     func.delete()
 
@@ -108,7 +108,7 @@ def tabular_classification_function(auth_test_user: User) -> Iterator[TabularCla
 def tabular_classification_function_with_content(
     auth_test_user: User,
 ) -> Iterator[TabularClassificationFunction]:
-    func = TabularClassificationFunction.create_function("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+    func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")

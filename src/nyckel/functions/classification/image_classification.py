@@ -34,7 +34,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     user = User(client_id="...", client_secret="...")
 
-    func = ImageClassificationFunction.new("IsCatOrDog", user)
+    func = ImageClassificationFunction.create("IsCatOrDog", user)
     func.create_samples([
         ("cat1.jpg", "cat"),
         ("cat2.jpg", "cat"),
@@ -62,12 +62,8 @@ class ImageClassificationFunction(ClassificationFunction):
         assert self._function_handler.get_input_modality() == "Image"
 
     @classmethod
-    def new(cls, name: str, user: User) -> "ImageClassificationFunction":
-        return factory.ClassificationFunctionFactory.new(name, "Image", user)  # type: ignore
-
-    @classmethod
-    def create_function(cls, name: str, user: User) -> "ImageClassificationFunction":
-        return cls.new(name, user)
+    def create(cls, name: str, user: User) -> "ImageClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Image", user)  # type: ignore
 
     def __str__(self) -> str:
         return self.__repr__()

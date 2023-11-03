@@ -22,7 +22,7 @@ class ClassificationFunctionFactory:
         return self.function_type_by_input[input_modality](function_id, user)
 
     @classmethod
-    def new(self, name: str, function_input: str, user: User) -> ClassificationFunction:
+    def create(self, name: str, function_input: str, user: User) -> ClassificationFunction:
         def post_function() -> str:
             url = f"{user.server_url}/v1/functions"
             response = session.post(url, json={"input": function_input, "output": "Classification", "name": name})
