@@ -75,10 +75,6 @@ class TextClassificationFunction(ClassificationFunction):
         return self._function_handler.label_count
 
     @property
-    def input_modality(self) -> str:
-        return "Text"
-
-    @property
     def name(self) -> str:
         return self._function_handler.get_name()
 
