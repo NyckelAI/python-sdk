@@ -90,9 +90,14 @@ class ClassificationSampleHandler:
 
         poster = ParallelPoster(self._session, endpoint, desc="Posting samples", body_transformer=body_transformer)
         response_list = poster(bodies)
-        sample_ids = [
-            strip_nyckel_prefix(response.json()["id"]) for response in response_list if response.status_code == 200
-        ]
+
+        sample_ids = []
+        for response in response_list:
+            if response.status_code == 200:
+                sample_ids.append(strip_nyckel_prefix(response.json()["id"]))
+            if response.status_code == 409:
+                sample_ids.append(strip_nyckel_prefix(response.json()["existingSampleId"]))
+
         return sample_ids
 
     def read_sample(self, sample_id: str) -> Dict:
