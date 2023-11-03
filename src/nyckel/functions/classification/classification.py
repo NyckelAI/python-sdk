@@ -11,7 +11,7 @@ ImageSampleData = str
 """DataUri, Url, or local filepath."""
 
 
-TabularFieldValue = Union[str, int]
+TabularFieldValue = Union[str, float]
 TabularFieldKey = str
 TabularSampleData = Dict[TabularFieldKey, TabularFieldValue]
 
@@ -21,7 +21,7 @@ LabelName = str
 @dataclass
 class ClassificationLabel:
     name: LabelName
-    id: Optional[str] = None
+    id: Optional[NyckelId] = None
     description: Optional[str] = None
     metadata: Optional[Dict[str, str]] = None
 
