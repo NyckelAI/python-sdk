@@ -53,7 +53,7 @@ def test_samples(text_classification_function: TextClassificationFunction) -> No
     assert set([sample.data for sample in samples_back]) == set(["hello", "hello again"])
 
     # Check delete
-    func.delete_sample(sample_ids[0])
+    func.delete_samples(sample_ids[0:1])
     time.sleep(1)
     samples_back = func.list_samples()
     assert len(samples_back) == 1

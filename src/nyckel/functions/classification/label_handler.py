@@ -77,11 +77,6 @@ class ClassificationLabelHandler:
         assert response.status_code == 200, f"Update failed with {response.status_code=}, {response.text=}"
         return label
 
-    def delete_label(self, label_id: NyckelId) -> None:
-        self._refresh_auth_token()
-        response = self._session.delete(self._url_handler.api_endpoint(path=f"labels/{strip_nyckel_prefix(label_id)}"))
-        assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
-
     def delete_labels(self, label_ids: List[str]) -> None:
         if len(label_ids) == 0:
             return None

@@ -42,7 +42,7 @@ def test_samples(image_classification_function: ImageClassificationFunction) -> 
     assert len(samples_back) == 2
 
     # Check delete
-    func.delete_sample(sample_ids[0])
+    func.delete_samples(sample_ids[0:1])
     time.sleep(1)
     samples_back = func.list_samples()
     assert len(samples_back) == 1
