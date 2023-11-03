@@ -6,25 +6,21 @@ from tqdm import tqdm
 from nyckel import ClassificationLabel, Credentials, NyckelId
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
+from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter
 
 
 class ClassificationLabelHandler:
     def __init__(self, function_id: str, credentials: Credentials):
         self._function_id = function_id
-        self.credentials = credentials
+        self._credentials = credentials
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
-        self._session = get_session_that_retries()
-
-    def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self.credentials.token})
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
-        self._refresh_auth_token()
+        session = self._credentials.get_session()
         bodies = [
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels
         ]
-        responses = ParallelPoster(self._session, self._url_handler.api_endpoint(path="labels"), desc="Posting labels")(
+        responses = ParallelPoster(session, self._url_handler.api_endpoint(path="labels"), desc="Posting labels")(
             bodies
         )
 
@@ -51,14 +47,14 @@ class ClassificationLabelHandler:
             progress_bar = tqdm(total=label_count, ncols=80, desc="Listing labels")
         else:
             progress_bar = None
-        self._refresh_auth_token()
-        labels_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="labels"))(progress_bar)
+        session = self._credentials.get_session()
+        labels_dict_list = SequentialGetter(session, self._url_handler.api_endpoint(path="labels"))(progress_bar)
         labels = [self._label_from_dict(entry) for entry in labels_dict_list]
         return labels
 
     def read_label(self, label_id: NyckelId) -> ClassificationLabel:
-        self._refresh_auth_token()
-        response = self._session.get(self._url_handler.api_endpoint(path=f"labels/{label_id}"))
+        session = self._credentials.get_session()
+        response = session.get(self._url_handler.api_endpoint(path=f"labels/{label_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
                 f"Unable to fetch label {label_id} from {self._url_handler.train_page} {response.text=} "
@@ -69,8 +65,8 @@ class ClassificationLabelHandler:
 
     def update_label(self, label: ClassificationLabel) -> ClassificationLabel:
         assert label.id, "label to be updated must have the id field set"
-        self._refresh_auth_token()
-        response = self._session.put(
+        session = self._credentials.get_session()
+        response = session.put(
             self._url_handler.api_endpoint(path=f"labels/{strip_nyckel_prefix(label.id)}"),
             json={"name": label.name, "description": label.description, "metadata": label.metadata},
         )
@@ -80,9 +76,9 @@ class ClassificationLabelHandler:
     def delete_labels(self, label_ids: List[str]) -> None:
         if len(label_ids) == 0:
             return None
-        self._refresh_auth_token()
         label_ids = [strip_nyckel_prefix(label_id) for label_id in label_ids]
-        parallel_deleter = ParallelDeleter(self._session, self._url_handler.api_endpoint(path="labels"))
+        session = self._credentials.get_session()
+        parallel_deleter = ParallelDeleter(session, self._url_handler.api_endpoint(path="labels"))
         parallel_deleter(label_ids)
 
     def _label_from_dict(self, label_dict: Dict) -> ClassificationLabel:

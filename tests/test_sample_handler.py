@@ -23,7 +23,8 @@ def test_duplicate_samples(text_classification_function: TextClassificationFunct
     ]
 
     sample_ids = func.create_samples(samples)
-    assert len(sample_ids) == 1  # Duplicate samples are ignored when posting.
+    assert len(sample_ids) == 2
+    assert sample_ids[0] == sample_ids[1]
 
 
 def test_update_annotation(text_classification_function: TextClassificationFunction) -> None:

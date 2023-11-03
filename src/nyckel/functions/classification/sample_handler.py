@@ -13,7 +13,7 @@ from nyckel import (
 )
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
+from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter
 
 ClassificationSampleList = Union[
     List[TextClassificationSample], List[TabularClassificationSample], List[ImageClassificationSample]
@@ -23,10 +23,8 @@ ClassificationSampleList = Union[
 class ClassificationSampleHandler:
     def __init__(self, function_id: str, credentials: Credentials):
         self._function_id = function_id
-        self.credentials = credentials
-        self._session = get_session_that_retries()
+        self._credentials = credentials
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
-        self._refresh_auth_token()
 
     def invoke(
         self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
@@ -47,8 +45,6 @@ class ClassificationSampleHandler:
     def attempt_invoke(
         self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
     ) -> Tuple[bool, List[Any]]:
-        self._refresh_auth_token()
-
         bodies = [{"data": sample_data} for sample_data in sample_data_list]
         endpoint = self._url_handler.api_endpoint(path="invoke")
 
@@ -56,7 +52,8 @@ class ClassificationSampleHandler:
             body["data"] = sample_data_transformer(body["data"])
             return body
 
-        poster = ParallelPoster(self._session, endpoint, desc="Invoking samples", body_transformer=body_transformer)
+        session = self._credentials.get_session()
+        poster = ParallelPoster(session, endpoint, desc="Invoking samples", body_transformer=body_transformer)
         response_list = poster(bodies)
         if response_list[0].status_code in [200]:
             return True, response_list
@@ -73,8 +70,6 @@ class ClassificationSampleHandler:
         ]
 
     def create_samples(self, samples: ClassificationSampleList, sample_data_transformer: Callable) -> List[str]:
-        self._refresh_auth_token()
-
         bodies = []
         for sample in samples:
             body = {"data": sample.data, "externalId": sample.external_id}
@@ -88,7 +83,8 @@ class ClassificationSampleHandler:
             body["data"] = sample_data_transformer(body["data"])
             return body
 
-        poster = ParallelPoster(self._session, endpoint, desc="Posting samples", body_transformer=body_transformer)
+        session = self._credentials.get_session()
+        poster = ParallelPoster(session, endpoint, desc="Posting samples", body_transformer=body_transformer)
         response_list = poster(bodies)
 
         sample_ids = []
@@ -101,12 +97,12 @@ class ClassificationSampleHandler:
         return sample_ids
 
     def read_sample(self, sample_id: str) -> Dict:
-        self._refresh_auth_token()
-        response = self._session.get(self._url_handler.api_endpoint(path=f"samples/{sample_id}"))
+        session = self._credentials.get_session()
+        response = session.get(self._url_handler.api_endpoint(path=f"samples/{sample_id}"))
         if response.status_code == 404:
             # If calling read right after create, the resource is not available yet. Sleep and retry once.
             time.sleep(1)
-            response = self._session.get(self._url_handler.api_endpoint(path=f"samples/{sample_id}"))
+            response = session.get(self._url_handler.api_endpoint(path=f"samples/{sample_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
                 f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} "
@@ -115,34 +111,30 @@ class ClassificationSampleHandler:
         return response.json()
 
     def list_samples(self, sample_count: int) -> List[Dict]:
-        self._refresh_auth_token()
-
-        samples_dict_list = SequentialGetter(
-            self._session, self._url_handler.api_endpoint(path="samples?batchSize=1000")
-        )(tqdm(total=sample_count, ncols=80, desc="Listing samples"))
+        session = self._credentials.get_session()
+        samples_dict_list = SequentialGetter(session, self._url_handler.api_endpoint(path="samples?batchSize=1000"))(
+            tqdm(total=sample_count, ncols=80, desc="Listing samples")
+        )
 
         return samples_dict_list
 
     def update_annotation(self, sample: ClassificationSample) -> None:
-        self._refresh_auth_token()
         url = self._url_handler.api_endpoint(path=f"samples/{sample.id}/annotation")
+        session = self._credentials.get_session()
         if sample.annotation:
             body = {"labelName": sample.annotation.label_name}
-            response = self._session.put(url, json=body)
+            response = session.put(url, json=body)
             assert response.status_code == 200, f"Update failed with {response.status_code=}, {response.text=}"
         else:
-            response = self._session.delete(url)
+            response = session.delete(url)
             assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
 
     def delete_samples(self, sample_ids: List[str]) -> None:
         if len(sample_ids) == 0:
             return None
-        self._refresh_auth_token()
+        session = self._credentials.get_session()
         sample_ids = [strip_nyckel_prefix(sample_id) for sample_id in sample_ids]
         parallel_deleter = ParallelDeleter(
-            self._session, self._url_handler.api_endpoint(path="samples"), desc="Deleting samples"
+            session, self._url_handler.api_endpoint(path="samples"), desc="Deleting samples"
         )
         parallel_deleter(sample_ids)
-
-    def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self.credentials.token})
