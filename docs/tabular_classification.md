@@ -7,5 +7,3 @@
 ::: nyckel.TabularFieldKey
 
 ::: nyckel.TabularFieldValue
-
-::: nyckel.TabularFunctionField
