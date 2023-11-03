@@ -51,10 +51,6 @@ class TextClassificationFunction(ClassificationFunction):
 
         assert self._function_handler.get_input_modality() == "Text"
 
-    @classmethod
-    def create(cls, name: str, credentials: Credentials) -> "TextClassificationFunction":
-        return factory.ClassificationFunctionFactory.create(name, "Text", credentials)  # type:ignore
-
     def __str__(self) -> str:
         return self.__repr__()
 
@@ -77,6 +73,13 @@ class TextClassificationFunction(ClassificationFunction):
     @property
     def name(self) -> str:
         return self._function_handler.get_name()
+
+    @classmethod
+    def create(cls, name: str, credentials: Credentials) -> "TextClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Text", credentials)  # type:ignore
+
+    def delete(self) -> None:
+        self._function_handler.delete()
 
     def invoke(self, sample_data_list: List[TextSampleData]) -> List[ClassificationPrediction]:
         return self._sample_handler.invoke(sample_data_list, lambda x: x)
@@ -128,9 +131,6 @@ class TextClassificationFunction(ClassificationFunction):
 
     def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)
-
-    def delete(self) -> None:
-        self._function_handler.delete()
 
     def _sample_from_dict(self, sample_dict: Dict, label_name_by_id: Dict[NyckelId, str]) -> TextClassificationSample:
         if "annotation" in sample_dict:
