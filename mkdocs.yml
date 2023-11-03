@@ -22,6 +22,9 @@ theme:
   palette:
     primary: white
 
+extra_css:
+  - stylesheets/extra.css
+
 plugins:
 - search
 - mkdocstrings:
