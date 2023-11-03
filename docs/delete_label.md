@@ -5,14 +5,14 @@ Deleting a label is easy in the [Nyckel UI](https://www.nyckel.com), [API](https
 This guide shows how to *delete a single label along with all samples associated with it*.
 
 ``` py
-from nyckel import User, TextClassificationFunction
+from nyckel import Credentials, TextClassificationFunction
 
 # This is the label name to be deleted
 label_name = "" 
 
-# Initialize your user and function
-user = User(client_id="...", client_secret="...")
-func = TextClassificationFunction("<function_id>", user)
+# Initialize your credentials and function
+credentials = Credentials(client_id="...", client_secret="...")
+func = TextClassificationFunction("<function_id>", credentials)
 
 # Get all samples
 samples = func.list_samples()

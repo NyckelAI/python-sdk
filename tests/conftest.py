@@ -9,13 +9,13 @@ from nyckel import (
     ClassificationAnnotation,
     ClassificationFunction,
     ClassificationLabel,
+    Credentials,
     ImageClassificationFunction,
     ImageClassificationSample,
     TabularClassificationFunction,
     TabularClassificationSample,
     TextClassificationFunction,
     TextClassificationSample,
-    User,
 )
 from nyckel.functions.classification.image_classification import ImageEncoder
 from PIL import Image
@@ -35,24 +35,26 @@ def hold_until_list_samples_available(function: ClassificationFunction, expected
 
 
 @pytest.fixture
-def auth_test_user() -> Iterator[User]:
-    user = get_test_user()
-    assert_user_has_access(user)
-    if not user_has_project(user):
-        create_project_for_user(user)
-    yield user
+def auth_test_credentials() -> Iterator[Credentials]:
+    credentials = get_test_credentials()
+    assert_credentials_has_access(credentials)
+    if not credentials_has_project(credentials):
+        create_project_for_credentials(credentials)
+    yield credentials
 
 
 @pytest.fixture
-def text_classification_function(auth_test_user: User) -> Iterator[TextClassificationFunction]:
-    func = TextClassificationFunction.create("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+def text_classification_function(auth_test_credentials: Credentials) -> Iterator[TextClassificationFunction]:
+    func = TextClassificationFunction.create("PYTHON-SDK TEXT TEST FUNCTION", auth_test_credentials)
     yield func
     func.delete()
 
 
 @pytest.fixture
-def text_classification_function_with_content(auth_test_user: User) -> Iterator[TextClassificationFunction]:
-    func = TextClassificationFunction.create("PYTHON-SDK TEXT TEST FUNCTION", auth_test_user)
+def text_classification_function_with_content(
+    auth_test_credentials: Credentials,
+) -> Iterator[TextClassificationFunction]:
+    func = TextClassificationFunction.create("PYTHON-SDK TEXT TEST FUNCTION", auth_test_credentials)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
@@ -71,15 +73,17 @@ def text_classification_function_with_content(auth_test_user: User) -> Iterator[
 
 
 @pytest.fixture
-def image_classification_function(auth_test_user: User) -> Iterator[ImageClassificationFunction]:
-    func = ImageClassificationFunction.create("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+def image_classification_function(auth_test_credentials: Credentials) -> Iterator[ImageClassificationFunction]:
+    func = ImageClassificationFunction.create("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_credentials)
     yield func
     func.delete()
 
 
 @pytest.fixture
-def image_classification_function_with_content(auth_test_user: User) -> Iterator[ImageClassificationFunction]:
-    func = ImageClassificationFunction.create("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_user)
+def image_classification_function_with_content(
+    auth_test_credentials: Credentials,
+) -> Iterator[ImageClassificationFunction]:
+    func = ImageClassificationFunction.create("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_credentials)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
@@ -98,17 +102,17 @@ def image_classification_function_with_content(auth_test_user: User) -> Iterator
 
 
 @pytest.fixture
-def tabular_classification_function(auth_test_user: User) -> Iterator[TabularClassificationFunction]:
-    func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+def tabular_classification_function(auth_test_credentials: Credentials) -> Iterator[TabularClassificationFunction]:
+    func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_credentials)
     yield func
     func.delete()
 
 
 @pytest.fixture
 def tabular_classification_function_with_content(
-    auth_test_user: User,
+    auth_test_credentials: Credentials,
 ) -> Iterator[TabularClassificationFunction]:
-    func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_user)
+    func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_credentials)
     labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
     func.create_labels(labels_to_create)
     nice = ClassificationAnnotation(label_name="Nice")
@@ -126,37 +130,37 @@ def tabular_classification_function_with_content(
     func.delete()
 
 
-def get_test_user() -> User:
+def get_test_credentials() -> Credentials:
     if "NYCKEL_PYTHON_SDK_CLIENT_SECRET" in os.environ:
-        user = User(
+        credentials = Credentials(
             client_id="python-sdk-test",
             client_secret=os.environ["NYCKEL_PYTHON_SDK_CLIENT_SECRET"],
             server_url="https://www.nyckel-staging.com",
         )
     else:
-        user = User(
+        credentials = Credentials(
             client_id="python-sdk-test",
             client_secret="secret",
             server_url="http://localhost:5000",
         )
-    return user
+    return credentials
 
 
-def assert_user_has_access(user: User) -> None:
-    user.token
+def assert_credentials_has_access(credentials: Credentials) -> None:
+    credentials.token
 
 
-def user_has_project(user: User) -> bool:
+def credentials_has_project(credentials: Credentials) -> bool:
     session = requests.Session()
-    session.headers.update({"authorization": "Bearer " + user.token})
-    response = session.get(f"{user.server_url}/v0.9/projects")
+    session.headers.update({"authorization": "Bearer " + credentials.token})
+    response = session.get(f"{credentials.server_url}/v0.9/projects")
     assert response.status_code == 200
     return len(response.json()) > 0
 
 
-def create_project_for_user(user: User) -> None:
+def create_project_for_credentials(credentials: Credentials) -> None:
     session = requests.Session()
-    session.headers.update({"authorization": "Bearer " + user.token})
-    print("-> Creating project for user")
-    response = session.post(f"{user.server_url}/v0.9/projects", json={"name": "my_project"})
+    session.headers.update({"authorization": "Bearer " + credentials.token})
+    print("-> Creating project for credentials")
+    response = session.post(f"{credentials.server_url}/v0.9/projects", json={"name": "my_project"})
     assert response.status_code == 200

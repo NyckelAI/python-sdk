@@ -5,11 +5,11 @@ from nyckel import (
     ClassificationFunction,
     ClassificationLabel,
     ClassificationPrediction,
+    Credentials,
     LabelName,
     NyckelId,
     TextClassificationSample,
     TextSampleData,
-    User,
 )
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
@@ -25,11 +25,11 @@ class TextClassificationFunction(ClassificationFunction):
 
     ```py
 
-    from nyckel import User, TextClassificationFunction
+    from nyckel import Credentials, TextClassificationFunction
 
-    user = User(client_id="...", client_secret="...")
+    credentials = Credentials(client_id="...", client_secret="...")
 
-    func = TextClassificationFunction.create("IsToxic", user)
+    func = TextClassificationFunction.create("IsToxic", credentials)
     func.create_samples([
         ("This is a nice comment", "Not toxic"),
         ("Hello friend", "Not toxic"),
@@ -41,20 +41,19 @@ class TextClassificationFunction(ClassificationFunction):
     ```
     """
 
-    def __init__(self, function_id: NyckelId, user: User):
+    def __init__(self, function_id: NyckelId, credentials: Credentials):
         self._function_id = function_id
-        self._user = user
 
-        self._function_handler = ClassificationFunctionHandler(function_id, user)
-        self._label_handler = ClassificationLabelHandler(function_id, user)
-        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
-        self._sample_handler = ClassificationSampleHandler(function_id, user)
+        self._function_handler = ClassificationFunctionHandler(function_id, credentials)
+        self._label_handler = ClassificationLabelHandler(function_id, credentials)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
+        self._sample_handler = ClassificationSampleHandler(function_id, credentials)
 
         assert self._function_handler.get_input_modality() == "Text"
 
     @classmethod
-    def create(cls, name: str, user: User) -> "TextClassificationFunction":
-        return factory.ClassificationFunctionFactory.create(name, "Text", user)  # type:ignore
+    def create(cls, name: str, credentials: Credentials) -> "TextClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Text", credentials)  # type:ignore
 
     def __str__(self) -> str:
         return self.__repr__()

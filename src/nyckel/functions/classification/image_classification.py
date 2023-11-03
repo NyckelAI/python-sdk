@@ -11,11 +11,11 @@ from nyckel import (
     ClassificationFunction,
     ClassificationLabel,
     ClassificationPrediction,
+    Credentials,
     ImageClassificationSample,
     ImageSampleData,
     LabelName,
     NyckelId,
-    User,
 )
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
@@ -30,11 +30,11 @@ class ImageClassificationFunction(ClassificationFunction):
     Example:
 
     ```py
-    from nyckel import User, ImageClassificationFunction
+    from nyckel import Credentials, ImageClassificationFunction
 
-    user = User(client_id="...", client_secret="...")
+    credentials = Credentials(client_id="...", client_secret="...")
 
-    func = ImageClassificationFunction.create("IsCatOrDog", user)
+    func = ImageClassificationFunction.create("IsCatOrDog", credentials)
     func.create_samples([
         ("cat1.jpg", "cat"),
         ("cat2.jpg", "cat"),
@@ -47,23 +47,22 @@ class ImageClassificationFunction(ClassificationFunction):
     """
 
     def __init__(
-        self, function_id: str, user: User, target_largest_side: int = 1024, force_recode: bool = True
+        self, function_id: str, credentials: Credentials, target_largest_side: int = 1024, force_recode: bool = True
     ) -> None:
         self._function_id = function_id
-        self._user = user
         self._target_largest_side = target_largest_side
         self._force_recode = force_recode  # Whether to resize & recode images before uploading them.
-        self._function_handler = ClassificationFunctionHandler(function_id, user)
-        self._label_handler = ClassificationLabelHandler(function_id, user)
-        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
-        self._sample_handler = ClassificationSampleHandler(function_id, user)
+        self._function_handler = ClassificationFunctionHandler(function_id, credentials)
+        self._label_handler = ClassificationLabelHandler(function_id, credentials)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
+        self._sample_handler = ClassificationSampleHandler(function_id, credentials)
         self._decoder = ImageDecoder()
         self._encoder = ImageEncoder()
         assert self._function_handler.get_input_modality() == "Image"
 
     @classmethod
-    def create(cls, name: str, user: User) -> "ImageClassificationFunction":
-        return factory.ClassificationFunctionFactory.create(name, "Image", user)  # type: ignore
+    def create(cls, name: str, credentials: Credentials) -> "ImageClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Image", credentials)  # type: ignore
 
     def __str__(self) -> str:
         return self.__repr__()

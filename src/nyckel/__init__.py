@@ -1,5 +1,6 @@
-from .auth import User  # noqa: F401
-from .auth import User as OAuth2Renewer  # For backwards compatibility. # noqa: F401
+from .auth import Credentials  # noqa: F401
+from .auth import Credentials as OAuth2Renewer  # For backwards compatibility. # noqa: F401
+from .auth import Credentials as User  # For backwards compatibility. # noqa: F401
 from .data_classes import NyckelId  # noqa: F401
 from .functions.classification.classification import (
     ClassificationAnnotation,  # noqa: F401

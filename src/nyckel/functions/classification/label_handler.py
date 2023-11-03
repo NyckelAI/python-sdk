@@ -3,21 +3,21 @@ from typing import Dict, List, Optional
 
 from tqdm import tqdm
 
-from nyckel import ClassificationLabel, NyckelId, User
+from nyckel import ClassificationLabel, Credentials, NyckelId
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter, get_session_that_retries
 
 
 class ClassificationLabelHandler:
-    def __init__(self, function_id: str, user: User):
+    def __init__(self, function_id: str, credentials: Credentials):
         self._function_id = function_id
-        self._user = user
-        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
+        self.credentials = credentials
+        self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
         self._session = get_session_that_retries()
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._user.token})
+        self._session.headers.update({"authorization": "Bearer " + self.credentials.token})
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
         self._refresh_auth_token()

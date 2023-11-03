@@ -1,16 +1,16 @@
 from typing import Dict
 
-from nyckel import User
+from nyckel import Credentials
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.request_utils import get_session_that_retries
 
 
 class ClassificationFunctionHandler:
-    def __init__(self, function_id: str, user: User):
+    def __init__(self, function_id: str, credentials: Credentials):
         self._function_id = function_id
-        self._user = user
+        self.credentials = credentials
         self._session = get_session_that_retries()
-        self._url_handler = ClassificationFunctionURLHandler(function_id, user.server_url)
+        self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
         self.validate_access()
         assert self.get_output_modality() == "Classification"
 
@@ -42,7 +42,7 @@ class ClassificationFunctionHandler:
             raise ValueError(f"Invalid access tokens. Can't access {self._function_id}.")
         if response.status_code == 403:
             raise ValueError(
-                f"Can't access {self._function_id} using credentials with CLIENT_ID: {self._user.client_id}."
+                f"Can't access {self._function_id} using credentials with CLIENT_ID: {self.credentials.client_id}."
             )
         elif not response.status_code == 200:
             raise ValueError(
@@ -94,4 +94,4 @@ class ClassificationFunctionHandler:
         print(f"-> Function {self._url_handler.train_page} deleted.")
 
     def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self._user.token})
+        self._session.headers.update({"authorization": "Bearer " + self.credentials.token})

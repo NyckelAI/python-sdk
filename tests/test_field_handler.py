@@ -1,13 +1,15 @@
 import time
 
-from nyckel import TabularClassificationFunction, User
+from nyckel import Credentials, TabularClassificationFunction
 from nyckel.functions.classification.tabular_classification import TabularFieldHandler, TabularFunctionField
 
 
-def test_fields(tabular_classification_function: TabularClassificationFunction, auth_test_user: User) -> None:
+def test_fields(
+    tabular_classification_function: TabularClassificationFunction, auth_test_credentials: Credentials
+) -> None:
     func = tabular_classification_function
     # Just borrow the function_id and create a TabularFieldHandler directly to test it.
-    fields_handler = TabularFieldHandler(func.function_id, auth_test_user)
+    fields_handler = TabularFieldHandler(func.function_id, auth_test_credentials)
 
     field = TabularFunctionField(name="Firstname", type="Text")
     field_id = fields_handler.create_fields([field])[0]
