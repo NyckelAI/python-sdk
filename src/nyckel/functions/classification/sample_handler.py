@@ -29,7 +29,7 @@ class ClassificationSampleHandler:
     def invoke(
         self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
     ) -> List[ClassificationPrediction]:
-        n_max_attempt = 10
+        n_max_attempt = 5
         for _ in range(n_max_attempt):
             invoke_ok, response_list = self.attempt_invoke(sample_data_list, sample_data_transformer)
             if invoke_ok:
