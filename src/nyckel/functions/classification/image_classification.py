@@ -91,10 +91,6 @@ class ImageClassificationFunction(ClassificationFunction):
     def name(self) -> str:
         return self._function_handler.get_name()
 
-    @property
-    def metrics(self) -> Dict:
-        return self._function_handler.get_metrics()
-
     def invoke(self, sample_data_list: List[ImageSampleData]) -> List[ClassificationPrediction]:
         return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body)
 
