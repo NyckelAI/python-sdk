@@ -1,4 +1,4 @@
-site_name: Nyckel
+site_name: Nyckel Python SDK
 site_url: https://www.nyckel.com
 nav:
   - Home: index.md
@@ -17,6 +17,10 @@ theme:
   name: 'material'
   features:
     - content.code.copy
+  logo: assets/nyckel-logo.png
+  favicon: assets/favicon.ico
+  palette:
+    primary: white
 
 plugins:
 - search
