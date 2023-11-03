@@ -15,7 +15,7 @@ func.create_samples([
     ("Who is this? Go away!", "Toxic"),
 ])
 
-prediction = func("This example is fantastic!")
+predictions = func.invoke(["This example is fantastic!"])
 ```
 
 ## Get started

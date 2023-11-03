@@ -45,7 +45,7 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
         print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
 
-    prediction = func({"firstname": "Eric", "lastname": "Ebony"})
+    prediction = func.invoke([{"firstname": "Eric", "lastname": "Ebony"}])[0]
     assert isinstance(prediction, ClassificationPrediction)
 
     predictions = func.invoke(

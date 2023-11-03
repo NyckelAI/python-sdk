@@ -34,7 +34,7 @@ func.add_samples([
 # ...and you can start classifying text right away!
 
 # Classify a new piece of text.
-label = func("New text")
+predictions = func.invoke(["New text"])
 ```
 
 ## Contributors

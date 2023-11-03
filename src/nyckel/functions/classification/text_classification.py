@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Sequence, Tuple, Union
 
 from nyckel import (
     ClassificationAnnotation,
@@ -37,7 +37,7 @@ class TextClassificationFunction(ClassificationFunction):
         ("Who is this? Go away!", "Toxic"),
     ])
 
-    prediction = func("This example is fantastic!")
+    predictions = func.invoke(["This example is fantastic!"])
     ```
     """
 
@@ -66,9 +66,6 @@ class TextClassificationFunction(ClassificationFunction):
     def __repr__(self) -> str:
         status_string = f"Name: {self.name}, id: {self.function_id}, url: {self.train_page}"
         return status_string
-
-    def __call__(self, sample_data: TextSampleData) -> ClassificationPrediction:
-        return self.invoke([sample_data])[0]
 
     @property
     def function_id(self) -> str:
@@ -123,7 +120,7 @@ class TextClassificationFunction(ClassificationFunction):
         return self._label_handler.delete_labels(label_ids)
 
     def create_samples(
-        self, samples: List[Union[TextClassificationSample, Tuple[TextSampleData, LabelName], TextSampleData]]  # type: ignore  # noqa: E501
+        self, samples: Sequence[Union[TextClassificationSample, Tuple[TextSampleData, LabelName], TextSampleData]]  # type: ignore  # noqa: E501
     ) -> List[NyckelId]:
         typed_samples = self._wrangle_post_samples_input(samples)
         self._create_labels_as_needed(typed_samples)
@@ -181,7 +178,7 @@ class TextClassificationFunction(ClassificationFunction):
         )
 
     def _wrangle_post_samples_input(
-        self, samples: List[Union[TextClassificationSample, Tuple[TextSampleData, LabelName], TextSampleData]]
+        self, samples: Sequence[Union[TextClassificationSample, Tuple[TextSampleData, LabelName], TextSampleData]]
     ) -> List[TextClassificationSample]:
         typed_samples: List[TextClassificationSample] = []
         for sample in samples:

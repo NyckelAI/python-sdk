@@ -68,7 +68,7 @@ def test_end_to_end(image_classification_function: ImageClassificationFunction) 
         print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
 
-    assert isinstance(func(make_random_image()), ClassificationPrediction)
+    assert isinstance(func.invoke([make_random_image()])[0], ClassificationPrediction)
 
     assert len(func.invoke([make_random_image(), make_random_image(), make_random_image()])) == 3
 

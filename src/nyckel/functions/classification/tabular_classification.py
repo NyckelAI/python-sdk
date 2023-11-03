@@ -1,6 +1,6 @@
 import numbers
 import time
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Sequence, Tuple, Union
 
 from tqdm import tqdm
 
@@ -44,7 +44,7 @@ class TabularClassificationFunction(ClassificationFunction):
         ({"Name": "Devin Duncan", "Response": "Nope. Please stop bugging me."}, "Not Interested"),
     ])
 
-    prediction = func({"Name": "Frank Fisher", "Response": "Yea, I'd love to try the Nyckel API!"})
+    predictions = func.invoke([{"Name": "Frank Fisher", "Response": "Yea, I'd love to try the Nyckel API!"}])
     ```
     """
 
@@ -73,9 +73,6 @@ class TabularClassificationFunction(ClassificationFunction):
     def __repr__(self) -> str:
         status_string = f"Name: {self.name}, id: {self.function_id}, url: {self.train_page}"
         return status_string
-
-    def __call__(self, sample_data: TabularSampleData) -> ClassificationPrediction:  # type: ignore
-        return self.invoke([sample_data])[0]
 
     @property
     def function_id(self) -> str:
@@ -129,7 +126,7 @@ class TabularClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[NyckelId]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(self, samples: List[Union[TabularClassificationSample, Tuple[TabularSampleData, LabelName], TabularSampleData]]) -> List[NyckelId]:  # type: ignore # noqa: E501
+    def create_samples(self, samples: Sequence[Union[TabularClassificationSample, Tuple[TabularSampleData, LabelName], TabularSampleData]]) -> List[NyckelId]:  # type: ignore # noqa: E501
         if len(samples) == 0:
             return []
 
@@ -185,8 +182,8 @@ class TabularClassificationFunction(ClassificationFunction):
 
     def _wrangle_post_samples_input(
         self,
-        samples: List[Union[TabularClassificationSample, Tuple[TabularSampleData, LabelName], TabularSampleData]],
-    ) -> List[TabularClassificationSample]:  # type: ignore # noqa: E501
+        samples: Sequence[Union[TabularClassificationSample, Tuple[TabularSampleData, LabelName], TabularSampleData]],
+    ) -> List[TabularClassificationSample]:
         typed_samples: List[TabularClassificationSample] = []
         for sample in samples:
             if isinstance(sample, TabularClassificationSample):
