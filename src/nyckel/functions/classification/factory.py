@@ -44,9 +44,7 @@ class ClassificationFunctionFactory:
                 response = session.get(url)
                 function_is_available = response.status_code == 200
 
-        session = get_session_that_retries()
-        session.headers.update({"authorization": "Bearer " + credentials.token})
-
+        session = credentials.get_session()
         function_id = post_function()
         hold_until_available(function_id)
 

@@ -1,5 +1,6 @@
 import time
 
+import pkg_resources
 import requests
 
 from nyckel.request_utils import get_session_that_retries
@@ -33,10 +34,25 @@ class Credentials:
     def server_url(self) -> str:
         return self._server_url
 
+    @property
+    def client_id(self) -> str:
+        return self._client_id
+
     def get_session(self) -> requests.Session:
         """Returns a requests session with active bearer token header."""
         session = get_session_that_retries()
-        session.headers.update({"Authorization": f"Bearer {self.token}"})
+        try:
+            nyckel_pip_version = pkg_resources.get_distribution("nyckel").version
+        except pkg_resources.DistributionNotFound:
+            nyckel_pip_version = "dev"
+
+        session.headers.update(
+            {
+                "Authorization": f"Bearer {self.token}",
+                "Nyckel-Client-Name": "python-sdk",
+                "Nyckel-Client-Version": nyckel_pip_version,
+            }
+        )
         return session
 
     def _renew_token(self) -> None:

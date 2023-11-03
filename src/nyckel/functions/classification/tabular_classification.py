@@ -243,19 +243,15 @@ class TabularClassificationFunction(ClassificationFunction):
 class TabularFieldHandler:
     def __init__(self, function_id: NyckelId, credentials: Credentials):
         self._function_id = function_id
-        self.credentials = credentials
+        self._credentials = credentials
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
-        self._session = get_session_that_retries()
         self._field_name_by_id: Dict = {}
 
-    def _refresh_auth_token(self) -> None:
-        self._session.headers.update({"authorization": "Bearer " + self.credentials.token})
-
     def create_fields(self, fields: List[TabularFunctionField]) -> List[NyckelId]:
-        self._refresh_auth_token()
         bodies = [{"name": field.name, "type": field.type} for field in fields]
         url = self._url_handler.api_endpoint(path="fields")
-        responses = ParallelPoster(self._session, url)(bodies)
+        session = self._credentials.get_session()
+        responses = ParallelPoster(session, url)(bodies)
         field_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
         self._confirm_new_fields_available(fields)
@@ -277,16 +273,16 @@ class TabularFieldHandler:
             )
 
     def list_fields(self) -> List[TabularFunctionField]:
-        self._refresh_auth_token()
-        fields_dict_list = SequentialGetter(self._session, self._url_handler.api_endpoint(path="fields"))(
+        session = self._credentials.get_session()
+        fields_dict_list = SequentialGetter(session, self._url_handler.api_endpoint(path="fields"))(
             tqdm(ncols=80, desc="Listing fields")
         )
         return [self._field_from_dict(entry) for entry in fields_dict_list]
 
     def read_field(self, field_id: NyckelId) -> TabularFunctionField:
-        self._refresh_auth_token()
+        session = self._credentials.get_session()
         url = self._url_handler.api_endpoint(path=f"fields/{field_id}")
-        response = self._session.get(url)
+        response = session.get(url)
         if not response.status_code == 200:
             raise RuntimeError(
                 f"Unable to fetch field {field_id} from {self._url_handler.train_page} "
@@ -295,8 +291,8 @@ class TabularFieldHandler:
         return self._field_from_dict(response.json())
 
     def delete_field(self, field_id: NyckelId) -> None:
-        self._refresh_auth_token()
-        response = self._session.delete(self._url_handler.api_endpoint(path=f"fields/{field_id}"))
+        session = self._credentials.get_session()
+        response = session.delete(self._url_handler.api_endpoint(path=f"fields/{field_id}"))
         assert response.status_code == 200, f"Delete failed with {response.status_code=}, {response.text=}"
 
     def _field_from_dict(self, field_dict: Dict) -> TabularFunctionField:
