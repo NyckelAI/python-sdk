@@ -105,11 +105,6 @@ class ClassificationFunction(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> str:
-        pass
-
-    @property
-    @abc.abstractmethod
     def name(self) -> str:
         pass
 
