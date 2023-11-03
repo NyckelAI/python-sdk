@@ -31,7 +31,6 @@ def test_post_sample_overloading(
 
 def test_samples(text_classification_function: TextClassificationFunction) -> None:
     func = text_classification_function
-    # func = TextClassificationFunction.create_function("[TEST TEXT CLASSIFICATION SAMPLES]", auth_test_user)
     label = ClassificationLabel(name="Nice")
     func.create_labels([label])
 

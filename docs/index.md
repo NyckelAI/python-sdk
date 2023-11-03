@@ -7,7 +7,7 @@ from nyckel import User, TextClassificationFunction
 
 user = User(client_id="...", client_secret="...")
 
-func = TextClassificationFunction.new("IsToxic", user)
+func = TextClassificationFunction.create("IsToxic", user)
 func.create_samples([
     ("This is a nice comment", "Not toxic"),
     ("Hello friend", "Not toxic"),

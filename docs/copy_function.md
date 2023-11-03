@@ -12,7 +12,7 @@ user = User(client_id=..., client_secret=...)
 from_func = TextClassificationFunction("<function_id>", user)
 
 # Create a new, empty function.
-to_func = TextClassificationFunction.new(f"{from_func.name} COPY", user)
+to_func = TextClassificationFunction.create(f"{from_func.name} COPY", user)
 
 # Copy samples over. Labels will automatically be created.
 to_func.create_samples(from_func.list_samples())

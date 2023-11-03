@@ -81,7 +81,7 @@ ClassificationSample = Union[TextClassificationSample, ImageClassificationSample
 class ClassificationFunction(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def new(cls, name: str, user: User) -> "ClassificationFunction":
+    def create(cls, name: str, user: User) -> "ClassificationFunction":
         pass
 
     @abc.abstractmethod

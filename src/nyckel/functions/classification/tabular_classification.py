@@ -36,7 +36,7 @@ class TabularClassificationFunction(ClassificationFunction):
 
     user = User(client_id="...", client_secret="...")
 
-    func = TabularClassificationFunction.new("InterestedProspect", user)
+    func = TabularClassificationFunction.create("InterestedProspect", user)
     func.create_samples([
         ({"Name": "Adam Adams", "Response": "Thanks for reaching out. I'd love to chat"}, "Interested"),
         ({"Name": "Bo Berg", "Response": "Sure! Can you tell me a bit more?"}, "Interested"),
@@ -60,12 +60,8 @@ class TabularClassificationFunction(ClassificationFunction):
         assert self._function_handler.get_input_modality() == "Tabular"
 
     @classmethod
-    def new(cls, name: str, user: User) -> "TabularClassificationFunction":
-        return factory.ClassificationFunctionFactory.new(name, "Tabular", user)  # type: ignore
-
-    @classmethod
-    def create_function(cls, name: str, user: User) -> "TabularClassificationFunction":
-        return cls.new(name, user)
+    def create(cls, name: str, user: User) -> "TabularClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Tabular", user)  # type: ignore
 
     def __str__(self) -> str:
         return self.__repr__()
