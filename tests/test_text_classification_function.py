@@ -81,7 +81,7 @@ def test_end_to_end(text_classification_function: TextClassificationFunction) ->
         print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
 
-    assert isinstance(func("Howdy"), ClassificationPrediction)
+    assert isinstance(func.invoke(["Howdy"])[0], ClassificationPrediction)
 
     assert len(func.invoke(["Hej", "Hola", "Gruezi"])) == 3
 

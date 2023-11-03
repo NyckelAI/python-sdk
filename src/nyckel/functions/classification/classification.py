@@ -88,11 +88,6 @@ class ClassificationFunction(abc.ABC):
     def __init__(self, function_id: str, user: User):
         pass
 
-    @abc.abstractmethod
-    def __call__(self, sample_data: str) -> ClassificationPrediction:
-        """Invokes the trained function. Raises ValueError if function is not trained"""
-        pass
-
     @property
     @abc.abstractmethod
     def function_id(self) -> NyckelId:

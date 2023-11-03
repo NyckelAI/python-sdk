@@ -1,7 +1,7 @@
 import base64
 import os
 from io import BytesIO
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Sequence, Tuple, Union
 
 import requests
 from PIL import Image
@@ -42,7 +42,7 @@ class ImageClassificationFunction(ClassificationFunction):
         ("dog2.jpg", "dog")
     ])
 
-    prediction = func("cat_or_dog.jpg")
+    predictions = func.invoke(["cat_or_dog.jpg"])
     ```
     """
 
@@ -75,9 +75,6 @@ class ImageClassificationFunction(ClassificationFunction):
     def __repr__(self) -> str:
         status_string = f"Name: {self.name}, id: {self.function_id}, url: {self.train_page}"
         return status_string
-
-    def __call__(self, sample_data: ImageSampleData) -> ClassificationPrediction:
-        return self.invoke([sample_data])[0]
 
     @property
     def function_id(self) -> NyckelId:
@@ -133,7 +130,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def create_samples(
         self,
-        samples: List[  # type: ignore
+        samples: Sequence[  # type: ignore
             Union[
                 ImageClassificationSample,
                 Tuple[Image.Image, LabelName],
@@ -244,7 +241,7 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def _wrangle_post_samples_input(
         self,
-        samples: List[  # type: ignore
+        samples: Sequence[
             Union[
                 ImageClassificationSample,
                 Tuple[Image.Image, LabelName],
