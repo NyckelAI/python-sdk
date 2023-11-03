@@ -85,6 +85,10 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def delete(self) -> None:
+        pass
+
+    @abc.abstractmethod
     def __init__(self, function_id: str, credentials: Credentials):
         pass
 
@@ -155,11 +159,6 @@ class ClassificationFunction(abc.ABC):
 
     @abc.abstractmethod
     def delete_samples(self, sample_ids: List[NyckelId]) -> None:
-        pass
-
-    @abc.abstractmethod
-    def delete(self) -> None:
-        """Deletes the function"""
         pass
 
 

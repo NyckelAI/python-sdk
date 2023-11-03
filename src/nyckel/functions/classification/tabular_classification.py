@@ -58,10 +58,6 @@ class TabularClassificationFunction(ClassificationFunction):
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
         assert self._function_handler.get_input_modality() == "Tabular"
 
-    @classmethod
-    def create(cls, name: str, credentials: Credentials) -> "TabularClassificationFunction":
-        return factory.ClassificationFunctionFactory.create(name, "Tabular", credentials)  # type: ignore
-
     def __str__(self) -> str:
         return self.__repr__()
 
@@ -84,6 +80,13 @@ class TabularClassificationFunction(ClassificationFunction):
     @property
     def name(self) -> str:
         return self._function_handler.get_name()
+
+    @classmethod
+    def create(cls, name: str, credentials: Credentials) -> "TabularClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Tabular", credentials)  # type: ignore
+
+    def delete(self) -> None:
+        self._function_handler.delete()
 
     def invoke(self, sample_data_list: List[TabularSampleData]) -> List[ClassificationPrediction]:  # type: ignore
         return self._sample_handler.invoke(sample_data_list, lambda x: x)
@@ -153,9 +156,6 @@ class TabularClassificationFunction(ClassificationFunction):
 
     def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)
-
-    def delete(self) -> None:
-        self._function_handler.delete()
 
     def _wrangle_post_samples_input(
         self,

@@ -60,10 +60,6 @@ class ImageClassificationFunction(ClassificationFunction):
         self._encoder = ImageEncoder()
         assert self._function_handler.get_input_modality() == "Image"
 
-    @classmethod
-    def create(cls, name: str, credentials: Credentials) -> "ImageClassificationFunction":
-        return factory.ClassificationFunctionFactory.create(name, "Image", credentials)  # type: ignore
-
     def __str__(self) -> str:
         return self.__repr__()
 
@@ -86,6 +82,13 @@ class ImageClassificationFunction(ClassificationFunction):
     @property
     def name(self) -> str:
         return self._function_handler.get_name()
+
+    @classmethod
+    def create(cls, name: str, credentials: Credentials) -> "ImageClassificationFunction":
+        return factory.ClassificationFunctionFactory.create(name, "Image", credentials)  # type: ignore
+
+    def delete(self) -> None:
+        self._function_handler.delete()
 
     def invoke(self, sample_data_list: List[ImageSampleData]) -> List[ClassificationPrediction]:
         return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body)
@@ -146,9 +149,6 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)
-
-    def delete(self) -> None:
-        self._function_handler.delete()
 
     def _resize_image(self, img: Image.Image) -> Image.Image:
         def get_new_width_height(width: int, height: int) -> Tuple[int, int]:
