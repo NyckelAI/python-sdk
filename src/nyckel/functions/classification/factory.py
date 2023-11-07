@@ -5,7 +5,6 @@ from nyckel.functions.classification import image_classification, tabular_classi
 from nyckel.functions.classification.classification import ClassificationFunction
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import get_session_that_retries
 
 
 class ClassificationFunctionFactory:
