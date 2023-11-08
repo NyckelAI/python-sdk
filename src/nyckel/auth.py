@@ -1,6 +1,6 @@
 import time
+from importlib.metadata import PackageNotFoundError, version
 
-import pkg_resources
 import requests
 
 from nyckel.request_utils import get_session_that_retries
@@ -42,8 +42,8 @@ class Credentials:
         """Returns a requests session with active bearer token header."""
         session = get_session_that_retries()
         try:
-            nyckel_pip_version = pkg_resources.get_distribution("nyckel").version
-        except pkg_resources.DistributionNotFound:
+            nyckel_pip_version = version("nyckel")
+        except PackageNotFoundError:
             nyckel_pip_version = "dev"
 
         session.headers.update(
