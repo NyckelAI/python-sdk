@@ -43,13 +43,17 @@ class ParallelPoster:
             ):
                 index = index_by_future[future]
                 body = bodies[index]
-                response = future.result()
-                if response.status_code not in [200, 409]:
-                    warnings.warn(
-                        f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}",
-                        RuntimeWarning,
-                    )
-                responses[index] = response
+                try:
+                    response = future.result()
+                    if response.status_code not in [200, 409]:
+                        warnings.warn(
+                            f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}",
+                            RuntimeWarning,
+                        )
+                    responses[index] = response
+                except Exception as e:
+                    warnings.warn(f"Posting {body} to {self._endpoint} failed with {e}", RuntimeWarning)
+
         return responses
 
 

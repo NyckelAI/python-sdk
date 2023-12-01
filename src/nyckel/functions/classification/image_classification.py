@@ -293,7 +293,7 @@ class ImageDecoder:
         return sample_data.startswith("https://") or sample_data.startswith("http://")
 
     def _load_from_url(self, url: str) -> BytesIO:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         return BytesIO(response.content)
 
     def looks_like_local_filepath(self, local_path: str) -> bool:
