@@ -34,7 +34,7 @@ class ParallelPoster:
         if len(bodies) == 0:
             return []
         responses = [requests.Response()] * len(bodies)
-        n_workers = max(min(len(bodies), NBR_CONCURRENT_REQUESTS), 1)
+        n_workers = min(len(bodies), NBR_CONCURRENT_REQUESTS)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:
             index_by_future = {executor.submit(self._post_as_json, body): index for index, body in enumerate(bodies)}
