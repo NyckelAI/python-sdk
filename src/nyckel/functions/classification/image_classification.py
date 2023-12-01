@@ -46,12 +46,10 @@ class ImageClassificationFunction(ClassificationFunction):
     ```
     """
 
-    def __init__(
-        self, function_id: str, credentials: Credentials, target_largest_side: int = 1024, force_recode: bool = True
-    ) -> None:
+    def __init__(self, function_id: str, credentials: Credentials) -> None:
         self._function_id = function_id
-        self._target_largest_side = target_largest_side
-        self._force_recode = force_recode  # Whether to resize & recode images before uploading them.
+        self._force_recode: bool  # Whether to resize & recode images before uploading them.
+        self._target_largest_side: int  # If recoding, what should be the target longest side
         self._function_handler = ClassificationFunctionHandler(function_id, credentials)
         self._label_handler = ClassificationLabelHandler(function_id, credentials)
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
@@ -111,7 +109,7 @@ class ImageClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[NyckelId]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
-    def create_samples(
+    def create_samples(  # type: ignore
         self,
         samples: Sequence[  # type: ignore
             Union[
@@ -122,7 +120,12 @@ class ImageClassificationFunction(ClassificationFunction):
                 ImageSampleData,
             ]
         ],
+        force_recode: bool = False,
+        target_largest_side: int = 1000,
     ) -> List[NyckelId]:
+        self._force_recode = force_recode
+        self._target_largest_side = target_largest_side
+
         typed_samples = self._wrangle_post_samples_input(samples)
         self._create_labels_as_needed(typed_samples)
 
@@ -173,23 +176,26 @@ class ImageClassificationFunction(ClassificationFunction):
             # In that case, we just point back to that URL.
             # This overrides the force_resize input and ensures that the image doesn't get recoded twice.
             return sample_data
-        else:
-            if self._decoder.looks_like_url(sample_data):
-                if self._force_recode:
-                    return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-                else:
-                    return sample_data
-            if self._decoder.looks_like_local_filepath(sample_data):
-                if self._force_recode:
-                    return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-                else:
-                    return self._encoder.stream_to_base64(self._decoder.to_stream(sample_data))
-            if self._decoder.looks_like_data_uri(sample_data):
-                if self._force_recode:
-                    return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-                else:
-                    return sample_data
-            raise ValueError(f"Can't parse input sample.data={sample_data}")
+
+        if self._decoder.looks_like_url(sample_data):
+            if self._force_recode:
+                return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+            else:
+                return sample_data
+
+        if self._decoder.looks_like_local_filepath(sample_data):
+            if self._force_recode:
+                return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+            else:
+                return self._encoder.stream_to_base64(self._decoder.to_stream(sample_data))
+
+        if self._decoder.looks_like_data_uri(sample_data):
+            if self._force_recode:
+                return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+            else:
+                return sample_data
+
+        raise ValueError(f"Can't parse input sample.data={sample_data}")
 
     def _is_nyckel_owned_url(self, sample_data: str) -> bool:
         return sample_data.startswith("https://s3.us-west-2.amazonaws.com/nyckel.server.")
