@@ -106,6 +106,7 @@ class TextClassificationFunction(ClassificationFunction):
         self, samples: Sequence[Union[TextClassificationSample, Tuple[TextSampleData, LabelName], TextSampleData]]  # type: ignore  # noqa: E501
     ) -> List[NyckelId]:
         typed_samples = self._wrangle_post_samples_input(samples)
+        typed_samples = self._strip_label_names(typed_samples)
         self._create_labels_as_needed(typed_samples)
 
         return self._sample_handler.create_samples(typed_samples, lambda x: x)
@@ -179,3 +180,9 @@ class TextClassificationFunction(ClassificationFunction):
         missing_labels = [ClassificationLabel(name=label_name) for label_name in missing_label_names]
         if len(missing_labels) > 0:
             self._label_handler.create_labels(missing_labels)
+
+    def _strip_label_names(self, samples: List[TextClassificationSample]) -> List[TextClassificationSample]:
+        for sample in samples:
+            if sample.annotation:
+                sample.annotation.label_name = sample.annotation.label_name.strip()
+        return samples

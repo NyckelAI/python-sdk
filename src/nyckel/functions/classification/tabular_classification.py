@@ -114,6 +114,7 @@ class TabularClassificationFunction(ClassificationFunction):
             return []
 
         typed_samples = self._wrangle_post_samples_input(samples)
+        typed_samples = self._strip_label_names(typed_samples)
         self._create_labels_as_needed(typed_samples)
         self._create_fields_as_needed(typed_samples)
         existing_fields = self._field_handler.list_fields()
@@ -238,6 +239,12 @@ class TabularClassificationFunction(ClassificationFunction):
             annotation=annotation,
             prediction=prediction,
         )
+
+    def _strip_label_names(self, samples: List[TabularClassificationSample]) -> List[TabularClassificationSample]:
+        for sample in samples:
+            if sample.annotation:
+                sample.annotation.label_name = sample.annotation.label_name.strip()
+        return samples
 
 
 class TabularFieldHandler:
