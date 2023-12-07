@@ -165,7 +165,7 @@ class TabularClassificationFunction(ClassificationFunction):
         for sample in samples:
             if isinstance(sample, TabularClassificationSample):
                 typed_samples.append(sample)
-            elif isinstance(sample, tuple):
+            elif isinstance(sample, (list, tuple)):
                 data_dict, label_name = sample
                 typed_samples.append(
                     TabularClassificationSample(
