@@ -226,11 +226,11 @@ class ImageClassificationFunction(ClassificationFunction):
         self,
         samples: Sequence[
             Union[
-                ImageClassificationSample,
-                Tuple[Image.Image, LabelName],
-                Image.Image,
-                Tuple[ImageSampleData, LabelName],
                 ImageSampleData,
+                Image.Image,
+                ImageClassificationSample,
+                Tuple[ImageSampleData, LabelName],
+                Tuple[Image.Image, LabelName],
             ]
         ],
     ) -> List[ImageClassificationSample]:
@@ -240,14 +240,14 @@ class ImageClassificationFunction(ClassificationFunction):
                 typed_samples.append(ImageClassificationSample(data=sample))
             elif isinstance(sample, Image.Image):
                 typed_samples.append(ImageClassificationSample(data=self._encoder.image_to_base64(sample)))
-            elif isinstance(sample, tuple) and isinstance(sample[0], str):
+            elif isinstance(sample, (tuple, list)) and isinstance(sample[0], str):
                 image_str, label_name = sample
                 typed_samples.append(
                     ImageClassificationSample(
                         data=image_str, annotation=ClassificationAnnotation(label_name=label_name)
                     )
                 )
-            elif isinstance(sample, tuple) and isinstance(sample[0], Image.Image):
+            elif isinstance(sample, (tuple, list)) and isinstance(sample[0], Image.Image):
                 image_pil, label_name = sample
                 typed_samples.append(
                     ImageClassificationSample(

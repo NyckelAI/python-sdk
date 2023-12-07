@@ -161,7 +161,7 @@ class TextClassificationFunction(ClassificationFunction):
         for sample in samples:
             if isinstance(sample, str):
                 typed_samples.append(TextClassificationSample(data=sample))
-            elif isinstance(sample, tuple):
+            elif isinstance(sample, (list, tuple)):
                 typed_samples.append(
                     TextClassificationSample(data=sample[0], annotation=ClassificationAnnotation(label_name=sample[1]))
                 )
