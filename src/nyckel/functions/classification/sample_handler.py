@@ -38,7 +38,7 @@ class ClassificationSampleHandler:
                 if "No model available to invoke function" in response_list[0].text:
                     print("Model not trained yet. Retrying...")
                 else:
-                    raise RuntimeError("Failed to invoke function. {response_list=}}")
+                    raise RuntimeError(f"Failed to invoke function. {response_list=}")
             time.sleep(5)
         raise TimeoutError("Still no model after {n_max_attempt} attempts. Please try again later.")
 

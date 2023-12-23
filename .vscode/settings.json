@@ -3,8 +3,8 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
     },
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true,
-        "source.sortImports": true,
+        "source.organizeImports": "explicit",
+        "source.sortImports": "explicit"
     },
     "editor.formatOnSave": true,
     "mypy.configFile": "pyproject.toml",

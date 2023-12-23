@@ -23,7 +23,7 @@ credentials = Credentials(client_id=..., client_secret=...)
 func = TextClassificationFunction.create(credentials=credentials, name="IsToxic")
 
 # Provide a few examples.
-func.add_samples([
+func.create_samples([
     ("This is a nice comment", "not toxic"),
     ("Hello friend", "not toxic"),
     ("This is a bad comment", "toxic"),

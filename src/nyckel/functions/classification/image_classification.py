@@ -88,7 +88,14 @@ class ImageClassificationFunction(ClassificationFunction):
     def delete(self) -> None:
         self._function_handler.delete()
 
-    def invoke(self, sample_data_list: List[ImageSampleData]) -> List[ClassificationPrediction]:
+    def invoke(
+        self,
+        sample_data_list: List[ImageSampleData],
+        force_recode: bool = False,
+        target_largest_side: int = 1000,
+    ) -> List[ClassificationPrediction]:
+        self._force_recode = force_recode
+        self._target_largest_side = target_largest_side
         return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body)
 
     def has_trained_model(self) -> bool:
