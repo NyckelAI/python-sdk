@@ -112,9 +112,9 @@ class ClassificationSampleHandler:
 
     def list_samples(self, sample_count: int) -> List[Dict]:
         session = self._credentials.get_session()
-        samples_dict_list = SequentialGetter(session, self._url_handler.api_endpoint(path="samples?batchSize=1000"))(
-            tqdm(total=sample_count, ncols=80, desc="Listing samples")
-        )
+        samples_dict_list = SequentialGetter(
+            session, self._url_handler.api_endpoint(path="samples?batchSize=1000&sortBy=creation&sortOrder=descending")
+        )(tqdm(total=sample_count, ncols=80, desc="Listing samples"))
 
         return samples_dict_list
 
