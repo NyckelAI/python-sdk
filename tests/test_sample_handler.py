@@ -55,3 +55,19 @@ def test_update_annotation(text_classification_function: TextClassificationFunct
     time.sleep(1)
     sample = func.read_sample(sample_id)
     assert sample.annotation and sample.annotation.label_name == "Bad"
+
+
+def test_list_order(text_classification_function: TextClassificationFunction) -> None:
+    # Create a few samples
+    samples = [TextClassificationSample(data=f"Sample {i}") for i in range(10)]
+    _ = text_classification_function.create_samples(samples)
+    time.sleep(1)
+    # Create one new sample
+    sample = TextClassificationSample(data="New Sample")
+    new_sample_id = text_classification_function.create_samples([sample])[0]
+    time.sleep(1)
+
+    # List the samples and make sure the order is correct
+    listed_samples = text_classification_function.list_samples()
+    assert len(listed_samples) == 11
+    assert listed_samples[0].id == new_sample_id
