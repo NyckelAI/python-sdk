@@ -14,6 +14,7 @@ from nyckel import (
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter
+from nyckel.utils import chunkify_list
 
 ClassificationSampleList = Union[
     List[TextClassificationSample], List[TabularClassificationSample], List[ImageClassificationSample]
@@ -46,14 +47,16 @@ class ClassificationSampleHandler:
         self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
     ) -> Tuple[bool, List[Any]]:
         bodies = [{"data": sample_data} for sample_data in sample_data_list]
-        endpoint = self._url_handler.api_endpoint(path="invoke")
 
         def body_transformer(body: Dict) -> Dict:
             body["data"] = sample_data_transformer(body["data"])
             return body
 
         session = self._credentials.get_session()
-        poster = ParallelPoster(session, endpoint, desc="Invoking samples", body_transformer=body_transformer)
+        endpoint = self._url_handler.api_endpoint(path="invoke")
+        progress_bar = tqdm(total=len(bodies), ncols=80, desc="Invoking")
+
+        poster = ParallelPoster(session, endpoint, progress_bar, body_transformer)
         response_list = poster(bodies)
         if response_list[0].status_code in [200]:
             return True, response_list
@@ -77,15 +80,18 @@ class ClassificationSampleHandler:
                 body["annotation"] = {"labelName": sample.annotation.label_name}
             bodies.append(body)
 
-        endpoint = self._url_handler.api_endpoint(path="samples")
-
         def body_transformer(body: Dict) -> Dict:
             body["data"] = sample_data_transformer(body["data"])
             return body
 
         session = self._credentials.get_session()
-        poster = ParallelPoster(session, endpoint, desc="Posting samples", body_transformer=body_transformer)
-        response_list = poster(bodies)
+        url = self._url_handler.api_endpoint(path="samples")
+        progress_bar = tqdm(total=len(bodies), ncols=80, desc="Posting samples")
+        poster = ParallelPoster(session, url, progress_bar, body_transformer)
+        response_list = []
+        for chunk in chunkify_list(bodies, 500):
+            response_list.extend(poster(chunk))
+            poster.refresh_session(self._credentials.get_session())
 
         sample_ids = []
         for response in response_list:

@@ -15,7 +15,7 @@ class ParallelPoster:
         self,
         session: requests.Session,
         endpoint: str,
-        desc: Optional[str] = None,
+        progress_bar: Optional[tqdm] = None,
         body_transformer: Callable = lambda x: x,
     ):
         """last input 'body_transformer' intended for image functions,
@@ -23,12 +23,19 @@ class ParallelPoster:
         This is to avoid blowing up the memory for large sets of images to post."""
         self._session = session
         self._endpoint = endpoint
-        self._desc = desc
         self._body_transformer = body_transformer
+        if progress_bar is not None:
+            self.progress_bar = progress_bar
+
+        else:
+            self.progress_bar = tqdm("Posting", ncols=80)
 
     def _post_as_json(self, data: Dict) -> requests.Response:
         response = self._session.post(self._endpoint, json=self._body_transformer(data))
         return response
+
+    def refresh_session(self, session: requests.Session) -> None:
+        self._session = session
 
     def __call__(self, bodies: List[Dict]) -> List[requests.Response]:
         if len(bodies) == 0:
@@ -38,11 +45,10 @@ class ParallelPoster:
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:
             index_by_future = {executor.submit(self._post_as_json, body): index for index, body in enumerate(bodies)}
-            for future in tqdm(
-                concurrent.futures.as_completed(index_by_future), total=len(bodies), desc=self._desc, ncols=80
-            ):
+            for future in concurrent.futures.as_completed(index_by_future):
                 index = index_by_future[future]
                 body = bodies[index]
+                self.progress_bar.update(1)
                 try:
                     response = future.result()
                     if response.status_code not in [200, 409]:

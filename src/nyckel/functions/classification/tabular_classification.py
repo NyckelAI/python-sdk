@@ -22,7 +22,7 @@ from nyckel.functions.classification.function_handler import ClassificationFunct
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.request_utils import ParallelPoster, SequentialGetter, get_session_that_retries
+from nyckel.request_utils import ParallelPoster, SequentialGetter
 
 
 class TabularClassificationFunction(ClassificationFunction):
@@ -258,7 +258,8 @@ class TabularFieldHandler:
         bodies = [{"name": field.name, "type": field.type} for field in fields]
         url = self._url_handler.api_endpoint(path="fields")
         session = self._credentials.get_session()
-        responses = ParallelPoster(session, url)(bodies)
+        progress_bar = tqdm(total=len(bodies), ncols=80, desc="Posting fields")
+        responses = ParallelPoster(session, url, progress_bar)(bodies)
         field_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
         self._confirm_new_fields_available(fields)

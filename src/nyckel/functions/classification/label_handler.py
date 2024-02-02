@@ -20,9 +20,9 @@ class ClassificationLabelHandler:
         bodies = [
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels
         ]
-        responses = ParallelPoster(session, self._url_handler.api_endpoint(path="labels"), desc="Posting labels")(
-            bodies
-        )
+        url = self._url_handler.api_endpoint(path="labels")
+        progress_bar = tqdm(total=len(bodies), ncols=80, desc="Posting labels")
+        responses = ParallelPoster(session, url, progress_bar)(bodies)
 
         label_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
         self._confirm_new_labels_available(labels)

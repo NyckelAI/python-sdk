@@ -123,4 +123,5 @@ def test_post_sample_overloading(
     original_image = Image.open(os.path.abspath("tests/flower.jpg"))
 
     assert returned_image.size == original_image.size
-    # TODO: test that the image content is the same. It's tricky b/c Nyckel re-codes the image when the sample is created.
+    # TODO: test that the image content is the same. It's tricky b/c Nyckel re-codes
+    # the image when the sample is created.
