@@ -91,12 +91,13 @@ class ImageClassificationFunction(ClassificationFunction):
     def invoke(
         self,
         sample_data_list: List[ImageSampleData],
+        model_id: str = "",
         force_recode: bool = False,
         target_largest_side: int = 1000,
     ) -> List[ClassificationPrediction]:
         self._force_recode = force_recode
         self._target_largest_side = target_largest_side
-        return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body)
+        return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body, model_id=model_id)
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained

@@ -28,11 +28,14 @@ class ClassificationSampleHandler:
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
 
     def invoke(
-        self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
+        self,
+        sample_data_list: Union[List[Dict], List[str]],
+        sample_data_transformer: Callable,
+        model_id: str = "",
     ) -> List[ClassificationPrediction]:
         n_max_attempt = 5
         for _ in range(n_max_attempt):
-            invoke_ok, response_list = self.attempt_invoke(sample_data_list, sample_data_transformer)
+            invoke_ok, response_list = self.attempt_invoke(sample_data_list, sample_data_transformer, model_id=model_id)
             if invoke_ok:
                 return self.parse_predictions_response(response_list)
             else:
@@ -44,7 +47,10 @@ class ClassificationSampleHandler:
         raise TimeoutError("Still no model after {n_max_attempt} attempts. Please try again later.")
 
     def attempt_invoke(
-        self, sample_data_list: Union[List[Dict], List[str]], sample_data_transformer: Callable
+        self,
+        sample_data_list: Union[List[Dict], List[str]],
+        sample_data_transformer: Callable,
+        model_id: str = "",
     ) -> Tuple[bool, List[Any]]:
         bodies = [{"data": sample_data} for sample_data in sample_data_list]
 
@@ -53,7 +59,8 @@ class ClassificationSampleHandler:
             return body
 
         session = self._credentials.get_session()
-        endpoint = self._url_handler.api_endpoint(path="invoke")
+        endpoint = self._url_handler.api_endpoint(path="invoke", query_str=f"modelId={model_id}")
+        print(f"endpoint: {endpoint}")
         progress_bar = tqdm(total=len(bodies), ncols=80, desc="Invoking")
 
         poster = ParallelPoster(session, endpoint, progress_bar, body_transformer)

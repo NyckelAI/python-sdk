@@ -26,7 +26,6 @@ from nyckel.request_utils import ParallelPoster, SequentialGetter
 
 
 class TabularClassificationFunction(ClassificationFunction):
-
     """
     Example:
 
@@ -88,8 +87,8 @@ class TabularClassificationFunction(ClassificationFunction):
     def delete(self) -> None:
         self._function_handler.delete()
 
-    def invoke(self, sample_data_list: List[TabularSampleData]) -> List[ClassificationPrediction]:  # type: ignore
-        return self._sample_handler.invoke(sample_data_list, lambda x: x)
+    def invoke(self, sample_data_list: List[TabularSampleData], model_id: str = "") -> List[ClassificationPrediction]:  # type: ignore
+        return self._sample_handler.invoke(sample_data_list, lambda x: x, model_id=model_id)
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
