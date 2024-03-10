@@ -113,7 +113,7 @@ class ClassificationFunction(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def invoke(self, sample_data_list: List[str]) -> List[ClassificationPrediction]:
+    def invoke(self, sample_data_list: List[str], model_id: str) -> List[ClassificationPrediction]:
         """Invokes the trained function. Raises ValueError if function is not trained"""
         pass
 

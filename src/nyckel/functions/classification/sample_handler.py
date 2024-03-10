@@ -60,7 +60,6 @@ class ClassificationSampleHandler:
 
         session = self._credentials.get_session()
         endpoint = self._url_handler.api_endpoint(path="invoke", query_str=f"modelId={model_id}")
-        print(f"endpoint: {endpoint}")
         progress_bar = tqdm(total=len(bodies), ncols=80, desc="Invoking")
 
         poster = ParallelPoster(session, endpoint, progress_bar, body_transformer)

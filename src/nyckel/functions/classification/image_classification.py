@@ -88,7 +88,7 @@ class ImageClassificationFunction(ClassificationFunction):
     def delete(self) -> None:
         self._function_handler.delete()
 
-    def invoke(
+    def invoke(  # type: ignore
         self,
         sample_data_list: List[ImageSampleData],
         model_id: str = "",
