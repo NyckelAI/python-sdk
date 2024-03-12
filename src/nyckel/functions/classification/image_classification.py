@@ -102,8 +102,11 @@ class ImageClassificationFunction(ClassificationFunction):
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
 
-    def create_labels(self, labels: List[ClassificationLabel]) -> List[NyckelId]:
-        return self._label_handler.create_labels(labels)
+    def create_labels(self, labels: Sequence[Union[ClassificationLabel, str]]) -> List[NyckelId]:
+        typed_labels = [
+            label if isinstance(label, ClassificationLabel) else ClassificationLabel(name=label) for label in labels
+        ]
+        return self._label_handler.create_labels(typed_labels)
 
     def list_labels(self) -> List[ClassificationLabel]:
         return self._label_handler.list_labels(self.label_count)
