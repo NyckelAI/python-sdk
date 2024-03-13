@@ -17,6 +17,7 @@ from nyckel import (
     LabelName,
     NyckelId,
 )
+from nyckel.config import MAX_IMAGE_SIZE_PIXELS
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
@@ -48,8 +49,6 @@ class ImageClassificationFunction(ClassificationFunction):
 
     def __init__(self, function_id: str, credentials: Credentials) -> None:
         self._function_id = function_id
-        self._force_recode: bool  # Whether to resize & recode images before uploading them.
-        self._target_largest_side: int  # If recoding, what should be the target longest side
         self._function_handler = ClassificationFunctionHandler(function_id, credentials)
         self._label_handler = ClassificationLabelHandler(function_id, credentials)
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
@@ -89,14 +88,8 @@ class ImageClassificationFunction(ClassificationFunction):
         self._function_handler.delete()
 
     def invoke(  # type: ignore
-        self,
-        sample_data_list: List[ImageSampleData],
-        model_id: str = "",
-        force_recode: bool = False,
-        target_largest_side: int = 1000,
+        self, sample_data_list: List[ImageSampleData], model_id: str = ""
     ) -> List[ClassificationPrediction]:
-        self._force_recode = force_recode
-        self._target_largest_side = target_largest_side
         return self._sample_handler.invoke(sample_data_list, self._sample_data_to_body, model_id=model_id)
 
     def has_trained_model(self) -> bool:
@@ -131,12 +124,7 @@ class ImageClassificationFunction(ClassificationFunction):
                 ImageSampleData,
             ]
         ],
-        force_recode: bool = False,
-        target_largest_side: int = 1000,
     ) -> List[NyckelId]:
-        self._force_recode = force_recode
-        self._target_largest_side = target_largest_side
-
         typed_samples = self._wrangle_post_samples_input(samples)
         typed_samples = self._strip_label_names(typed_samples)
         self._create_labels_as_needed(typed_samples)
@@ -166,46 +154,41 @@ class ImageClassificationFunction(ClassificationFunction):
         self._sample_handler.delete_samples(sample_ids)
 
     def _resize_image(self, img: Image.Image) -> Image.Image:
+
+        def needs_resize(width: int, height: int) -> bool:
+            return width > MAX_IMAGE_SIZE_PIXELS or height > MAX_IMAGE_SIZE_PIXELS
+
         def get_new_width_height(width: int, height: int) -> Tuple[int, int]:
-            if width < self._target_largest_side and height < self._target_largest_side:
-                return width, height
             if width > height:
-                new_width = self._target_largest_side
+                new_width = MAX_IMAGE_SIZE_PIXELS
                 new_height = int(new_width * height / width)
             else:
-                new_height = self._target_largest_side
+                new_height = MAX_IMAGE_SIZE_PIXELS
                 new_width = int(new_height * width / height)
             return new_width, new_height
 
-        width, height = get_new_width_height(img.width, img.height)
-        img = img.resize((width, height))
-        return img
+        if not needs_resize(img.width, img.height):
+            return img
+        else:
+            width, height = get_new_width_height(img.width, img.height)
+            img = img.resize((width, height))
+            return img
 
     def _sample_data_to_body(self, sample_data: str) -> str:
         """Encodes the sample data as a URL or dataURI as appropriate."""
         if self._is_nyckel_owned_url(sample_data):
             # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified.
             # In that case, we just point back to that URL.
-            # This overrides the force_resize input and ensures that the image doesn't get recoded twice.
             return sample_data
 
         if self._decoder.looks_like_url(sample_data):
-            if self._force_recode:
-                return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-            else:
-                return sample_data
+            return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
 
         if self._decoder.looks_like_local_filepath(sample_data):
-            if self._force_recode:
-                return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-            else:
-                return self._encoder.stream_to_base64(self._decoder.to_stream(sample_data))
+            return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
 
         if self._decoder.looks_like_data_uri(sample_data):
-            if self._force_recode:
-                return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-            else:
-                return sample_data
+            return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
 
         raise ValueError(f"Can't parse input sample.data={sample_data}")
 

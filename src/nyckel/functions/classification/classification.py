@@ -41,11 +41,11 @@ class ClassificationAnnotation:
 class TabularFunctionField:
     name: str
     type: str
-    """Type must be Number or Text"""
+    """Type must be Number, Text or Image"""
     id: Optional[NyckelId] = None
 
     def __post_init__(self) -> None:
-        assert self.type in ["Number", "Text"]
+        assert self.type in ["Number", "Text", "Image"]
 
 
 @dataclass
