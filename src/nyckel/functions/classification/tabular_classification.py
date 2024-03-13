@@ -115,17 +115,30 @@ class TabularClassificationFunction(ClassificationFunction):
     def delete_labels(self, label_ids: List[NyckelId]) -> None:
         return self._label_handler.delete_labels(label_ids)
 
+    def create_fields(self, fields: List[TabularFunctionField]) -> List[NyckelId]:
+        return self._field_handler.create_fields(fields)
+
+    def list_fields(self) -> List[TabularFunctionField]:
+        return self._field_handler.list_fields()
+
+    def read_field(self, field_id: NyckelId) -> TabularFunctionField:
+        return self._field_handler.read_field(field_id)
+
+    def delete_field(self, field_id: NyckelId) -> None:
+        return self._field_handler.delete_field(field_id)
+
     def create_samples(self, samples: Sequence[Union[TabularClassificationSample, Tuple[TabularSampleData, LabelName], TabularSampleData]]) -> List[NyckelId]:  # type: ignore # noqa: E501
         if len(samples) == 0:
             return []
 
         typed_samples = self._wrangle_post_samples_input(samples)
         typed_samples = self._strip_label_names(typed_samples)
+        self._assert_fields_created(typed_samples)
+
         self._create_labels_as_needed(typed_samples)
-        self._create_fields_as_needed(typed_samples)
-        existing_fields = self._field_handler.list_fields()
+        existing_fields = self.list_fields()
         field_id_by_name = {field.name: field.id for field in existing_fields}
-        samples = [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in typed_samples]  # type: ignore # noqa: E501
+        [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in typed_samples]  # type: ignore
         return self._sample_handler.create_samples(typed_samples, lambda x: x)
 
     def _switch_field_names_to_field_ids(
@@ -185,21 +198,12 @@ class TabularClassificationFunction(ClassificationFunction):
                 raise ValueError(f"Unknown sample type: {type(sample)}")
         return typed_samples
 
-    def _create_fields_as_needed(self, samples: List[TabularClassificationSample]) -> None:
+    def _assert_fields_created(self, samples: List[TabularClassificationSample]) -> None:
         existing_fields = self._field_handler.list_fields()
-
-        new_fields: List[TabularFunctionField] = []
-        for sample in samples:
-            for field_name, field_value in sample.data.items():
-                if field_name in [field.name for field in existing_fields + new_fields]:
-                    continue
-                if isinstance(field_value, numbers.Number):
-                    new_fields.append(TabularFunctionField(name=field_name, type="Number"))
-                else:
-                    new_fields.append(TabularFunctionField(name=field_name, type="Text"))
-
-        if len(new_fields) > 0:
-            self._field_handler.create_fields(new_fields)
+        existing_field_names = {field.name for field in existing_fields}
+        new_field_names = {field_name for sample in samples for field_name in sample.data.keys()}
+        missing_field_names = new_field_names - existing_field_names
+        assert len(missing_field_names) == 0, f"Fields not created: {missing_field_names=}. Please create fields first."
 
     def _create_labels_as_needed(self, samples: List[TabularClassificationSample]) -> None:
         existing_labels = self._label_handler.list_labels(None)
