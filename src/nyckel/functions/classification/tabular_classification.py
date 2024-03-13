@@ -153,7 +153,7 @@ class TabularClassificationFunction(ClassificationFunction):
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         samples_dict_list = self._sample_handler.list_samples(self.sample_count)
         labels = self._label_handler.list_labels(None)
-        fields = self._field_handler.list_fields()
+        fields = self.list_fields()
 
         label_name_by_id = {label.id: label.name for label in labels}
         field_name_by_id = {field.id: field.name for field in fields}  # type: ignore
@@ -164,7 +164,7 @@ class TabularClassificationFunction(ClassificationFunction):
         sample_as_dict = self._sample_handler.read_sample(sample_id)
 
         labels = self._label_handler.list_labels(None)
-        fields = self._field_handler.list_fields()
+        fields = self.list_fields()
 
         label_name_by_id = {label.id: label.name for label in labels}
         field_name_by_id = {field.id: field.name for field in fields}  # type: ignore
@@ -199,7 +199,7 @@ class TabularClassificationFunction(ClassificationFunction):
         return typed_samples
 
     def _assert_fields_created(self, samples: List[TabularClassificationSample]) -> None:
-        existing_fields = self._field_handler.list_fields()
+        existing_fields = self.list_fields()
         existing_field_names = {field.name for field in existing_fields}
         new_field_names = {field_name for sample in samples for field_name in sample.data.keys()}
         missing_field_names = new_field_names - existing_field_names
