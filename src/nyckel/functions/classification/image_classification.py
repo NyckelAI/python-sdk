@@ -169,26 +169,26 @@ class ImageClassificationFunction(ClassificationFunction):
 
         if not needs_resize(img.width, img.height):
             return img
-        else:
-            width, height = get_new_width_height(img.width, img.height)
-            img = img.resize((width, height))
-            return img
+
+        width, height = get_new_width_height(img.width, img.height)
+        img = img.resize((width, height))
+        return img
 
     def _sample_data_to_body(self, sample_data: str) -> str:
-        """Encodes the sample data as a URL or dataURI as appropriate."""
+        """Resizes if needed and encodes the sample data as a URL or dataURI."""
         if self._is_nyckel_owned_url(sample_data):
             # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified.
             # In that case, we just point back to that URL.
             return sample_data
 
         if self._decoder.looks_like_url(sample_data):
-            return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
 
         if self._decoder.looks_like_local_filepath(sample_data):
-            return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
 
         if self._decoder.looks_like_data_uri(sample_data):
-            return self._encoder.image_to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
 
         raise ValueError(f"Can't parse input sample.data={sample_data}")
 
@@ -234,7 +234,7 @@ class ImageClassificationFunction(ClassificationFunction):
             if isinstance(sample, str):
                 typed_samples.append(ImageClassificationSample(data=sample))
             elif isinstance(sample, Image.Image):
-                typed_samples.append(ImageClassificationSample(data=self._encoder.image_to_base64(sample)))
+                typed_samples.append(ImageClassificationSample(data=self._encoder.to_base64(sample)))
             elif isinstance(sample, (tuple, list)) and isinstance(sample[0], str):
                 image_str, label_name = sample
                 typed_samples.append(
@@ -246,7 +246,7 @@ class ImageClassificationFunction(ClassificationFunction):
                 image_pil, label_name = sample
                 typed_samples.append(
                     ImageClassificationSample(
-                        data=self._encoder.image_to_base64(image_pil),
+                        data=self._encoder.to_base64(image_pil),
                         annotation=ClassificationAnnotation(label_name=label_name),
                     )
                 )
@@ -329,14 +329,13 @@ class ImageDecoder:
 
 
 class ImageEncoder:
-    def image_to_base64(self, img: Image.Image) -> str:
-        buffered = BytesIO()
-        if not img.mode == "RGB":
-            img = img.convert("RGB")
-        img.save(buffered, format="JPEG", quality=95)
-        encoded_string = base64.b64encode(buffered.getvalue()).decode("utf-8")
-        return "data:image/jpg;base64," + encoded_string
-
-    def stream_to_base64(self, im_bytes: BytesIO) -> str:
+    def to_base64(self, img: Union[Image.Image, BytesIO]) -> str:
+        if isinstance(img, Image.Image):
+            im_bytes = BytesIO()
+            if not img.mode == "RGB":
+                img = img.convert("RGB")
+            img.save(im_bytes, format="JPEG", quality=95)
+        else:
+            im_bytes = img
         encoded_string = base64.b64encode(im_bytes.getvalue()).decode("utf-8")
         return "data:image/jpg;base64," + encoded_string

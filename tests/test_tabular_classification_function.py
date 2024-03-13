@@ -10,13 +10,16 @@ from nyckel import (
     TabularClassificationFunction,
     TabularClassificationSample,
 )
+from nyckel.functions.classification.classification import TabularFunctionField
 
 
 def test_end_to_end(tabular_classification_function: TabularClassificationFunction) -> None:
     func: TabularClassificationFunction = tabular_classification_function
 
     func.create_labels([ClassificationLabel(name="happy"), ClassificationLabel(name="sad")])
-
+    func.create_fields(
+        [TabularFunctionField(name="firstname", type="Text"), TabularFunctionField(name="lastname", type="Text")]
+    )
     func.create_samples(
         [
             TabularClassificationSample(
@@ -34,7 +37,7 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
         ]
     )
 
-    fields = func._field_handler.list_fields()
+    fields = func.list_fields()
     assert len(fields) == 2
     assert set([field.name for field in fields]) == set(["firstname", "lastname"])
     time.sleep(2)
@@ -56,13 +59,14 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
 
 def test_field_creation(tabular_classification_function: TabularClassificationFunction) -> None:
     func: TabularClassificationFunction = tabular_classification_function
-
+    func.create_fields([TabularFunctionField(name="firstname", type="Text")])
     func.create_samples([TabularClassificationSample(data={"firstname": "Adam"})])
-    fields = func._field_handler.list_fields()
+    fields = func.list_fields()
     assert len(fields) == 1
     assert fields[0].type == "Text"
+    func.create_fields([TabularFunctionField(name="age", type="Number")])
     func.create_samples([TabularClassificationSample(data={"age": 32})])
-    fields = func._field_handler.list_fields()
+    fields = func.list_fields()
     assert len(fields) == 2
     age_field = [field for field in fields if field.name == "age"][0]
     assert age_field.type == "Number"
@@ -87,6 +91,9 @@ def test_post_sample_overloading(
     tabular_classification_function: TabularClassificationFunction,
     post_samples_input: Union[TabularClassificationSample, Tuple[Dict, str], Dict],
 ) -> None:
+    tabular_classification_function.create_fields(
+        [TabularFunctionField(name="firstname", type="Text"), TabularFunctionField(name="lastname", type="Text")]
+    )
     tabular_classification_function.create_samples([post_samples_input])
     time.sleep(1)
     samples = tabular_classification_function.list_samples()
