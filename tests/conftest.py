@@ -24,7 +24,7 @@ from PIL import Image
 def make_random_image(size: int = 100) -> str:
     imarray = np.random.rand(size, size, 3) * 255
     img = Image.fromarray(imarray.astype("uint8")).convert("RGB")
-    return ImageEncoder().image_to_base64(img)
+    return ImageEncoder().to_base64(img)
 
 
 def hold_until_list_samples_available(function: ClassificationFunction, expected_count: int) -> None:
