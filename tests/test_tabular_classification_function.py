@@ -1,3 +1,4 @@
+import os
 import time
 import warnings
 from typing import Dict, Tuple, Union
@@ -7,6 +8,7 @@ from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
     ClassificationPrediction,
+    ImageDecoder,
     TabularClassificationFunction,
     TabularClassificationSample,
 )
@@ -99,3 +101,27 @@ def test_post_sample_overloading(
     samples = tabular_classification_function.list_samples()
     assert len(samples) == 1
     assert samples[0].data == {"firstname": "Adam", "lastname": "Abrams"}
+
+
+def test_image_field(tabular_classification_function: TabularClassificationFunction) -> None:
+    tabular_classification_function.create_fields(
+        [TabularFunctionField(name="firstname", type="Text"), TabularFunctionField(name="mug", type="Image")]
+    )
+
+    local_filepath = os.path.abspath("tests/flower.jpg")
+
+    tabular_classification_function.create_samples(
+        [
+            TabularClassificationSample(
+                data={"firstname": "Adam", "mug": local_filepath},
+                annotation=ClassificationAnnotation(label_name="Person"),
+            )
+        ]
+    )
+    time.sleep(1)
+    samples = tabular_classification_function.list_samples()
+    assert isinstance(samples[0].data["mug"], str)
+    img = ImageDecoder().to_image(samples[0].data["mug"])
+
+    # The tabular filed uploader will resize the images to 384x384
+    assert max(img.size) == 384
