@@ -8,6 +8,7 @@ nav:
     - Delete label: delete_label.md
     - Merge labels: merge_labels.md
     - Delete samples: delete_samples.md
+    - Multimodal classification: multimodal_classification.md
   - Reference:
     - Image Classification: image_classification.md
     - Text Classification: text_classification.md

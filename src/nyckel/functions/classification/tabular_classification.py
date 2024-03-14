@@ -33,11 +33,15 @@ class TabularClassificationFunction(ClassificationFunction):
 
     ```py
 
-    from nyckel import Credentials, TabularClassificationFunction
+    from nyckel import Credentials, TabularClassificationFunction, TabularFunctionField
 
     credentials = Credentials(client_id="...", client_secret="...")
 
     func = TabularClassificationFunction.create("InterestedProspect", credentials)
+    func.create_fields([
+        TabularFunctionField(type="Text", name="Name"),
+        TabularFunctionField(type="Text", name="Response")
+    ])
     func.create_samples([
         ({"Name": "Adam Adams", "Response": "Thanks for reaching out. I'd love to chat"}, "Interested"),
         ({"Name": "Bo Berg", "Response": "Sure! Can you tell me a bit more?"}, "Interested"),
