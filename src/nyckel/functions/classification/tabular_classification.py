@@ -137,16 +137,16 @@ class TabularClassificationFunction(ClassificationFunction):
         self._assert_fields_created(typed_samples)
 
         self._create_labels_as_needed(typed_samples)
-        existing_fields = self.list_fields()
-        field_id_by_name = {field.name: field.id for field in existing_fields}
+        fields = self.list_fields()
+        field_id_by_name = {field.name: field.id for field in fields}
         [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in typed_samples]  # type: ignore
 
-        # This should be only only one image field, if at all, so this is OK.
-        field_id_by_type = {field.type: field.id for field in existing_fields}
-        if "Image" in field_id_by_type:
-            image_field_transformer = ImageFieldHandler(field_id_by_type["Image"])  # type: ignore
-        else:
-            image_field_transformer = lambda x: x  # type: ignore  # noqa: E731
+        image_field_transformer = lambda x: x  # type: ignore  # noqa: E731
+        for field in fields:
+            if field.type == "Image":
+                # There is only one image field (max) per function, so we can break here.
+                image_field_transformer = ImageFieldHandler(field.id)  # type: ignore
+                break
 
         return self._sample_handler.create_samples(typed_samples, image_field_transformer)
 
