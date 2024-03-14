@@ -20,12 +20,18 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
 
     func.create_labels([ClassificationLabel(name="happy"), ClassificationLabel(name="sad")])
     func.create_fields(
-        [TabularFunctionField(name="firstname", type="Text"), TabularFunctionField(name="lastname", type="Text")]
+        [
+            TabularFunctionField(name="firstname", type="Text"),
+            TabularFunctionField(name="lastname", type="Text"),
+            TabularFunctionField(name="mugshot", type="Image"),
+        ]
     )
+    local_image_file = os.path.abspath("tests/flower.jpg")
     func.create_samples(
         [
             TabularClassificationSample(
-                data={"firstname": "Adam", "lastname": "Art"}, annotation=ClassificationAnnotation(label_name="happy")
+                data={"firstname": "Adam", "lastname": "Art", "mugshot": local_image_file},
+                annotation=ClassificationAnnotation(label_name="happy"),
             ),
             TabularClassificationSample(
                 data={"firstname": "Bo", "lastname": "Busy"}, annotation=ClassificationAnnotation(label_name="happy")
@@ -40,8 +46,8 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
     )
 
     fields = func.list_fields()
-    assert len(fields) == 2
-    assert set([field.name for field in fields]) == set(["firstname", "lastname"])
+    assert len(fields) == 3
+    assert set([field.name for field in fields]) == set(["firstname", "lastname", "mugshot"])
     time.sleep(2)
     assert len(func.list_samples()) == 4
     assert len(func.list_labels()) == 2
@@ -50,7 +56,7 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
         print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
 
-    prediction = func.invoke([{"firstname": "Eric", "lastname": "Ebony"}])[0]
+    prediction = func.invoke([{"firstname": "Eric", "lastname": "Ebony", "mugshot": local_image_file}])[0]
     assert isinstance(prediction, ClassificationPrediction)
 
     predictions = func.invoke(
