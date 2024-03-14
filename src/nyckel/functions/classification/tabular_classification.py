@@ -1,7 +1,7 @@
-import numbers
 import time
 from typing import Dict, List, Sequence, Tuple, Union
 
+from PIL import Image
 from tqdm import tqdm
 
 from nyckel import (
@@ -19,6 +19,7 @@ from nyckel import (
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
+from nyckel.functions.classification.image_classification import ImageDecoder, ImageEncoder
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
 from nyckel.functions.utils import strip_nyckel_prefix
@@ -139,7 +140,15 @@ class TabularClassificationFunction(ClassificationFunction):
         existing_fields = self.list_fields()
         field_id_by_name = {field.name: field.id for field in existing_fields}
         [self._switch_field_names_to_field_ids(sample, field_id_by_name) for sample in typed_samples]  # type: ignore
-        return self._sample_handler.create_samples(typed_samples, lambda x: x)
+
+        # This should be only only one image field, if at all, so this is OK.
+        field_id_by_type = {field.type: field.id for field in existing_fields}
+        if "Image" in field_id_by_type:
+            image_field_transformer = ImageFieldHandler(field_id_by_type["Image"])  # type: ignore
+        else:
+            image_field_transformer = lambda x: x  # type: ignore  # noqa: E731
+
+        return self._sample_handler.create_samples(typed_samples, image_field_transformer)
 
     def _switch_field_names_to_field_ids(
         self, sample: TabularClassificationSample, field_id_by_name: Dict[str, str]
@@ -257,6 +266,62 @@ class TabularClassificationFunction(ClassificationFunction):
         return samples
 
 
+class ImageFieldHandler:
+
+    MAX_IMAGE_SIZE_PIXELS_TABULAR = 384
+
+    def __init__(self, field_id: NyckelId):
+        self._field_id = field_id
+        self._decoder = ImageDecoder()
+        self._encoder = ImageEncoder()
+
+    def __call__(self, tabular_sample_data: dict) -> dict:
+        tabular_sample_data[self._field_id] = self._sample_data_to_body(tabular_sample_data[self._field_id])
+        return tabular_sample_data
+
+    def _resize_image(self, img: Image.Image) -> Image.Image:
+
+        def needs_resize(width: int, height: int) -> bool:
+            return width > self.MAX_IMAGE_SIZE_PIXELS_TABULAR or height > self.MAX_IMAGE_SIZE_PIXELS_TABULAR
+
+        def get_new_width_height(width: int, height: int) -> Tuple[int, int]:
+            if width > height:
+                new_width = self.MAX_IMAGE_SIZE_PIXELS_TABULAR
+                new_height = int(new_width * height / width)
+            else:
+                new_height = self.MAX_IMAGE_SIZE_PIXELS_TABULAR
+                new_width = int(new_height * width / height)
+            return new_width, new_height
+
+        if not needs_resize(img.width, img.height):
+            return img
+
+        width, height = get_new_width_height(img.width, img.height)
+        img = img.resize((width, height))
+        return img
+
+    def _sample_data_to_body(self, sample_data: str) -> str:
+        """Resizes if needed and encodes the sample data as a URL or dataURI."""
+        if self._is_nyckel_owned_url(sample_data):
+            # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified.
+            # In that case, we just point back to that URL.
+            return sample_data
+
+        if self._decoder.looks_like_url(sample_data):
+            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+
+        if self._decoder.looks_like_local_filepath(sample_data):
+            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+
+        if self._decoder.looks_like_data_uri(sample_data):
+            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
+
+        raise ValueError(f"Can't parse input sample.data={sample_data}")
+
+    def _is_nyckel_owned_url(self, sample_data: str) -> bool:
+        return sample_data.startswith("https://s3.us-west-2.amazonaws.com/nyckel.server.")
+
+
 class TabularFieldHandler:
     def __init__(self, function_id: NyckelId, credentials: Credentials):
         self._function_id = function_id
@@ -273,7 +338,6 @@ class TabularFieldHandler:
         field_ids = [strip_nyckel_prefix(resp.json()["id"]) for resp in responses]
 
         self._confirm_new_fields_available(fields)
-
         return field_ids
 
     def _confirm_new_fields_available(self, new_fields: List[TabularFunctionField]) -> None:
