@@ -27,3 +27,14 @@ from .functions.classification.image_classification import (
 )
 from .functions.classification.tabular_classification import TabularClassificationFunction  # noqa: F401
 from .functions.classification.text_classification import TextClassificationFunction  # noqa: F401
+from .functions.tags.tags import (
+    ImageTagsSample,
+    TabularTagsSample,
+    TagsAnnotation,
+    TagsFunction,
+    TagsPrediction,
+    TagsSample,
+    TextSampleData,
+    TextTagsSample,
+)
+from .functions.tags.text_tags import TextTagsFunction  # noqa: F401

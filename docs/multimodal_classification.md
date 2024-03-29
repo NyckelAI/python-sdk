@@ -5,7 +5,7 @@ Nyckel supports multi-modal (joint) classification of images and text data throu
 Below is an e-commerce example:
 
 ``` py
-from nyckel import Credentials, TabularClassificationFunction, TabularFunctionField, TabularFunctionSample, ClassificationAnnotation
+from nyckel import Credentials, TabularClassificationFunction, TabularFunctionField, TabularClassificationSample, ClassificationAnnotation
 
 credentials = Credentials(client_id="...", client_secret="...")
 
@@ -19,19 +19,19 @@ func.create_fields([
 # <image-data> entires can be provided as URLs, base64-encoded dataURIs, or local file paths.
 func.create_samples(
     [
-        TabularFunctionSample(
+        TabularClassificationSample(
             data={"Product": "Acme wrench", "Description": "Solid steel; never breaks", "Picture": "<image-data>"},
             annotation=ClassificationAnnotation(label_name="Hardware"),
         ),
-        TabularFunctionSample(
+        TabularClassificationSample(
             data={"Product": "ULINE Hammer", "Description": "Hammer with wood handle", "Picture": "<image-data>"},
             annotation=ClassificationAnnotation(label_name="Hardware"),
         ),
-        TabularFunctionSample(
+        TabularClassificationSample(
             data={"Product": "Brooklinen bedding","Description": "Queen size bedding","Picture": "<image-data>"},
             annotation=ClassificationAnnotation(label_name="Bedding"),
         ),
-        TabularFunctionSample(
+        TabularClassificationSample(
             data={"Product": "Comforter", "Description": "Nice down comforter", "Picture": "<image-data>"},
             annotation=ClassificationAnnotation(label_name="Bedding"),
         ),

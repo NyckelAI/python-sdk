@@ -16,6 +16,7 @@ from nyckel import (
     TabularClassificationSample,
     TextClassificationFunction,
     TextClassificationSample,
+    TextTagsFunction,
 )
 from nyckel.functions.classification.image_classification import ImageEncoder
 from PIL import Image
@@ -130,6 +131,13 @@ def tabular_classification_function_with_content(
     func.delete()
 
 
+@pytest.fixture
+def text_tags_function(auth_test_credentials: Credentials) -> Iterator[TextTagsFunction]:
+    func = TextTagsFunction.create("PYTHON-SDK TEXT TAGS TEST FUNCTION", auth_test_credentials)
+    yield func
+    # func.delete()
+
+
 def get_test_credentials() -> Credentials:
     if "NYCKEL_PYTHON_SDK_CLIENT_SECRET" in os.environ:
         credentials = Credentials(
@@ -159,8 +167,7 @@ def credentials_has_project(credentials: Credentials) -> bool:
 
 
 def create_project_for_credentials(credentials: Credentials) -> None:
-    session = requests.Session()
-    session.headers.update({"authorization": "Bearer " + credentials.token})
+    session = credentials.get_session()
     print("-> Creating project for credentials")
     response = session.post(f"{credentials.server_url}/v0.9/projects", json={"name": "my_project"})
     assert response.status_code == 200
