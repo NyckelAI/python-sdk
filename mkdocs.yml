@@ -13,6 +13,7 @@ nav:
     - Image Classification: image_classification.md
     - Text Classification: text_classification.md
     - Tabular Classification: tabular_classification.md
+    - Text Tags: text_tags.md
     - Credentials: credentials.md
     - Data classes: data_classes.md
 theme: 
