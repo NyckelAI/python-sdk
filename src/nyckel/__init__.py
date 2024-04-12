@@ -1,4 +1,4 @@
-from .auth import Credentials  # noqa: F401
+from .auth import Credentials  # noqa: F401, I001
 from .auth import Credentials as OAuth2Renewer  # For backwards compatibility. # noqa: F401
 from .auth import Credentials as User  # For backwards compatibility. # noqa: F401
 from .data_classes import NyckelId  # noqa: F401
@@ -19,6 +19,15 @@ from .functions.classification.classification import (
     TextClassificationSample,  # noqa: F401
     TextSampleData,  # noqa: F401
 )
+
+from .functions.tags.tags import (
+    ImageTagsSample,  # noqa: F401
+    TabularTagsSample,  # noqa: F401
+    TagsAnnotation,  # noqa: F401
+    TagsPrediction,  # noqa: F401
+    TextTagsSample,  # noqa: F401
+)
+
 from .functions.classification.factory import ClassificationFunctionFactory  # noqa: F401
 from .functions.classification.image_classification import (
     ImageClassificationFunction,  # noqa: F401
@@ -27,11 +36,4 @@ from .functions.classification.image_classification import (
 )
 from .functions.classification.tabular_classification import TabularClassificationFunction  # noqa: F401
 from .functions.classification.text_classification import TextClassificationFunction  # noqa: F401
-from .functions.tags.tags import (
-    ImageTagsSample,
-    TabularTagsSample,
-    TagsAnnotation,
-    TagsPrediction,
-    TextTagsSample,
-)
 from .functions.tags.text_tags import TextTagsFunction  # noqa: F401

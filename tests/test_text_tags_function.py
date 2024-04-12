@@ -1,7 +1,12 @@
 import time
 
-from nyckel import ClassificationLabel, TextTagsFunction
-from nyckel.functions.tags.tags import ClassificationPrediction, TagsAnnotation, TextTagsSample
+from nyckel import (
+    ClassificationLabel,
+    ClassificationPrediction,
+    TagsAnnotation,
+    TextTagsFunction,
+    TextTagsSample,
+)
 
 
 def compare_tags_samples(sample1: TextTagsSample, sample2: TextTagsSample) -> bool:
