@@ -33,8 +33,6 @@ from .functions.tags.tags import (
     TagsAnnotation,
     TagsFunction,
     TagsPrediction,
-    TagsSample,
-    TextSampleData,
     TextTagsSample,
 )
 from .functions.tags.text_tags import TextTagsFunction  # noqa: F401

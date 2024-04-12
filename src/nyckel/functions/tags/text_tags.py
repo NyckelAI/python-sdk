@@ -8,7 +8,6 @@ from nyckel import (
     TagsAnnotation,
     TagsFunction,
     TagsPrediction,
-    TagsSample,
     TextSampleData,
     TextTagsSample,
 )

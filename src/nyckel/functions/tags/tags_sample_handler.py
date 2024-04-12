@@ -7,7 +7,6 @@ from nyckel import (
     ImageTagsSample,
     TabularTagsSample,
     TagsPrediction,
-    TagsSample,
     TextTagsSample,
 )
 from nyckel.functions.tags.tags import TagsFunctionURLHandler
@@ -135,7 +134,7 @@ class TagsSampleHandler:
             )
         return response.json()
 
-    def update_annotation(self, sample: TagsSample) -> None:
+    def update_annotation(self, sample: TextTagsSample) -> None:
         session = self._credentials.get_session()
         assert sample.annotation
         response = session.put(
