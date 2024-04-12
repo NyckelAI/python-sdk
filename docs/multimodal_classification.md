@@ -31,7 +31,7 @@ func.create_samples(
             data={"Product": "Brooklinen bedding","Description": "Queen size bedding","Picture": "<image-data>"},
             annotation=ClassificationAnnotation(label_name="Bedding"),
         ),
-        TabularClassificationSample(
+        TabularClassificationSamplefo(
             data={"Product": "Comforter", "Description": "Nice down comforter", "Picture": "<image-data>"},
             annotation=ClassificationAnnotation(label_name="Bedding"),
         ),
