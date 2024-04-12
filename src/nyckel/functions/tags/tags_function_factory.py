@@ -2,7 +2,6 @@ import time
 
 from nyckel import Credentials
 from nyckel.functions.tags import text_tags
-from nyckel.functions.tags.tags import TagsFunction
 from nyckel.functions.tags.tags_function_handler import TagsFunctionHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 
@@ -17,12 +16,12 @@ class TagsFunctionFactory:
         }
 
     @classmethod
-    def load(self, function_id: str, credentials: Credentials) -> TagsFunction:
+    def load(self, function_id: str, credentials: Credentials):
         function_handler = TagsFunctionHandler(function_id, credentials)
         input_modality = function_handler.get_input_modality()
         return self.function_type_by_input[input_modality](function_id, credentials)
 
-    def create(self, name: str, function_input: str, credentials: Credentials) -> TagsFunction:
+    def create(self, name: str, function_input: str, credentials: Credentials):
         def post_function() -> str:
             url = f"{credentials.server_url}/v1/functions"
             response = session.post(url, json={"input": function_input, "output": "Tags", "name": name})

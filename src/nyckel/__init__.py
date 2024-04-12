@@ -31,7 +31,6 @@ from .functions.tags.tags import (
     ImageTagsSample,
     TabularTagsSample,
     TagsAnnotation,
-    TagsFunction,
     TagsPrediction,
     TextTagsSample,
 )

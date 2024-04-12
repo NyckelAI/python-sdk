@@ -6,7 +6,6 @@ from nyckel import (
     Credentials,
     NyckelId,
     TagsAnnotation,
-    TagsFunction,
     TagsPrediction,
     TextSampleData,
     TextTagsSample,
