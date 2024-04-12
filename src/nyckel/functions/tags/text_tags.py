@@ -26,7 +26,7 @@ class TextTagsFunction:
 
     from nyckel import Credentials, TextTagsFunction, TextTagsSample, TagsAnnotation
 
-    # credentials = Credentials(client_id="...", client_secret="...")
+    credentials = Credentials(client_id="...", client_secret="...")
 
     func = TextTagsFunction.create("NewsTopics", credentials)
     func.create_samples([
