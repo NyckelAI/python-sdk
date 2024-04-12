@@ -135,7 +135,7 @@ def tabular_classification_function_with_content(
 def text_tags_function(auth_test_credentials: Credentials) -> Iterator[TextTagsFunction]:
     func = TextTagsFunction.create("PYTHON-SDK TEXT TAGS TEST FUNCTION", auth_test_credentials)
     yield func
-    # func.delete()
+    func.delete()
 
 
 def get_test_credentials() -> Credentials:
