@@ -19,6 +19,26 @@ from nyckel.functions.utils import strip_nyckel_prefix
 
 
 class TextTagsFunction:
+    """
+    Example:
+
+    ```py
+
+    from nyckel import Credentials, TextTagsFunction, TextTagsSample, TagsAnnotation
+
+    # credentials = Credentials(client_id="...", client_secret="...")
+
+    func = TextTagsFunction.create("NewsTopics", credentials)
+    func.create_samples([
+        TextTagsSample(data="This is the best restaurant in NYC.", annotation=[TagsAnnotation("Food"), TagsAnnotation("Reviews")]),
+        TextTagsSample(data="The Belly-Up tavern in Solana Beach...", annotation=[TagsAnnotation("Music"), TagsAnnotation("Reviews")]),
+        TextTagsSample(data="Here is how to make the best Pasta Carbonara.", annotation=[TagsAnnotation("Food")]),
+        TextTagsSample(data="Taylor swift just released a new album, again.", annotation=[TagsAnnotation("Music")]),
+    ])
+
+    predictions = func.invoke(["Swedish meatballs: the best recipes"])
+    ```
+    """
 
     def __init__(self, function_id: NyckelId, credentials: Credentials):
         self._function_id = function_id

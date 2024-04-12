@@ -1,10 +1,8 @@
-import abc
 from dataclasses import dataclass
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence
 
-from nyckel import Credentials, NyckelId
+from nyckel import NyckelId
 from nyckel.functions.classification.classification import (
-    ClassificationLabel,
     ClassificationPrediction,
     ImageSampleData,
     TabularSampleData,
