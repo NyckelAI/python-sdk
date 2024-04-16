@@ -8,7 +8,7 @@ image_url = "https://www.nyckel.com/blog/images/taimi-case-study-header-image.pn
 
 image_base64 = ImageEncoder().to_base64(Image.new(mode="RGB", size=(40, 40)))
 
-image_filepath = os.path.abspath("tests/flower.jpg")
+image_filepath = os.path.abspath("tests/fixtures/flower.jpg")
 
 
 def test_to_bytes() -> None:

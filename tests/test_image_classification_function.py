@@ -83,7 +83,7 @@ def test_end_to_end(image_classification_function: ImageClassificationFunction) 
 )
 def test_image_integrity_on_copy(image_classification_function: ImageClassificationFunction) -> None:
     func: ImageClassificationFunction = image_classification_function
-    local_filepath = os.path.abspath("tests/flower.jpg")
+    local_filepath = os.path.abspath("tests/fixtures/flower.jpg")
 
     # When Nyckel first receives an image, it resizes and recodes it.
     first_sample_id = func.create_samples([ImageClassificationSample(data=local_filepath, external_id="v0")])[0]
@@ -99,12 +99,12 @@ def test_image_integrity_on_copy(image_classification_function: ImageClassificat
 
 post_sample_parameter_examples = [
     ImageClassificationSample(
-        data=os.path.abspath("tests/flower.jpg"), annotation=ClassificationAnnotation(label_name="Nice")
+        data=os.path.abspath("tests/fixtures/flower.jpg"), annotation=ClassificationAnnotation(label_name="Nice")
     ),
-    (os.path.abspath("tests/flower.jpg"), "Nice"),
-    (Image.open(os.path.abspath("tests/flower.jpg")), "Nice"),
-    os.path.abspath("tests/flower.jpg"),
-    Image.open(os.path.abspath("tests/flower.jpg")),
+    (os.path.abspath("tests/fixtures/flower.jpg"), "Nice"),
+    (Image.open(os.path.abspath("tests/fixtures/flower.jpg")), "Nice"),
+    os.path.abspath("tests/fixtures/flower.jpg"),
+    Image.open(os.path.abspath("tests/fixtures/flower.jpg")),
 ]
 
 
@@ -120,7 +120,7 @@ def test_post_sample_overloading(
 
     decoder = ImageDecoder()
     returned_image = decoder.to_image(samples[0].data)
-    original_image = Image.open(os.path.abspath("tests/flower.jpg"))
+    original_image = Image.open(os.path.abspath("tests/fixtures/flower.jpg"))
 
     assert returned_image.size == original_image.size
     # TODO: test that the image content is the same. It's tricky b/c Nyckel re-codes
