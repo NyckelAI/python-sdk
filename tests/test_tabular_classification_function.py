@@ -26,7 +26,7 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
             TabularFunctionField(name="mugshot", type="Image"),
         ]
     )
-    local_image_file = os.path.abspath("tests/flower.jpg")
+    local_image_file = os.path.abspath("tests/fixtures/flower.jpg")
     func.create_samples(
         [
             TabularClassificationSample(
@@ -114,7 +114,7 @@ def test_image_field(tabular_classification_function: TabularClassificationFunct
         [TabularFunctionField(name="firstname", type="Text"), TabularFunctionField(name="mug", type="Image")]
     )
 
-    local_filepath = os.path.abspath("tests/flower.jpg")
+    local_filepath = os.path.abspath("tests/fixtures/flower.jpg")
 
     tabular_classification_function.create_samples(
         [

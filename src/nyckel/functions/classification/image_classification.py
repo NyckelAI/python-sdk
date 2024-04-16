@@ -332,6 +332,14 @@ class ImageEncoder:
     def to_base64(self, img: Union[Image.Image, BytesIO]) -> str:
         if isinstance(img, Image.Image):
             im_bytes = BytesIO()
+            if img.mode == "P" and "transparency" in img.info:
+                # Convert to RGBA if the image has transparency.
+                img = img.convert("RGBA")
+            if img.mode == "RGBA":
+                # Explicitly set RGBA backgrounds to white.
+                background = Image.new("RGBA", img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[3])  # 3 is the alpha channel
+                img = background
             if not img.mode == "RGB":
                 img = img.convert("RGB")
             img.save(im_bytes, format="JPEG", quality=95)
