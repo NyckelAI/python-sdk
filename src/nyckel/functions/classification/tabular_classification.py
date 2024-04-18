@@ -2,7 +2,6 @@ import copy
 import time
 from typing import Callable, Dict, List, Sequence, Tuple, Union
 
-from PIL import Image
 from tqdm import tqdm
 
 from nyckel import (
@@ -20,10 +19,9 @@ from nyckel import (
 from nyckel.functions.classification import factory
 from nyckel.functions.classification.classification import ClassificationFunctionURLHandler
 from nyckel.functions.classification.function_handler import ClassificationFunctionHandler
-from nyckel.functions.classification.image_classification import ImageDecoder, ImageEncoder
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.classification.sample_handler import ClassificationSampleHandler
-from nyckel.functions.utils import strip_nyckel_prefix
+from nyckel.functions.utils import ImageFieldTransformer, strip_nyckel_prefix
 from nyckel.request_utils import ParallelPoster, SequentialGetter
 
 
@@ -150,7 +148,7 @@ class TabularClassificationFunction(ClassificationFunction):
         for field in fields:
             if field.type == "Image":
                 # There is only one image field (max) per function, so we can break here.
-                image_field_transformer = ImageFieldHandler(field.id)  # type: ignore
+                image_field_transformer = ImageFieldTransformer(field.id)  # type: ignore
                 break
         return image_field_transformer
 
@@ -273,63 +271,6 @@ class TabularClassificationFunction(ClassificationFunction):
             if sample.annotation:
                 sample.annotation.label_name = sample.annotation.label_name.strip()
         return samples
-
-
-class ImageFieldHandler:
-
-    MAX_IMAGE_SIZE_PIXELS_TABULAR = 384
-
-    def __init__(self, field_id: NyckelId):
-        self._field_id = field_id
-        self._decoder = ImageDecoder()
-        self._encoder = ImageEncoder()
-
-    def __call__(self, tabular_sample_data: dict) -> dict:
-        if self._field_id in tabular_sample_data:
-            tabular_sample_data[self._field_id] = self._sample_data_to_body(tabular_sample_data[self._field_id])
-        return tabular_sample_data
-
-    def _resize_image(self, img: Image.Image) -> Image.Image:
-
-        def needs_resize(width: int, height: int) -> bool:
-            return width > self.MAX_IMAGE_SIZE_PIXELS_TABULAR or height > self.MAX_IMAGE_SIZE_PIXELS_TABULAR
-
-        def get_new_width_height(width: int, height: int) -> Tuple[int, int]:
-            if width > height:
-                new_width = self.MAX_IMAGE_SIZE_PIXELS_TABULAR
-                new_height = int(new_width * height / width)
-            else:
-                new_height = self.MAX_IMAGE_SIZE_PIXELS_TABULAR
-                new_width = int(new_height * width / height)
-            return new_width, new_height
-
-        if not needs_resize(img.width, img.height):
-            return img
-
-        width, height = get_new_width_height(img.width, img.height)
-        img = img.resize((width, height))
-        return img
-
-    def _sample_data_to_body(self, sample_data: str) -> str:
-        """Resizes if needed and encodes the sample data as a URL or dataURI."""
-        if self._is_nyckel_owned_url(sample_data):
-            # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified.
-            # In that case, we just point back to that URL.
-            return sample_data
-
-        if self._decoder.looks_like_url(sample_data):
-            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-
-        if self._decoder.looks_like_local_filepath(sample_data):
-            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-
-        if self._decoder.looks_like_data_uri(sample_data):
-            return self._encoder.to_base64(self._resize_image(self._decoder.to_image(sample_data)))
-
-        raise ValueError(f"Can't parse input sample.data={sample_data}")
-
-    def _is_nyckel_owned_url(self, sample_data: str) -> bool:
-        return sample_data.startswith("https://s3.us-west-2.amazonaws.com/nyckel.server.")
 
 
 class TabularFieldHandler:

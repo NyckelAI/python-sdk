@@ -12,6 +12,7 @@ from nyckel import (
     Credentials,
     ImageClassificationFunction,
     ImageClassificationSample,
+    ImageEncoder,
     ImageTagsFunction,
     TabularClassificationFunction,
     TabularClassificationSample,
@@ -19,7 +20,6 @@ from nyckel import (
     TextClassificationSample,
     TextTagsFunction,
 )
-from nyckel.functions.classification.image_classification import ImageEncoder
 from PIL import Image
 
 

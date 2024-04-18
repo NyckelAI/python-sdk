@@ -7,20 +7,19 @@ from nyckel import (
     ClassificationLabel,
     ClassificationPrediction,
     Credentials,
+    ImageEncoder,
     ImageSampleData,
     ImageTagsSample,
     NyckelId,
     TagsAnnotation,
     TagsPrediction,
 )
-from nyckel.functions.classification.image_classification import ImageDecoder, ImageEncoder
 from nyckel.functions.classification.label_handler import ClassificationLabelHandler
 from nyckel.functions.tags import tags_function_factory
 from nyckel.functions.tags.tags import TagsFunctionURLHandler
 from nyckel.functions.tags.tags_function_handler import TagsFunctionHandler
 from nyckel.functions.tags.tags_sample_handler import TagsSampleHandler
-from nyckel.functions.utils import strip_nyckel_prefix
-from nyckel.image_processing import ImageResizer
+from nyckel.functions.utils import ImageSampleBodyTransformer, strip_nyckel_prefix
 
 
 class ImageTagsFunctionInterface(abc.ABC):
@@ -135,7 +134,6 @@ class ImageTagsFunction(ImageTagsFunctionInterface):
         self._label_handler = ClassificationLabelHandler(function_id, credentials)
         self._url_handler = TagsFunctionURLHandler(function_id, credentials.server_url)
         self._sample_handler = TagsSampleHandler(function_id, credentials)
-        self._decoder = ImageDecoder()
         self._encoder = ImageEncoder()
 
         assert self._function_handler.get_input_modality() == "Image"
@@ -279,32 +277,3 @@ class ImageTagsFunction(ImageTagsFunctionInterface):
 
     def delete_samples(self, sample_ids: List[NyckelId]) -> None:
         self._sample_handler.delete_samples(sample_ids)
-
-
-class ImageSampleBodyTransformer:
-
-    def __init__(self):
-        self._decoder = ImageDecoder()
-        self._encoder = ImageEncoder()
-        self._resizer = ImageResizer()
-
-    def __call__(self, sample_data: ImageSampleData) -> str:
-        """Resizes if needed and encodes the sample data as a URL or dataURI."""
-        if self._is_nyckel_owned_url(sample_data):
-            # If the input points to a Nyckel S3 bucket, we know that the image is processed and verified.
-            # In that case, we just point back to that URL.
-            return sample_data
-
-        if self._decoder.looks_like_url(sample_data):
-            return self._encoder.to_base64(self._resizer(self._decoder.to_image(sample_data)))
-
-        if self._decoder.looks_like_local_filepath(sample_data):
-            return self._encoder.to_base64(self._resizer(self._decoder.to_image(sample_data)))
-
-        if self._decoder.looks_like_data_uri(sample_data):
-            return self._encoder.to_base64(self._resizer(self._decoder.to_image(sample_data)))
-
-        raise ValueError(f"Can't parse input sample.data={sample_data}")
-
-    def _is_nyckel_owned_url(self, sample_data: str) -> bool:
-        return sample_data.startswith("https://s3.us-west-2.amazonaws.com/nyckel.server.")

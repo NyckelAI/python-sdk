@@ -11,8 +11,8 @@ from nyckel import (
     ClassificationPrediction,
     ImageClassificationFunction,
     ImageClassificationSample,
+    ImageDecoder,
 )
-from nyckel.functions.classification.image_classification import ImageDecoder
 from PIL import Image
 
 credentials = get_test_credentials()
