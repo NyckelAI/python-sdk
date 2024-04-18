@@ -2,8 +2,7 @@ import os
 import time
 from typing import Iterator
 
-from nyckel import ImageClassificationFunction
-from nyckel.functions.classification.image_classification import ImageDecoder
+from nyckel import ImageClassificationFunction, ImageDecoder
 
 FULLY_TRANSPARENT_PIXEL_THAT_SHOULD_BECOME_WHITE = (10, 10)
 
