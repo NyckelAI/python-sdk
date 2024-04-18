@@ -12,6 +12,7 @@ from nyckel import (
     Credentials,
     ImageClassificationFunction,
     ImageClassificationSample,
+    ImageTagsFunction,
     TabularClassificationFunction,
     TabularClassificationSample,
     TextClassificationFunction,
@@ -134,6 +135,13 @@ def tabular_classification_function_with_content(
 @pytest.fixture
 def text_tags_function(auth_test_credentials: Credentials) -> Iterator[TextTagsFunction]:
     func = TextTagsFunction.create("PYTHON-SDK TEXT TAGS TEST FUNCTION", auth_test_credentials)
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def image_tags_function(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
+    func = ImageTagsFunction.create("PYTHON-SDK IMAGE TAGS TEST FUNCTION", auth_test_credentials)
     yield func
     func.delete()
 

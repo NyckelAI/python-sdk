@@ -27,6 +27,7 @@
         "ncols",
         "nyckel",
         "pytest",
+        "Resizer",
         "tqdm"
     ],
 }

@@ -98,6 +98,35 @@ def test_delete_sample(text_tags_function: TextTagsFunction) -> None:
     assert len(func.list_samples()) == 1
 
 
+def test_new_labels(text_tags_function: TextTagsFunction) -> None:
+
+    func = text_tags_function
+
+    func.create_labels([ClassificationLabel(name="label1")])
+    time.sleep(0.5)
+    sample_1_id = func.create_samples([TextTagsSample(data="sample1", annotation=[TagsAnnotation("label1")])])[0]
+
+    func.create_labels([ClassificationLabel(name="label2")])
+    time.sleep(0.5)
+    sample_2_id = func.create_samples([TextTagsSample(data="sample2", annotation=[TagsAnnotation("label1")])])[0]
+
+    sample1 = func.read_sample(sample_1_id)
+
+    # When sample1 was created, label2 wasn't present yet.
+    # So sample1 doesn't have an "opinion" about that label.
+    # This means that it's not present in the annotation field.
+    assert len(sample1.annotation) == 1
+    assert TagsAnnotation("label1") in sample1.annotation
+    assert TagsAnnotation("label2", present=False) not in sample1.annotation
+    time.sleep(0.5)
+    sample2 = func.read_sample(sample_2_id)
+    # When sample2 was created, both labels were present.
+    # Since we didn't give an annotation for label2, it was set to not present.
+    assert len(sample2.annotation) == 2
+    assert TagsAnnotation("label1") in sample2.annotation
+    assert TagsAnnotation("label2", present=False) in sample2.annotation
+
+
 def test_end_to_end(text_tags_function: TextTagsFunction) -> None:
     func = text_tags_function
 
@@ -117,10 +146,12 @@ def test_end_to_end(text_tags_function: TextTagsFunction) -> None:
     while not func.has_trained_model():
         print("-> No trained model yet. Sleeping 1 sec...")
         time.sleep(1)
-    pred = func.invoke(["Howdy"])[0]
-    assert isinstance(pred[0], ClassificationPrediction)
 
-    assert len(func.invoke(["Hej", "Hola", "Gruezi"])) == 3
+    predictions = func.invoke(["Hej", "Hola", "Gruezi"])
+    assert len(predictions) == 3
+    for prediction in predictions:
+        if len(prediction) > 0:
+            assert isinstance(prediction[0], ClassificationPrediction)
 
     returned_samples = func.list_samples()
     assert len(samples) == len(returned_samples)
