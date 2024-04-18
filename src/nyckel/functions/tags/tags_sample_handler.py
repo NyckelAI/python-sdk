@@ -1,6 +1,8 @@
 import time
 from typing import Any, Callable, Dict, List, Tuple, Union
 
+from tqdm import tqdm
+
 from nyckel import (
     ClassificationPrediction,
     Credentials,
@@ -13,7 +15,6 @@ from nyckel.functions.tags.tags import TagsFunctionURLHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 from nyckel.request_utils import ParallelDeleter, ParallelPoster, SequentialGetter
 from nyckel.utils import chunkify_list
-from tqdm import tqdm
 
 TagsSampleList = Union[List[TextTagsSample], List[ImageTagsSample], List[TabularTagsSample]]
 
@@ -134,7 +135,7 @@ class TagsSampleHandler:
             )
         return response.json()
 
-    def update_annotation(self, sample: TextTagsSample) -> None:
+    def update_annotation(self, sample: Union[TextTagsSample, ImageTagsSample]) -> None:
         session = self._credentials.get_session()
         assert sample.annotation
         response = session.put(

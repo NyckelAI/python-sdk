@@ -37,3 +37,4 @@ from .functions.classification.image_classification import (
 from .functions.classification.tabular_classification import TabularClassificationFunction  # noqa: F401
 from .functions.classification.text_classification import TextClassificationFunction  # noqa: F401
 from .functions.tags.text_tags import TextTagsFunction  # noqa: F401
+from .functions.tags.image_tags import ImageTagsFunction  # noqa: F401

@@ -163,6 +163,7 @@ class TextTagsFunction:
             ]
         else:
             annotation = None
+
         if "prediction" in sample_dict:
             prediction = [
                 ClassificationPrediction(
@@ -171,9 +172,9 @@ class TextTagsFunction:
                 )
                 for entry in sample_dict["prediction"]
             ]
-
         else:
             prediction = None
+
         return TextTagsSample(
             id=strip_nyckel_prefix(sample_dict["id"]),
             data=sample_dict["data"],
