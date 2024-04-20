@@ -1,4 +1,6 @@
 import os
+import random
+import string
 import time
 from typing import Iterator
 
@@ -16,10 +18,12 @@ from nyckel import (
     ImageTagsFunction,
     TabularClassificationFunction,
     TabularClassificationSample,
+    TabularTagsFunction,
     TextClassificationFunction,
     TextClassificationSample,
     TextTagsFunction,
 )
+from nyckel.functions.classification.classification import TabularFunctionField
 from PIL import Image
 
 
@@ -27,6 +31,18 @@ def make_random_image(size: int = 100) -> str:
     imarray = np.random.rand(size, size, 3) * 255
     img = Image.fromarray(imarray.astype("uint8")).convert("RGB")
     return ImageEncoder().to_base64(img)
+
+
+def make_random_text() -> str:
+    return "".join(random.choices(string.ascii_uppercase, k=50))
+
+
+def make_random_tabular() -> dict:
+    return {
+        "name": make_random_text(),
+        "age": random.randint(0, 100),
+        "mug": make_random_image(),
+    }
 
 
 def hold_until_list_samples_available(function: ClassificationFunction, expected_count: int) -> None:
@@ -142,6 +158,26 @@ def text_tags_function(auth_test_credentials: Credentials) -> Iterator[TextTagsF
 @pytest.fixture
 def image_tags_function(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
     func = ImageTagsFunction.create("PYTHON-SDK IMAGE TAGS TEST FUNCTION", auth_test_credentials)
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def tabular_tags_function(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
+    func = TabularTagsFunction.create("PYTHON-SDK TABULAR TAGS TEST FUNCTION", auth_test_credentials)
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def tabular_tags_function_with_fields(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
+    func = TabularTagsFunction.create("PYTHON-SDK TABULAR TAGS TEST FUNCTION", auth_test_credentials)
+    fields = [
+        TabularFunctionField(name="name", type="Text"),
+        TabularFunctionField(name="age", type="Number"),
+        TabularFunctionField(name="mug", type="Image"),
+    ]
+    func.create_fields(fields)
     yield func
     func.delete()
 

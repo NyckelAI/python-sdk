@@ -96,7 +96,7 @@ class TabularClassificationFunction(ClassificationFunction):
         sample_data_list: List[TabularSampleData],
         model_id: str = "",
     ) -> List[ClassificationPrediction]:
-        return self._sample_handler.invoke(sample_data_list, self.get_image_field_transformer(), model_id=model_id)
+        return self._sample_handler.invoke(sample_data_list, self._get_image_field_transformer(), model_id=model_id)
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
@@ -140,9 +140,9 @@ class TabularClassificationFunction(ClassificationFunction):
         self._assert_fields_created(typed_samples)
         self._create_labels_as_needed(typed_samples)
         typed_samples = self._switch_field_names_to_field_ids(typed_samples)
-        return self._sample_handler.create_samples(typed_samples, self.get_image_field_transformer())
+        return self._sample_handler.create_samples(typed_samples, self._get_image_field_transformer())
 
-    def get_image_field_transformer(self) -> Callable:
+    def _get_image_field_transformer(self) -> Callable:
         fields = self.list_fields()
         image_field_transformer = lambda x: x  # type: ignore  # noqa: E731
         for field in fields:
