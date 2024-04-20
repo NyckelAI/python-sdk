@@ -34,13 +34,16 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
                 annotation=ClassificationAnnotation(label_name="happy"),
             ),
             TabularClassificationSample(
-                data={"firstname": "Bo", "lastname": "Busy"}, annotation=ClassificationAnnotation(label_name="happy")
+                data={"firstname": "Bo", "lastname": "Busy", "mugshot": local_image_file},
+                annotation=ClassificationAnnotation(label_name="happy"),
             ),
             TabularClassificationSample(
-                data={"firstname": "Carl", "lastname": "Carrot"}, annotation=ClassificationAnnotation(label_name="sad")
+                data={"firstname": "Carl", "lastname": "Carrot", "mugshot": local_image_file},
+                annotation=ClassificationAnnotation(label_name="sad"),
             ),
             TabularClassificationSample(
-                data={"firstname": "Dick", "lastname": "Denali"}, annotation=ClassificationAnnotation(label_name="sad")
+                data={"firstname": "Dick", "lastname": "Denali", "mugshot": local_image_file},
+                annotation=ClassificationAnnotation(label_name="sad"),
             ),
         ]
     )
@@ -60,7 +63,10 @@ def test_end_to_end(tabular_classification_function: TabularClassificationFuncti
     assert isinstance(prediction, ClassificationPrediction)
 
     predictions = func.invoke(
-        [{"firstname": "Eric", "lastname": "Ebony"}, {"firstname": "Frank", "lastname": "Froggy"}]
+        [
+            {"firstname": "Eric", "lastname": "Ebony", "mugshot": local_image_file},
+            {"firstname": "Frank", "lastname": "Froggy", "mugshot": local_image_file},
+        ]
     )
     assert isinstance(predictions[0], ClassificationPrediction)
 
