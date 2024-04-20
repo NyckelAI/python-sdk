@@ -1,7 +1,7 @@
 import time
 
 from nyckel import Credentials
-from nyckel.functions.tags import image_tags, text_tags
+from nyckel.functions.tags import image_tags, tabular_tags, text_tags
 from nyckel.functions.tags.tags_function_handler import TagsFunctionHandler
 from nyckel.functions.utils import strip_nyckel_prefix
 
@@ -12,7 +12,7 @@ class TagsFunctionFactory:
         self.function_type_by_input = {
             "Text": text_tags.TextTagsFunction,
             "Image": image_tags.ImageTagsFunction,
-            # "Tabular": tabular_classification.TabularClassificationFunction,
+            "Tabular": tabular_tags.TabularTagsFunction,
         }
 
     @classmethod

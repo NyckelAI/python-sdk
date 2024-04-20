@@ -16,6 +16,8 @@ class ClassificationLabelHandler:
         self._url_handler = ClassificationFunctionURLHandler(function_id, credentials.server_url)
 
     def create_labels(self, labels: List[ClassificationLabel]) -> List[str]:
+        for label in labels:
+            label.name = label.name.strip()
         session = self._credentials.get_session()
         bodies = [
             {"name": label.name, "description": label.description, "metadata": label.metadata} for label in labels

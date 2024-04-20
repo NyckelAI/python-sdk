@@ -1,33 +1,30 @@
 """ Shared tests for all Tags functions."""
 
-import random
-import string
 import time
 
 import pytest
-from conftest import make_random_image
+from conftest import make_random_image, make_random_tabular, make_random_text
 from nyckel import (
     ClassificationLabel,
     ClassificationPrediction,
     ImageTagsFunction,
     ImageTagsSample,
+    TabularFunctionField,
+    TabularTagsFunction,
+    TabularTagsSample,
     TagsAnnotation,
     TextTagsFunction,
     TextTagsSample,
 )
 
 
-def random_test_image_maker() -> str:
-    return make_random_image()
-
-
-def random_test_text_maker() -> str:
-    return "".join(random.choices(string.ascii_uppercase, k=50))
-
-
 @pytest.mark.parametrize(
     "function_type,function_class",
-    [("image_tags_function", ImageTagsFunction), ("text_tags_function", TextTagsFunction)],
+    [
+        ("image_tags_function", ImageTagsFunction),
+        ("text_tags_function", TextTagsFunction),
+        ("tabular_tags_function", TabularTagsFunction),
+    ],
 )
 class TestFunction:
 
@@ -43,13 +40,24 @@ class TestFunction:
 
 @pytest.mark.parametrize(
     "function_class,sample_data_maker",
-    [(ImageTagsFunction, random_test_image_maker), (TextTagsFunction, random_test_text_maker)],
+    [
+        (ImageTagsFunction, make_random_image),
+        (TextTagsFunction, make_random_text),
+        (TabularTagsFunction, make_random_tabular),
+    ],
 )
 class TestProperties:
 
     def test_all(self, function_class, sample_data_maker, auth_test_credentials):
-        name = "PYTHON-SDK IMAGE TAGS PROPERTIES TEST FUNCTION"
+        name = "PYTHON-SDK TAGS PROPERTIES TEST FUNCTION"
         func = function_class.create(name, auth_test_credentials)
+        if isinstance(func, TabularTagsFunction):
+            fields = [
+                TabularFunctionField(name="name", type="Text"),
+                TabularFunctionField(name="age", type="Number"),
+                TabularFunctionField(name="mug", type="Image"),
+            ]
+            func.create_fields(fields)
         assert func.name == name
         assert func.sample_count == 0
         assert func.label_count == 0
@@ -65,12 +73,17 @@ class TestProperties:
         func.delete()
 
 
-@pytest.mark.parametrize("function_type", ["image_tags_function", "text_tags_function"])
+@pytest.mark.parametrize("function_type", ["image_tags_function", "text_tags_function", "tabular_tags_function"])
 class TestLabels:
 
-    def test_create(self, function_type, request):
+    def test_create_untyped(self, function_type, request):
         func = request.getfixturevalue(function_type)
         label_ids = func.create_labels(["cat", "dog"])
+        assert len(label_ids) == 2
+
+    def test_create_typed(self, function_type, request):
+        func = request.getfixturevalue(function_type)
+        label_ids = func.create_labels([ClassificationLabel("cat"), ClassificationLabel("dog")])
         assert len(label_ids) == 2
 
     def test_read(self, function_type, request):
@@ -97,27 +110,52 @@ class TestLabels:
         labels = func.list_labels()
         assert len(labels) == 0
 
+    def test_strip_whitespaces(self, function_type, request):
+        func = request.getfixturevalue(function_type)
+        func.create_labels(["  cat  "])
+        labels = func.list_labels()
+        assert labels[0].name == "cat"
+
 
 @pytest.mark.parametrize(
     "function_type,sample_data_maker,sample_class",
     [
-        ("image_tags_function", random_test_image_maker, ImageTagsSample),
-        ("text_tags_function", random_test_text_maker, TextTagsSample),
+        ("image_tags_function", make_random_image, ImageTagsSample),
+        ("text_tags_function", make_random_text, TextTagsSample),
+        ("tabular_tags_function_with_fields", make_random_tabular, TabularTagsSample),
     ],
 )
 class TestSamples:
 
-    def test_create(self, function_type, sample_data_maker, sample_class, request):
+    def test_create_untyped(self, function_type, sample_data_maker, sample_class, request):
         func = request.getfixturevalue(function_type)
         sample_ids = func.create_samples([sample_data_maker(), sample_data_maker()])
         assert len(sample_ids) == 2
 
+    def test_create_typed(self, function_type, sample_data_maker, sample_class, request):
+        func = request.getfixturevalue(function_type)
+        sample_ids = func.create_samples(
+            [sample_class(data=sample_data_maker()), sample_class(data=sample_data_maker())]
+        )
+        assert len(sample_ids) == 2
+
+    def test_create_annotated(self, function_type, sample_data_maker, sample_class, request):
+        func = request.getfixturevalue(function_type)
+        sample_ids = func.create_samples([sample_class(data=sample_data_maker(), annotation=[TagsAnnotation("Nice")])])
+        assert len(sample_ids) == 1
+        assert func.label_count == 1  # Labels are created automatically
+
     def test_read(self, function_type, sample_data_maker, sample_class, request):
         func = request.getfixturevalue(function_type)
-        sample_id = func.create_samples([sample_data_maker()])[0]
+        sample_to_be_created = sample_data_maker()
+        sample_id = func.create_samples([sample_to_be_created])[0]
         time.sleep(0.5)
         sample = func.read_sample(sample_id)
         assert sample.id == sample_id
+        if function_type == "text_tags_function":
+            # We can't test for exact equality for image and (tabular with image fields) because
+            # the image data is recoded by the server.
+            assert sample.data == sample_to_be_created
 
     def test_update(self, function_type, sample_data_maker, sample_class, request):
         func = request.getfixturevalue(function_type)
@@ -199,8 +237,9 @@ class TestSamples:
 @pytest.mark.parametrize(
     "function_type,sample_data_maker,sample_class",
     [
-        ("image_tags_function", random_test_image_maker, ImageTagsSample),
-        ("text_tags_function", random_test_text_maker, TextTagsSample),
+        ("image_tags_function", make_random_image, ImageTagsSample),
+        ("text_tags_function", make_random_text, TextTagsSample),
+        ("tabular_tags_function_with_fields", make_random_tabular, TabularTagsSample),
     ],
 )
 class TestEndToEnd:
@@ -218,7 +257,7 @@ class TestEndToEnd:
             sample_class(data=sample_data_maker(), annotation=[TagsAnnotation("Boo")]),
             sample_class(data=sample_data_maker(), annotation=[]),
         ]
-
+        assert not func.has_trained_model()
         func.create_samples(samples)
 
         while not func.has_trained_model():
