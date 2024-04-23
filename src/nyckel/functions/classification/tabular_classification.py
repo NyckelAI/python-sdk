@@ -139,32 +139,17 @@ class TabularClassificationFunction(ClassificationFunction):
         typed_samples = self._strip_label_names(typed_samples)
         self._assert_fields_created(typed_samples)
         self._create_labels_as_needed(typed_samples)
-        typed_samples = self._switch_field_names_to_field_ids(typed_samples)
         return self._sample_handler.create_samples(typed_samples, self._get_image_field_transformer())
 
     def _get_image_field_transformer(self) -> Callable:
         fields = self.list_fields()
-        image_field_transformer = lambda x: x  # type: ignore  # noqa: E731
+        image_field_transformer = lambda x: x  # noqa: E731
         for field in fields:
             if field.type == "Image":
                 # There is only one image field (max) per function, so we can break here.
-                image_field_transformer = ImageFieldTransformer(field.id)  # type: ignore
+                image_field_transformer = ImageFieldTransformer(field.name)
                 break
         return image_field_transformer
-
-    def _switch_field_names_to_field_ids(
-        self, samples: List[TabularClassificationSample]
-    ) -> List[TabularClassificationSample]:
-
-        samples = copy.deepcopy(samples)  # Deep-copy so we don't modify the callers input.
-        fields = self.list_fields()
-        field_id_by_name = {field.name: field.id for field in fields}
-        for sample in samples:
-            field_names = list(sample.data.keys())
-            for field_name in field_names:
-                field_value = sample.data.pop(field_name)
-                sample.data[field_id_by_name[field_name]] = field_value  # type: ignore
-        return samples
 
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         samples_dict_list = self._sample_handler.list_samples(self.sample_count)
