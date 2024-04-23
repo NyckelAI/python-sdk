@@ -123,6 +123,7 @@ class ImageTagsFunction(ImageTagsFunctionInterface):
         ImageTagsSample(data="jacket.jpg", annotation=[TagsAnnotation("Black")]),
         ImageTagsSample(data="jeans.jpg", annotation=[TagsAnnotation("Blue")]),
     ])
+
     predictions = func.invoke(["new-jacket.jpg"])
     ```
     """
