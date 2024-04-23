@@ -26,6 +26,12 @@ from nyckel import (
 from nyckel.functions.classification.classification import TabularFunctionField
 from PIL import Image
 
+standard_tabular_test_fields = [
+    TabularFunctionField(name="name", type="Text"),
+    TabularFunctionField(name="age", type="Number"),
+    TabularFunctionField(name="mug", type="Image"),
+]
+
 
 def make_random_image(size: int = 100) -> str:
     imarray = np.random.rand(size, size, 3) * 255
@@ -50,6 +56,12 @@ def hold_until_list_samples_available(function: ClassificationFunction, expected
     while not actual_count == expected_count:
         actual_count = len(function.list_samples())
         time.sleep(0.25)
+
+
+def hold_until_function_trained(func: ClassificationFunction) -> None:
+    while not func.has_trained_model():
+        print("-> No trained model yet. Sleeping 1 sec...")
+        time.sleep(1)
 
 
 @pytest.fixture
@@ -98,28 +110,6 @@ def image_classification_function(auth_test_credentials: Credentials) -> Iterato
 
 
 @pytest.fixture
-def image_classification_function_with_content(
-    auth_test_credentials: Credentials,
-) -> Iterator[ImageClassificationFunction]:
-    func = ImageClassificationFunction.create("PYTHON-SDK IMAGE TEST FUNCTION", auth_test_credentials)
-    labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
-    func.create_labels(labels_to_create)
-    nice = ClassificationAnnotation(label_name="Nice")
-    boo = ClassificationAnnotation(label_name="Boo")
-    samples = [
-        ImageClassificationSample(data=make_random_image(), external_id="1", annotation=nice),
-        ImageClassificationSample(data=make_random_image(), external_id="2", annotation=nice),
-        ImageClassificationSample(data=make_random_image(), external_id="3", annotation=boo),
-        ImageClassificationSample(data=make_random_image(), external_id="4", annotation=boo),
-        ImageClassificationSample(data=make_random_image(), external_id="5"),
-    ]
-    func.create_samples(samples)
-    hold_until_list_samples_available(func, len(samples))
-    yield func
-    func.delete()
-
-
-@pytest.fixture
 def tabular_classification_function(auth_test_credentials: Credentials) -> Iterator[TabularClassificationFunction]:
     func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_credentials)
     yield func
@@ -127,23 +117,29 @@ def tabular_classification_function(auth_test_credentials: Credentials) -> Itera
 
 
 @pytest.fixture
-def tabular_classification_function_with_content(
+def tabular_classification_function_with_fields(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
+    func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_credentials)
+
+    func.create_fields(standard_tabular_test_fields)
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def trained_tabular_classification_function(
     auth_test_credentials: Credentials,
 ) -> Iterator[TabularClassificationFunction]:
     func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_credentials)
-    labels_to_create = [ClassificationLabel(name="Nice"), ClassificationLabel(name="Boo")]
-    func.create_labels(labels_to_create)
-    nice = ClassificationAnnotation(label_name="Nice")
-    boo = ClassificationAnnotation(label_name="Boo")
+
+    func.create_fields(standard_tabular_test_fields)
     samples = [
-        TabularClassificationSample(data={"firstname": "Adam", "lastname": "Adams"}, external_id="1", annotation=nice),
-        TabularClassificationSample(data={"firstname": "Bo", "lastname": "Biden"}, external_id="2", annotation=nice),
-        TabularClassificationSample(data={"firstname": "Carl", "lastname": "Carrot"}, external_id="3", annotation=boo),
-        TabularClassificationSample(data={"firstname": "Dick", "lastname": "Denali"}, external_id="4", annotation=boo),
-        TabularClassificationSample(data={"firstname": "Erik", "lastname": "Elk"}, external_id="5"),
+        TabularClassificationSample(data=make_random_tabular(), annotation=ClassificationAnnotation(label_name="a")),
+        TabularClassificationSample(data=make_random_tabular(), annotation=ClassificationAnnotation(label_name="a")),
+        TabularClassificationSample(data=make_random_tabular(), annotation=ClassificationAnnotation(label_name="b")),
+        TabularClassificationSample(data=make_random_tabular(), annotation=ClassificationAnnotation(label_name="b")),
     ]
     func.create_samples(samples)
-    hold_until_list_samples_available(func, len(samples))
+    hold_until_function_trained(func)
     yield func
     func.delete()
 
