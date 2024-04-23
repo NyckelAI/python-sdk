@@ -203,15 +203,20 @@ class TabularTagsFunction(TabularTagsFunctionInterface):
         typed_samples = self._strip_label_names(typed_samples)
         self._assert_fields_created(typed_samples)
         self._create_labels_as_needed(typed_samples)
-        typed_samples = self._switch_field_names_to_field_ids(typed_samples)
         return self._sample_handler.create_samples(typed_samples, self._get_image_field_transformer())
 
     def _wrangle_post_samples_input(
         self, samples: Sequence[Union[TabularTagsSample, TabularSampleData]]
     ) -> List[TabularTagsSample]:
-        return [
-            sample if isinstance(sample, TabularTagsSample) else TabularTagsSample(data=sample) for sample in samples
-        ]
+        typed_samples: List[TabularTagsSample] = []
+        for sample in samples:
+            if isinstance(sample, TabularTagsSample):
+                typed_samples.append(sample)
+            elif isinstance(sample, dict):
+                typed_samples.append(TabularTagsSample(data=sample))
+            else:
+                raise ValueError(f"Sample {sample} has invalid type: {type(sample)}")
+        return typed_samples
 
     def _strip_label_names(self, samples: List[TabularTagsSample]) -> List[TabularTagsSample]:
         for sample in samples:
@@ -239,24 +244,13 @@ class TabularTagsFunction(TabularTagsFunctionInterface):
         if len(missing_labels) > 0:
             self._label_handler.create_labels(missing_labels)
 
-    def _switch_field_names_to_field_ids(self, samples: List[TabularTagsSample]) -> List[TabularTagsSample]:
-        samples = copy.deepcopy(samples)  # Deep-copy so we don't modify the callers input.
-        fields = self.list_fields()
-        field_id_by_name = {field.name: field.id for field in fields}
-        for sample in samples:
-            field_names = list(sample.data.keys())
-            for field_name in field_names:
-                field_value = sample.data.pop(field_name)
-                sample.data[field_id_by_name[field_name]] = field_value  # type: ignore
-        return samples
-
     def _get_image_field_transformer(self) -> Callable:
         fields = self.list_fields()
-        image_field_transformer = lambda x: x  # type: ignore  # noqa: E731
+        image_field_transformer = lambda x: x  # noqa: E731
         for field in fields:
             if field.type == "Image":
                 # There is only one image field (max) per function, so we can break here.
-                image_field_transformer = ImageFieldTransformer(field.id)  # type: ignore
+                image_field_transformer = ImageFieldTransformer(field.name)
                 break
         return image_field_transformer
 

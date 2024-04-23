@@ -19,6 +19,8 @@ from nyckel import (
     TabularClassificationFunction,
     TabularClassificationSample,
     TabularTagsFunction,
+    TabularTagsSample,
+    TagsAnnotation,
     TextClassificationFunction,
     TextClassificationSample,
     TextTagsFunction,
@@ -159,21 +161,32 @@ def image_tags_function(auth_test_credentials: Credentials) -> Iterator[ImageTag
 
 
 @pytest.fixture
-def tabular_tags_function(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
+def tabular_tags_function(auth_test_credentials: Credentials) -> Iterator[TabularTagsFunction]:
     func = TabularTagsFunction.create("PYTHON-SDK TABULAR TAGS TEST FUNCTION", auth_test_credentials)
     yield func
     func.delete()
 
 
 @pytest.fixture
-def tabular_tags_function_with_fields(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
+def tabular_tags_function_with_fields(auth_test_credentials: Credentials) -> Iterator[TabularTagsFunction]:
     func = TabularTagsFunction.create("PYTHON-SDK TABULAR TAGS TEST FUNCTION", auth_test_credentials)
-    fields = [
-        TabularFunctionField(name="name", type="Text"),
-        TabularFunctionField(name="age", type="Number"),
-        TabularFunctionField(name="mug", type="Image"),
+    func.create_fields(standard_tabular_test_fields)
+    yield func
+    func.delete()
+
+
+@pytest.fixture
+def trained_tabular_tags_function(auth_test_credentials: Credentials) -> Iterator[TabularTagsFunction]:
+    func = TabularTagsFunction.create("PYTHON-SDK TABULAR TAGS TEST FUNCTION", auth_test_credentials)
+    func.create_fields(standard_tabular_test_fields)
+    samples = [
+        TabularTagsSample(data=make_random_tabular(), annotation=[TagsAnnotation(label_name="a")]),
+        TabularTagsSample(data=make_random_tabular(), annotation=[TagsAnnotation(label_name="a")]),
+        TabularTagsSample(data=make_random_tabular(), annotation=[TagsAnnotation(label_name="b")]),
+        TabularTagsSample(data=make_random_tabular(), annotation=[TagsAnnotation(label_name="b")]),
     ]
-    func.create_fields(fields)
+    func.create_samples(samples)
+    hold_until_function_trained(func)
     yield func
     func.delete()
 

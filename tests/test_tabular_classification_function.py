@@ -155,12 +155,12 @@ class TestImageFieldOverloading:
             TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
         ],
     )
-    def test_post_as_url(
+    def test_post_sample(
         self,
-        tabular_classification_function_with_fields: TabularClassificationFunction,
+        tabular_tags_function_with_fields: TabularClassificationFunction,
         sample: TabularClassificationSample,
     ) -> None:
-        func = tabular_classification_function_with_fields
+        func = tabular_tags_function_with_fields
         func.create_samples([sample])
         time.sleep(0.5)
         assert func.sample_count == 1
@@ -177,7 +177,7 @@ class TestInvokeFieldOverloading:
             TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
         ],
     )
-    def test_post_as_url(
+    def test_invoke(
         self,
         trained_tabular_classification_function: TabularClassificationFunction,
         sample: TabularClassificationSample,
