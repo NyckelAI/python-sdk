@@ -124,6 +124,30 @@ class TabularTagsFunctionInterface(abc.ABC):
 
 
 class TabularTagsFunction(TabularTagsFunctionInterface):
+    """
+    Example:
+
+    ```py
+
+    from nyckel import Credentials, TabularTagsFunction, TabularTagsSample, TagsAnnotation, TabularFunctionField
+
+    credentials = Credentials(client_id="...", client_secret="...")
+
+    func = TabularTagsFunction.create("NewsTopics", credentials)
+    func.create_fields([
+        TabularFunctionField(type="Text", name="Title"),
+        TabularFunctionField(type="Text", name="Abstract")
+    ])
+    func.create_samples([
+        TabularTagsSample(data={"Title": "New restaurant in SOHO", "Abstract": "This is the best..."}, annotation=[TagsAnnotation("Food"), TagsAnnotation("Reviews")]),
+        TabularTagsSample(data={"Title": "Belly-up still going strong", "Abstract": "The Belly-Up tavern in Solana..."}, annotation=[TagsAnnotation("Music"), TagsAnnotation("Reviews")]),
+        TabularTagsSample(data={"Title": "Carbonara at its best", "Abstract": "Here is how to make the best..."}, annotation=[TagsAnnotation("Food")]),
+        TabularTagsSample(data={"Title": "New album out!", "Abstract": "Taylor swift just released ..."}, annotation=[TagsAnnotation("Music")]),
+    ])
+
+    predictions = func.invoke([{"Title": "Swedish meatballs: the best recipe", "Abstract": "This age-old Swedish classic ..."}])
+    ```
+    """
 
     def __init__(self, function_id: NyckelId, credentials: Credentials):
         self._function_id = function_id
