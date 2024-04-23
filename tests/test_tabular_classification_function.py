@@ -4,6 +4,7 @@ import warnings
 from typing import Dict, Tuple, Union
 
 import pytest
+from conftest import make_random_image
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
@@ -137,3 +138,50 @@ def test_image_field(tabular_classification_function: TabularClassificationFunct
 
     # The tabular filed uploader will resize the images to 384x384
     assert max(img.size) == 384
+
+
+local_image_file = os.path.abspath("tests/fixtures/flower.jpg")
+
+
+class TestImageFieldOverloading:
+    """Testing various way of giving the image field in the sample data."""
+
+    @pytest.mark.parametrize(
+        "sample",
+        [
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
+        ],
+    )
+    def test_post_as_url(
+        self,
+        tabular_classification_function_with_fields: TabularClassificationFunction,
+        sample: TabularClassificationSample,
+    ) -> None:
+        func = tabular_classification_function_with_fields
+        func.create_samples([sample])
+        time.sleep(0.5)
+        assert func.sample_count == 1
+
+
+class TestInvokeFieldOverloading:
+
+    @pytest.mark.parametrize(
+        "sample",
+        [
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
+        ],
+    )
+    def test_post_as_url(
+        self,
+        trained_tabular_classification_function: TabularClassificationFunction,
+        sample: TabularClassificationSample,
+    ) -> None:
+        func = trained_tabular_classification_function
+        pred = func.invoke([sample.data])[0]
+        assert isinstance(pred, ClassificationPrediction)
