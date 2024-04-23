@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
-from nyckel import NyckelId
+from nyckel.data_classes import NyckelId
 from nyckel.functions.classification.classification import (
     ClassificationPrediction,
     ImageSampleData,

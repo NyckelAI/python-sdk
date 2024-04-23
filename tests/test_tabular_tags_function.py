@@ -1,6 +1,11 @@
+import os
 import time
 
-from nyckel import TabularFunctionField, TabularTagsFunction
+import pytest
+from conftest import make_random_image
+from nyckel import ClassificationPrediction, TabularFunctionField, TabularTagsFunction, TabularTagsSample
+
+local_image_file = os.path.abspath("tests/fixtures/flower.jpg")
 
 
 class TestFields:
@@ -36,3 +41,48 @@ class TestFields:
 
         fields = func.list_fields()
         assert len(fields) == 0
+
+
+class TestImageFieldOverloading:
+    """Testing various way of giving the image field in the sample data."""
+
+    @pytest.mark.parametrize(
+        "sample",
+        [
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
+        ],
+    )
+    def test_post_sample(
+        self,
+        tabular_tags_function_with_fields: TabularTagsFunction,
+        sample: TabularTagsSample,
+    ) -> None:
+        func = tabular_tags_function_with_fields
+        func.create_samples([sample])
+        time.sleep(0.5)
+        assert func.sample_count == 1
+
+
+class TestInvokeFieldOverloading:
+
+    @pytest.mark.parametrize(
+        "sample",
+        [
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
+        ],
+    )
+    def test_invoke(
+        self,
+        trained_tabular_tags_function: TabularTagsFunction,
+        sample: TabularTagsSample,
+    ) -> None:
+        func = trained_tabular_tags_function
+        prediction = func.invoke([sample.data])[0]
+        if len(prediction) > 0:
+            assert isinstance(prediction[0], ClassificationPrediction)
