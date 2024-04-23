@@ -29,6 +29,7 @@
         "nyckel",
         "pytest",
         "Resizer",
+        "sklearn",
         "tqdm"
     ],
 }
