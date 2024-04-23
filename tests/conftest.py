@@ -121,7 +121,6 @@ def tabular_classification_function(auth_test_credentials: Credentials) -> Itera
 @pytest.fixture
 def tabular_classification_function_with_fields(auth_test_credentials: Credentials) -> Iterator[ImageTagsFunction]:
     func = TabularClassificationFunction.create("PYTHON-SDK TABULAR TEST FUNCTION", auth_test_credentials)
-
     func.create_fields(standard_tabular_test_fields)
     yield func
     func.delete()

@@ -157,10 +157,10 @@ class TestImageFieldOverloading:
     )
     def test_post_sample(
         self,
-        tabular_tags_function_with_fields: TabularClassificationFunction,
+        tabular_classification_function_with_fields: TabularClassificationFunction,
         sample: TabularClassificationSample,
     ) -> None:
-        func = tabular_tags_function_with_fields
+        func = tabular_classification_function_with_fields
         func.create_samples([sample])
         time.sleep(0.5)
         assert func.sample_count == 1
