@@ -123,15 +123,15 @@ class TagsSampleHandler:
 
     def read_sample(self, sample_id: str) -> Dict:
         session = self._credentials.get_session()
-        response = session.get(self._url_handler.api_endpoint(path=f"samples/{sample_id}", api_version="v0.9"))
+        url = self._url_handler.api_endpoint(path=f"samples/{sample_id}", api_version="v0.9")
+        response = session.get(url)
         if response.status_code == 404:
             # If calling read right after create, the resource is not available yet. Sleep and retry once.
             time.sleep(1)
             response = session.get(self._url_handler.api_endpoint(path=f"samples/{sample_id}"))
         if not response.status_code == 200:
             raise RuntimeError(
-                f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} "
-                f"from {self._url_handler.train_page}"
+                f"{response.status_code=}, {response.text=}. Unable to fetch sample {sample_id} " f"from {url   }"
             )
         return response.json()
 
