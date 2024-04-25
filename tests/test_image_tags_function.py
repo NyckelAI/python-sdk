@@ -1,6 +1,6 @@
 import os
 
-from conftest import make_random_image
+from conftest import large_image_url, make_random_image, small_image_url
 from nyckel import ImageTagsFunction
 from PIL import Image
 
@@ -25,5 +25,5 @@ class TestSamples:
 
     def test_create_url(self, image_tags_function: ImageTagsFunction):
         func = image_tags_function
-        sample_ids = func.create_samples(["https://picsum.photos/200", "https://picsum.photos/300"])
+        sample_ids = func.create_samples([small_image_url, large_image_url])
         assert len(sample_ids) == 2

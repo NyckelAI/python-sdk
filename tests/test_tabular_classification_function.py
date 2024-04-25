@@ -4,7 +4,7 @@ import warnings
 from typing import Dict, Tuple, Union
 
 import pytest
-from conftest import make_random_image
+from conftest import large_image_url, make_random_image, small_image_url
 from nyckel import (
     ClassificationAnnotation,
     ClassificationLabel,
@@ -149,8 +149,8 @@ class TestImageFieldOverloading:
     @pytest.mark.parametrize(
         "sample",
         [
-            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
-            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": small_image_url}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": large_image_url}),
             TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
             TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
         ],
@@ -171,8 +171,8 @@ class TestInvokeFieldOverloading:
     @pytest.mark.parametrize(
         "sample",
         [
-            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
-            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": small_image_url}),
+            TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": large_image_url}),
             TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
             TabularClassificationSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
         ],

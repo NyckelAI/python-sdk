@@ -2,7 +2,7 @@ import os
 import time
 
 import pytest
-from conftest import make_random_image
+from conftest import large_image_url, make_random_image, small_image_url
 from nyckel import ClassificationPrediction, TabularFunctionField, TabularTagsFunction, TabularTagsSample
 
 local_image_file = os.path.abspath("tests/fixtures/flower.jpg")
@@ -49,8 +49,8 @@ class TestImageFieldOverloading:
     @pytest.mark.parametrize(
         "sample",
         [
-            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
-            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": small_image_url}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": large_image_url}),
             TabularTagsSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
             TabularTagsSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
         ],
@@ -71,8 +71,8 @@ class TestInvokeFieldOverloading:
     @pytest.mark.parametrize(
         "sample",
         [
-            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/40"}),
-            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": "https://picsum.photos/2000"}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": small_image_url}),
+            TabularTagsSample(data={"name": "Adam", "age": 32, "mug": large_image_url}),
             TabularTagsSample(data={"name": "Adam", "age": 32, "mug": make_random_image()}),
             TabularTagsSample(data={"name": "Adam", "age": 32, "mug": local_image_file}),
         ],

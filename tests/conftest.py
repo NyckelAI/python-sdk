@@ -34,6 +34,9 @@ standard_tabular_test_fields = [
     TabularFunctionField(name="mug", type="Image"),
 ]
 
+small_image_url = "https://www.nyckel.com/favicon.png"
+large_image_url = "https://www.nyckel.com/favicon-500.png"
+
 
 def make_random_image(size: int = 100) -> str:
     imarray = np.random.rand(size, size, 3) * 255
