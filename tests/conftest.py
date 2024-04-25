@@ -13,7 +13,6 @@ from nyckel import (
     ClassificationLabel,
     Credentials,
     ImageClassificationFunction,
-    ImageClassificationSample,
     ImageEncoder,
     ImageTagsFunction,
     TabularClassificationFunction,

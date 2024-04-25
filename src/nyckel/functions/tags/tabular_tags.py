@@ -1,5 +1,4 @@
 import abc
-import copy
 from typing import Callable, Dict, List, Sequence, Union
 
 from nyckel import (
