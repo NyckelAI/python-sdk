@@ -3,6 +3,7 @@ import os
 from io import BytesIO
 from typing import Tuple, Union
 
+import pillow_avif  # type: ignore # noqa: F401. This is used transparently in PIL to support AVIF images.
 import requests
 from PIL import Image
 
