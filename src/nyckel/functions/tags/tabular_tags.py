@@ -308,12 +308,16 @@ class TabularTagsFunction(TabularTagsFunctionInterface):
             annotation = None
 
         if "prediction" in sample_dict:
+            # TODO: Note that we filter out predictsion that are not in the label list.
+            # This is a temporary fix since these should not be there in the first place.
+
             prediction = [
                 ClassificationPrediction(
                     confidence=entry["confidence"],
                     label_name=label_name_by_id[strip_nyckel_prefix(entry["labelId"])],
                 )
                 for entry in sample_dict["prediction"]
+                if strip_nyckel_prefix(entry["labelId"]) in label_name_by_id
             ]
         else:
             prediction = None
