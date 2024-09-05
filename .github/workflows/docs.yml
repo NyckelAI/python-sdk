@@ -20,6 +20,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.MKDOCSTRINGS_SSH_KEY }}
       - run: git clone git@github.com:NyckelAI/mkdocstrings-python.git
-      - run: pip install -e mkdocstrings-python==0.24.3
-      - run: pip install mkdocs-material==9.4.5
+      - run: pip install -e mkdocstrings-python
+      - run: pip install mkdocs-material
       - run: mkdocs gh-deploy --force
