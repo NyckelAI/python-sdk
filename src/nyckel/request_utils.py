@@ -48,6 +48,7 @@ class ParallelPoster:
             for future in concurrent.futures.as_completed(index_by_future):
                 index = index_by_future[future]
                 body = bodies[index]
+                body.pop("data", None)  # data is too large for logs and error messages
                 self.progress_bar.update(1)
                 try:
                     response = future.result()
