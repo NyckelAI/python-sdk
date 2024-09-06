@@ -59,4 +59,6 @@ Run
 mkdocs build
 ```
 
-Note that the production docs uses an [private repo](https://github.com/pawamoy-insiders/mkdocstrings-python) that allows cross-references for types.
+### Testing
+
+Testing locally requires a local server running the API. CI will run tests against a staging environment.
