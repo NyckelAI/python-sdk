@@ -35,3 +35,5 @@ from .functions.classification.text_classification import TextClassificationFunc
 from .functions.tags.text_tags import TextTagsFunction  # noqa: F401
 from .functions.tags.image_tags import ImageTagsFunction  # noqa: F401
 from .functions.tags.tabular_tags import TabularTagsFunction  # noqa: F401
+
+from .functions.pretrained import invoke as call
