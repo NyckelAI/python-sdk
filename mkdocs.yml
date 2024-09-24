@@ -3,6 +3,7 @@ site_url: https://www.nyckel.com
 nav:
   - Home: index.md
   - Guides:
+    - Pretrained classifiers: pretrained.md
     - Quickstart: quickstart.md
     - Copy function: copy_function.md
     - Delete label: delete_label.md
@@ -19,6 +20,7 @@ nav:
     - Tabular Tags: tabular_tags.md
     - Credentials: credentials.md
     - Data classes: data_classes.md
+    - Classify: classify.md
 theme: 
   name: 'material'
   features:

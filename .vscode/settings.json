@@ -27,6 +27,7 @@
         "Multimodal",
         "ncols",
         "nyckel",
+        "Pretrained",
         "pytest",
         "Resizer",
         "sklearn",
