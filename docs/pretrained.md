@@ -11,10 +11,11 @@ Nyckel offers a variety of [Pretrained Classifiers](https://www.nyckel.com/pretr
 ## Classify text
 
 ``` py
->>> import nyckel
->>> function_id = 'toxic-language-identifier'
->>> text = 'Hello friend!'
->>> nyckel.invoke(function_id, text, client_id, client_secret)
+import nyckel
+function_id = 'toxic-language-identifier'
+text = 'Hello friend!'
+credentials = nyckel.Credentials(client_id, client_secret)
+nyckel.invoke(function_id, text, credentials)
 {
     'labelName': 'Not Offensive', 
     'labelId': 'label_3e46tk7jimpeozap', 
@@ -27,10 +28,11 @@ Nyckel offers a variety of [Pretrained Classifiers](https://www.nyckel.com/pretr
 For image classification functions, use a `URL` or `base64 encoded image` as the input. Like so:
 
 ``` py
->>> import nyckel
->>> function_id = 'colors-identifier'
->>> image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Altja_j%C3%B5gi_Lahemaal.jpg/320px-Altja_j%C3%B5gi_Lahemaal.jpg"
->>> nyckel.invoke(function_id, image_url, client_id, client_secret)
+import nyckel
+function_id = 'colors-identifier'
+image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Altja_j%C3%B5gi_Lahemaal.jpg/320px-Altja_j%C3%B5gi_Lahemaal.jpg"
+credentials = nyckel.Credentials(client_id, client_secret)
+nyckel.invoke(function_id, image_url, credentials)
 {
     'labelName': 'Green',
     'labelId': 'label_csyoeshimzojn8xs',
