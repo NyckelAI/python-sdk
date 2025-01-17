@@ -36,3 +36,41 @@ from .functions.tags.image_tags import ImageTagsFunction  # noqa: F401
 from .functions.tags.tabular_tags import TabularTagsFunction  # noqa: F401
 
 from .functions.tags.text_tags import TextTagsFunction  # noqa: F401
+
+__all__ = [
+    "Credentials",
+    "OAuth2Renewer",  # Backwards compatibility
+    "User",  # Backwards compatibility
+    "NyckelId",
+    "ClassificationAnnotation",
+    "ClassificationFunction",
+    "ClassificationLabel",
+    "ClassificationPrediction",
+    "ClassificationSample",
+    "ImageClassificationSample",
+    "ImageSampleData",
+    "LabelName",
+    "TabularClassificationSample",
+    "TabularFieldKey",
+    "TabularFieldValue",
+    "TabularFunctionField",
+    "TabularSampleData",
+    "TextClassificationSample",
+    "TextSampleData",
+    "ImageTagsSample",
+    "TabularTagsSample",
+    "TagsAnnotation",
+    "TagsPrediction",
+    "TextTagsSample",
+    "ImageDecoder",
+    "ImageEncoder",
+    "ImageResizer",
+    "ClassificationFunctionFactory",
+    "ImageClassificationFunction",
+    "TabularClassificationFunction",
+    "TextClassificationFunction",
+    "invoke",
+    "ImageTagsFunction",
+    "TabularTagsFunction",
+    "TextTagsFunction",
+]
