@@ -1,3 +1,4 @@
+import copy
 import time
 from typing import Callable, Dict, List, Sequence, Tuple, Union
 
@@ -95,7 +96,9 @@ class TabularClassificationFunction(ClassificationFunction):
         sample_data_list: List[TabularSampleData],
         model_id: str = "",
     ) -> List[ClassificationPrediction]:
-        return self._sample_handler.invoke(sample_data_list, self._get_image_field_transformer(), model_id=model_id)
+        return self._sample_handler.invoke(
+            sample_data_list, self._get_image_field_transformer("name"), model_id=model_id
+        )
 
     def has_trained_model(self) -> bool:
         return self._function_handler.is_trained
@@ -138,17 +141,37 @@ class TabularClassificationFunction(ClassificationFunction):
         typed_samples = self._strip_label_names(typed_samples)
         self._assert_fields_created(typed_samples)
         self._create_labels_as_needed(typed_samples)
+
+        # For large tabular functions, the POST samples API does not support field names. So we need to switch to IDs.
+        typed_samples = self._switch_field_names_to_field_ids(typed_samples)
         return self._sample_handler.create_samples(typed_samples, self._get_image_field_transformer())
 
-    def _get_image_field_transformer(self) -> Callable:
+    def _get_image_field_transformer(self, field_identifier: str = "id") -> Callable:
         fields = self.list_fields()
         image_field_transformer = lambda x: x  # noqa: E731
         for field in fields:
             if field.type == "Image":
                 # There is only one image field (max) per function, so we can break here.
-                image_field_transformer = ImageFieldTransformer(field.name)
+                if field_identifier == "id":
+                    assert field.id is not None
+                    image_field_transformer = ImageFieldTransformer(field.id)
+                elif field_identifier == "name":
+                    image_field_transformer = ImageFieldTransformer(field.name)
                 break
         return image_field_transformer
+
+    def _switch_field_names_to_field_ids(
+        self, samples: List[TabularClassificationSample]
+    ) -> List[TabularClassificationSample]:
+        samples = copy.deepcopy(samples)  # Deep-copy so we don't modify the callers input.
+        fields = self.list_fields()
+        field_id_by_name = {field.name: field.id for field in fields}
+        for sample in samples:
+            field_names = list(sample.data.keys())
+            for field_name in field_names:
+                field_value = sample.data.pop(field_name)
+                sample.data[field_id_by_name[field_name]] = field_value  # type: ignore
+        return samples
 
     def list_samples(self) -> List[TabularClassificationSample]:  # type: ignore
         samples_dict_list = self._sample_handler.list_samples(self.sample_count)
