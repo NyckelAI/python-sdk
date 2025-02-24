@@ -31,7 +31,13 @@ class ImageClassificationFunction(ClassificationFunction):
 
     credentials = Credentials(client_id="...", client_secret="...")
 
+    # Create new function
     func = ImageClassificationFunction.create("IsCatOrDog", credentials)
+
+    # (or load existing function)
+    # func = ImageClassificationFunction("function_id", credentials)
+
+    # Create samples
     func.create_samples([
         ("cat1.jpg", "cat"),
         ("cat2.jpg", "cat"),
@@ -44,6 +50,7 @@ class ImageClassificationFunction(ClassificationFunction):
     """
 
     def __init__(self, function_id: str, credentials: Credentials) -> None:
+        function_id = strip_nyckel_prefix(function_id)
         self._function_id = function_id
         self._function_handler = ClassificationFunctionHandler(function_id, credentials)
         self._label_handler = ClassificationLabelHandler(function_id, credentials)

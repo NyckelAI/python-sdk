@@ -35,11 +35,19 @@ class TabularClassificationFunction(ClassificationFunction):
 
     credentials = Credentials(client_id="...", client_secret="...")
 
+    # Create new function
     func = TabularClassificationFunction.create("InterestedProspect", credentials)
+
+    # (or load existing function)
+    # func = TabularClassificationFunction("function_id", credentials)
+
+    # Create fields
     func.create_fields([
         TabularFunctionField(type="Text", name="Name"),
         TabularFunctionField(type="Text", name="Response")
     ])
+
+    # Create samples
     func.create_samples([
         ({"Name": "Adam Adams", "Response": "Thanks for reaching out. I'd love to chat"}, "Interested"),
         ({"Name": "Bo Berg", "Response": "Sure! Can you tell me a bit more?"}, "Interested"),
@@ -52,6 +60,7 @@ class TabularClassificationFunction(ClassificationFunction):
     """
 
     def __init__(self, function_id: NyckelId, credentials: Credentials) -> None:
+        function_id = strip_nyckel_prefix(function_id)
         self._function_id = function_id
 
         self._function_handler = ClassificationFunctionHandler(function_id, credentials)

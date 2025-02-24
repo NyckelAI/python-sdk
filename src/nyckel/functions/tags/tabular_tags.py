@@ -133,11 +133,19 @@ class TabularTagsFunction(TabularTagsFunctionInterface):
 
     credentials = Credentials(client_id="...", client_secret="...")
 
+    # Create new function
     func = TabularTagsFunction.create("NewsTopics", credentials)
+
+    # (or load existing function)
+    # func = TabularTagsFunction("function_id", credentials)
+
+    # Create fields
     func.create_fields([
         TabularFunctionField(type="Text", name="Title"),
         TabularFunctionField(type="Text", name="Abstract")
     ])
+
+    # Create samples
     func.create_samples([
         TabularTagsSample(data={"Title": "New restaurant in SOHO", "Abstract": "This is the best..."}, annotation=[TagsAnnotation("Food"), TagsAnnotation("Reviews")]),
         TabularTagsSample(data={"Title": "Belly-up still going strong", "Abstract": "The Belly-Up tavern in Solana..."}, annotation=[TagsAnnotation("Music"), TagsAnnotation("Reviews")]),
@@ -150,6 +158,7 @@ class TabularTagsFunction(TabularTagsFunctionInterface):
     """
 
     def __init__(self, function_id: NyckelId, credentials: Credentials):
+        function_id = strip_nyckel_prefix(function_id)
         self._function_id = function_id
 
         self._function_handler = TagsFunctionHandler(function_id, credentials)

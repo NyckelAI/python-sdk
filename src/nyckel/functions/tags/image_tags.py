@@ -116,7 +116,12 @@ class ImageTagsFunction(ImageTagsFunctionInterface):
 
     credentials = Credentials(client_id="...", client_secret="...")
 
+    # Create new function
     func = ImageTagsFunction.create("ClothingColor", credentials)
+
+    # (or load existing function)
+    # func = ImageTagsFunction("function_id", credentials)
+
     func.create_samples([
         ImageTagsSample(data="t-shirt1.jpg", annotation=[TagsAnnotation("White"), TagsAnnotation("Blue")]),
         ImageTagsSample(data="t=shirt2.jpg", annotation=[TagsAnnotation("Red"), TagsAnnotation("White")]),
@@ -129,6 +134,7 @@ class ImageTagsFunction(ImageTagsFunctionInterface):
     """
 
     def __init__(self, function_id: NyckelId, credentials: Credentials):
+        function_id = strip_nyckel_prefix(function_id)
         self._function_id = function_id
 
         self._function_handler = TagsFunctionHandler(function_id, credentials)

@@ -29,7 +29,13 @@ class TextClassificationFunction(ClassificationFunction):
 
     credentials = Credentials(client_id="...", client_secret="...")
 
+    # Create new function
     func = TextClassificationFunction.create("IsToxic", credentials)
+
+    # (or load existing function)
+    # func = TextClassificationFunction("function_id", credentials)
+
+    # Create samples
     func.create_samples([
         ("This is a nice comment", "Not toxic"),
         ("Hello friend", "Not toxic"),
@@ -42,6 +48,7 @@ class TextClassificationFunction(ClassificationFunction):
     """
 
     def __init__(self, function_id: NyckelId, credentials: Credentials):
+        function_id = strip_nyckel_prefix(function_id)
         self._function_id = function_id
 
         self._function_handler = ClassificationFunctionHandler(function_id, credentials)

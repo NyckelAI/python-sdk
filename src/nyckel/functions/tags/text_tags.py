@@ -28,7 +28,13 @@ class TextTagsFunction:
 
     credentials = Credentials(client_id="...", client_secret="...")
 
+    # Create new function
     func = TextTagsFunction.create("NewsTopics", credentials)
+
+    # (or load existing function)
+    # func = TextTagsFunction("function_id", credentials)
+
+    # Create samples
     func.create_samples([
         TextTagsSample(data="This is the best restaurant in NYC.", annotation=[TagsAnnotation("Food"), TagsAnnotation("Reviews")]),
         TextTagsSample(data="The Belly-Up tavern in Solana Beach...", annotation=[TagsAnnotation("Music"), TagsAnnotation("Reviews")]),
@@ -41,6 +47,7 @@ class TextTagsFunction:
     """
 
     def __init__(self, function_id: NyckelId, credentials: Credentials):
+        function_id = strip_nyckel_prefix(function_id)
         self._function_id = function_id
 
         self._function_handler = TagsFunctionHandler(function_id, credentials)
