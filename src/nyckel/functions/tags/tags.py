@@ -4,6 +4,7 @@ from typing import List, Optional, Sequence
 from nyckel.data_classes import NyckelId
 from nyckel.functions.classification.classification import (
     ClassificationPrediction,
+    ClassificationPredictionOrError,
     ImageSampleData,
     TabularSampleData,
     TextSampleData,
@@ -16,7 +17,7 @@ class TagsAnnotation:
     present: bool = True
 
 
-TagsPrediction = Sequence[ClassificationPrediction]
+TagsPrediction = Sequence[ClassificationPredictionOrError]
 
 
 @dataclass
