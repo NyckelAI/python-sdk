@@ -1,0 +1,2012 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://www.nyckel.com/data_classes/">
+      
+      
+        <link rel="prev" href="../credentials/">
+      
+      
+        <link rel="next" href="../classify/">
+      
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.4.5">
+    
+    
+      
+        <title>Data classes - Nyckel Python SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6a10b989.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.356b1318.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#nyckel.NyckelId" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Nyckel Python SDK" class="md-header__button md-logo" aria-label="Nyckel Python SDK" data-md-component="logo">
+      
+  <img src="../assets/nyckel-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Nyckel Python SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data classes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Nyckel Python SDK" class="md-nav__button md-logo" aria-label="Nyckel Python SDK" data-md-component="logo">
+      
+  <img src="../assets/nyckel-logo.png" alt="logo">
+
+    </a>
+    Nyckel Python SDK
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pretrained/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pretrained classifiers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quickstart
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../copy_function/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Copy function
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../delete_label/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Delete label
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../merge_labels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Merge labels
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../delete_samples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Delete samples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multimodal_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multimodal classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sklearn_analytics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sklearn analytics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../image_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Image Classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../text_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Text Classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tabular_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tabular Classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../image_tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Image Tags
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../text_tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Text Tags
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tabular_tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tabular Tags
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../credentials/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Credentials
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Data classes
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Data classes
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.NyckelId" class="md-nav__link">
+    NyckelId
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.LabelName" class="md-nav__link">
+    LabelName
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ImageSampleData" class="md-nav__link">
+    ImageSampleData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TextSampleData" class="md-nav__link">
+    TextSampleData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TabularSampleData" class="md-nav__link">
+    TabularSampleData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TabularFieldKey" class="md-nav__link">
+    TabularFieldKey
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TabularFieldValue" class="md-nav__link">
+    TabularFieldValue
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel" class="md-nav__link">
+    ClassificationLabel
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationLabel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.id" class="md-nav__link">
+    id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.description" class="md-nav__link">
+    description
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.metadata" class="md-nav__link">
+    metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction" class="md-nav__link">
+    ClassificationPrediction
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationPrediction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction.label_name" class="md-nav__link">
+    label_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction.confidence" class="md-nav__link">
+    confidence
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError" class="md-nav__link">
+    ClassificationPredictionError
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationPredictionError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError.error" class="md-nav__link">
+    error
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError.status_code" class="md-nav__link">
+    status_code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionOrError" class="md-nav__link">
+    ClassificationPredictionOrError
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationAnnotation" class="md-nav__link">
+    ClassificationAnnotation
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationAnnotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationAnnotation.label_name" class="md-nav__link">
+    label_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationAnnotation.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation" class="md-nav__link">
+    TagsAnnotation
+  </a>
+  
+    <nav class="md-nav" aria-label="TagsAnnotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation.label_name" class="md-nav__link">
+    label_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation.present" class="md-nav__link">
+    present
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TagsPrediction" class="md-nav__link">
+    TagsPrediction
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classify/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Classify
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.NyckelId" class="md-nav__link">
+    NyckelId
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.LabelName" class="md-nav__link">
+    LabelName
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ImageSampleData" class="md-nav__link">
+    ImageSampleData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TextSampleData" class="md-nav__link">
+    TextSampleData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TabularSampleData" class="md-nav__link">
+    TabularSampleData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TabularFieldKey" class="md-nav__link">
+    TabularFieldKey
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TabularFieldValue" class="md-nav__link">
+    TabularFieldValue
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel" class="md-nav__link">
+    ClassificationLabel
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationLabel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.id" class="md-nav__link">
+    id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.description" class="md-nav__link">
+    description
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.metadata" class="md-nav__link">
+    metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationLabel.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction" class="md-nav__link">
+    ClassificationPrediction
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationPrediction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction.label_name" class="md-nav__link">
+    label_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction.confidence" class="md-nav__link">
+    confidence
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPrediction.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError" class="md-nav__link">
+    ClassificationPredictionError
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationPredictionError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError.error" class="md-nav__link">
+    error
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError.status_code" class="md-nav__link">
+    status_code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionError.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationPredictionOrError" class="md-nav__link">
+    ClassificationPredictionOrError
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.ClassificationAnnotation" class="md-nav__link">
+    ClassificationAnnotation
+  </a>
+  
+    <nav class="md-nav" aria-label="ClassificationAnnotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationAnnotation.label_name" class="md-nav__link">
+    label_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.ClassificationAnnotation.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation" class="md-nav__link">
+    TagsAnnotation
+  </a>
+  
+    <nav class="md-nav" aria-label="TagsAnnotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation.label_name" class="md-nav__link">
+    label_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation.present" class="md-nav__link">
+    present
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nyckel.TagsAnnotation.__init__" class="md-nav__link">
+    __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nyckel.TagsPrediction" class="md-nav__link">
+    TagsPrediction
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  <h1>Data classes</h1>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.NyckelId" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.NyckelId</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">NyckelId</span> <span class="o">=</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>Unique 16 char alphanumerical string. For example: <code>9ab6nqe7dh5u2ppf</code></p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.LabelName" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.LabelName</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">LabelName</span> <span class="o">=</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.ImageSampleData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.ImageSampleData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ImageSampleData</span> <span class="o">=</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>DataUri, Url, or local filepath.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.TextSampleData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.TextSampleData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">TextSampleData</span> <span class="o">=</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.TabularSampleData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.TabularSampleData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">TabularSampleData</span> <span class="o">=</span> <span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.TabularFieldKey" href="#nyckel.TabularFieldKey">TabularFieldKey</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.TabularFieldValue" href="#nyckel.TabularFieldValue">TabularFieldValue</a></span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.TabularFieldKey" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.TabularFieldKey</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">TabularFieldKey</span> <span class="o">=</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.TabularFieldValue" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.TabularFieldValue</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">TabularFieldValue</span> <span class="o">=</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="float">float</span></span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="nyckel.ClassificationLabel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">nyckel.ClassificationLabel</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/nyckel/functions/classification/classification.py</code></summary>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="nd">@dataclass</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="k">class</span><span class="w"> </span><span class="nc">ClassificationLabel</span><span class="p">:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span class="n">name</span><span class="p">:</span> <span class="n">LabelName</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>    <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NyckelId</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationLabel.name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.LabelName" href="#nyckel.LabelName">LabelName</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationLabel.id" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">id</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">id</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="nyckel.NyckelId" href="#nyckel.NyckelId">NyckelId</a></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationLabel.description" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">description</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">description</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationLabel.metadata" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">metadata</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">metadata</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="nyckel.ClassificationLabel.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="nf">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.LabelName" href="#nyckel.LabelName">LabelName</a></span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="nyckel.NyckelId" href="#nyckel.NyckelId">NyckelId</a></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="typing.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="nyckel.ClassificationPrediction" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">nyckel.ClassificationPrediction</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/nyckel/functions/classification/classification.py</code></summary>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="nd">@dataclass</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="k">class</span><span class="w"> </span><span class="nc">ClassificationPrediction</span><span class="p">:</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>    <span class="n">label_name</span><span class="p">:</span> <span class="n">LabelName</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationPrediction.label_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">label_name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">label_name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.LabelName" href="#nyckel.LabelName">LabelName</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationPrediction.confidence" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">confidence</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">confidence</span><span class="p">:</span> <span class="n"><span title="float">float</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="nyckel.ClassificationPrediction.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="nf">label_name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.LabelName" href="#nyckel.LabelName">LabelName</a></span><span class="p">,</span> <span class="n">confidence</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="nyckel.ClassificationPredictionError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">nyckel.ClassificationPredictionError</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/nyckel/functions/classification/classification.py</code></summary>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="nd">@dataclass</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="k">class</span><span class="w"> </span><span class="nc">ClassificationPredictionError</span><span class="p">:</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="n">error</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Any content / information from the server</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="n">status_code</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># HTTP status code</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationPredictionError.error" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">error</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">error</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationPredictionError.status_code" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">status_code</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">status_code</span><span class="p">:</span> <span class="n"><span title="int">int</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="nyckel.ClassificationPredictionError.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="nf">error</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">status_code</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.ClassificationPredictionOrError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.ClassificationPredictionOrError</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ClassificationPredictionOrError</span> <span class="o">=</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.ClassificationPrediction" href="#nyckel.ClassificationPrediction">ClassificationPrediction</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.ClassificationPredictionError" href="#nyckel.ClassificationPredictionError">ClassificationPredictionError</a></span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="nyckel.ClassificationAnnotation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">nyckel.ClassificationAnnotation</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/nyckel/functions/classification/classification.py</code></summary>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="nd">@dataclass</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="k">class</span><span class="w"> </span><span class="nc">ClassificationAnnotation</span><span class="p">:</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span class="n">label_name</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.ClassificationAnnotation.label_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">label_name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">label_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="nyckel.ClassificationAnnotation.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="nf">label_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="nyckel.TagsAnnotation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">nyckel.TagsAnnotation</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/nyckel/functions/tags/tags.py</code></summary>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="nd">@dataclass</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="k">class</span><span class="w"> </span><span class="nc">TagsAnnotation</span><span class="p">:</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a>    <span class="n">label_name</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a>    <span class="n">present</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.TagsAnnotation.label_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">label_name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">label_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="nyckel.TagsAnnotation.present" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">present</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">present</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="nyckel.TagsAnnotation.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="nf">label_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">present</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="nyckel.TagsPrediction" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">nyckel.TagsPrediction</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">TagsPrediction</span> <span class="o">=</span> <span class="n"><span title="typing.Sequence">Sequence</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="nyckel.functions.classification.classification.ClassificationPredictionOrError" href="#nyckel.ClassificationPredictionOrError">ClassificationPredictionOrError</a></span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+    </div>
+
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.aecac24b.min.js"></script>
+      
+    
+  </body>
+</html>
