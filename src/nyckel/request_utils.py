@@ -1,4 +1,5 @@
 import concurrent.futures
+import time
 import warnings
 from json import JSONDecodeError
 from typing import Callable, Dict, List, Optional, Tuple
@@ -31,7 +32,21 @@ class ParallelPoster:
             self.progress_bar = tqdm("Posting", ncols=80)
 
     def _post_as_json(self, data: Dict) -> requests.Response:
-        response = self._session.post(self._endpoint, json=self._body_transformer(data))
+        for attempt in range(5):
+            try:
+                response = self._session.post(self._endpoint, json=self._body_transformer(data))
+                if response.status_code == 200:
+                    return response
+                if response.status_code == 409:  # Conflict - don't retry
+                    return response
+            except Exception as err:
+                if attempt == 4:  # Last attempt failed
+                    response = requests.Response()
+                    response.status_code = 400
+                    response._content = f'{{"error": "Failed to post data", "details": "{str(err)}"}}'.encode()
+                    return response
+            # Wait with exponential backoff: 0.5, 1, 2, 4, 8 seconds
+            time.sleep(0.5 * (2**attempt))
         return response
 
     def refresh_session(self, session: requests.Session) -> None:
@@ -54,12 +69,12 @@ class ParallelPoster:
                     response = future.result()
                     if response.status_code not in [200, 409]:
                         warnings.warn(
-                            f"Posting {body} to {self._endpoint} failed with {response.status_code=} {response.text=}",
+                            f"Posting {index} to {self._endpoint} failed with {response.status_code=} {response.text=}",
                             RuntimeWarning,
                         )
                     responses[index] = response
                 except Exception as e:
-                    warnings.warn(f"Posting {body} to {self._endpoint} failed with {e}", RuntimeWarning)
+                    warnings.warn(f"Posting {index} to {self._endpoint} failed with {e}", RuntimeWarning)
 
         return responses
 

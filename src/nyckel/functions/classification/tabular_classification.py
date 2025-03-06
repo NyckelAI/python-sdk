@@ -9,6 +9,7 @@ from nyckel import (
     ClassificationFunction,
     ClassificationLabel,
     ClassificationPrediction,
+    ClassificationPredictionOrError,
     Credentials,
     LabelName,
     NyckelId,
@@ -104,7 +105,7 @@ class TabularClassificationFunction(ClassificationFunction):
         self,
         sample_data_list: List[TabularSampleData],
         model_id: str = "",
-    ) -> List[ClassificationPrediction]:
+    ) -> List[ClassificationPredictionOrError]:
         return self._sample_handler.invoke(
             sample_data_list, self._get_image_field_transformer("name"), model_id=model_id
         )

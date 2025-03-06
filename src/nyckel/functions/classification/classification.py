@@ -33,6 +33,15 @@ class ClassificationPrediction:
 
 
 @dataclass
+class ClassificationPredictionError:
+    error: str  # Any content / information from the server
+    status_code: int  # HTTP status code
+
+
+ClassificationPredictionOrError = Union[ClassificationPrediction, ClassificationPredictionError]
+
+
+@dataclass
 class ClassificationAnnotation:
     label_name: str
 

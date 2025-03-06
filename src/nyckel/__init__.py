@@ -7,6 +7,8 @@ from .functions.classification.classification import (
     ClassificationFunction,  # noqa: F401
     ClassificationLabel,  # noqa: F401
     ClassificationPrediction,  # noqa: F401
+    ClassificationPredictionError,  # noqa: F401
+    ClassificationPredictionOrError,  # noqa: F401
     ClassificationSample,  # noqa: F401
     ImageClassificationSample,  # noqa: F401
     ImageSampleData,  # noqa: F401
@@ -46,6 +48,8 @@ __all__ = [
     "ClassificationFunction",
     "ClassificationLabel",
     "ClassificationPrediction",
+    "ClassificationPredictionError",
+    "ClassificationPredictionOrError",
     "ClassificationSample",
     "ImageClassificationSample",
     "ImageSampleData",

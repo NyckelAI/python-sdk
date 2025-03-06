@@ -16,6 +16,10 @@
 
 ::: nyckel.ClassificationPrediction
 
+::: nyckel.ClassificationPredictionError
+
+::: nyckel.ClassificationPredictionOrError
+
 ::: nyckel.ClassificationAnnotation
 
 ::: nyckel.TagsAnnotation
