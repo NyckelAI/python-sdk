@@ -66,7 +66,7 @@ class ParallelPoster:
 
                 # Pull out and truncate data to avoid blowing up logs and error messages
                 data = body.pop("data", None)
-                data = data[:100] if data else None
+                data = str(data)[:100] + "..." if data else None
                 self.progress_bar.update(1)
                 try:
                     response = future.result()
