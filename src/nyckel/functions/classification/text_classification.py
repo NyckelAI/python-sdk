@@ -5,6 +5,7 @@ from nyckel import (
     ClassificationFunction,
     ClassificationLabel,
     ClassificationPrediction,
+    ClassificationPredictionOrError,
     Credentials,
     LabelName,
     NyckelId,
@@ -92,7 +93,7 @@ class TextClassificationFunction(ClassificationFunction):
         self,
         sample_data_list: List[TextSampleData],
         model_id: str = "",
-    ) -> List[ClassificationPrediction]:
+    ) -> List[ClassificationPredictionOrError]:
         return self._sample_handler.invoke(sample_data_list, lambda x: x, model_id=model_id)
 
     def has_trained_model(self) -> bool:

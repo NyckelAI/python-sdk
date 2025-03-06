@@ -1,10 +1,13 @@
 import time
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Union
 
+import requests
 from tqdm import tqdm
 
 from nyckel import (
     ClassificationPrediction,
+    ClassificationPredictionError,
+    ClassificationPredictionOrError,
     ClassificationSample,
     Credentials,
     ImageClassificationSample,
@@ -32,26 +35,8 @@ class ClassificationSampleHandler:
         sample_data_list: Union[List[Dict], List[str]],
         sample_data_transformer: Callable,
         model_id: str = "",
-    ) -> List[ClassificationPrediction]:
-        n_max_attempt = 5
-        for _ in range(n_max_attempt):
-            invoke_ok, response_list = self.attempt_invoke(sample_data_list, sample_data_transformer, model_id=model_id)
-            if invoke_ok:
-                return self.parse_predictions_response(response_list)
-            else:
-                if "No model available to invoke function" in response_list[0].text:
-                    print("Model not trained yet. Retrying...")
-                else:
-                    raise RuntimeError(f"Failed to invoke function. {response_list=}")
-            time.sleep(5)
-        raise TimeoutError("Still no model after {n_max_attempt} attempts. Please try again later.")
+    ) -> List[ClassificationPredictionOrError]:
 
-    def attempt_invoke(
-        self,
-        sample_data_list: Union[List[Dict], List[str]],
-        sample_data_transformer: Callable,
-        model_id: str = "",
-    ) -> Tuple[bool, List[Any]]:
         bodies = [{"data": sample_data} for sample_data in sample_data_list]
 
         def body_transformer(body: Dict) -> Dict:
@@ -64,19 +49,30 @@ class ClassificationSampleHandler:
 
         poster = ParallelPoster(session, endpoint, progress_bar, body_transformer)
         response_list = poster(bodies)
-        if response_list[0].status_code in [200]:
-            return True, response_list
-        else:
-            return False, response_list
+        parsed_responses = self.parse_predictions_response(response_list)
 
-    def parse_predictions_response(self, response_list: List[Any]) -> List[ClassificationPrediction]:
-        return [
-            ClassificationPrediction(
-                label_name=response.json()["labelName"],
-                confidence=response.json()["confidence"],
-            )
-            for response in response_list
-        ]
+        return parsed_responses
+
+    def parse_predictions_response(
+        self, response_list: List[requests.Response]
+    ) -> List[ClassificationPredictionOrError]:
+        typed_responses: List[ClassificationPredictionOrError] = []
+        for response in response_list:
+            if response.status_code == 200:
+                typed_responses.append(
+                    ClassificationPrediction(
+                        label_name=response.json()["labelName"],
+                        confidence=response.json()["confidence"],
+                    )
+                )
+            else:
+                typed_responses.append(
+                    ClassificationPredictionError(
+                        error=response.text,
+                        status_code=response.status_code,
+                    )
+                )
+        return typed_responses
 
     def create_samples(self, samples: ClassificationSampleList, sample_data_transformer: Callable) -> List[str]:
         bodies = []
