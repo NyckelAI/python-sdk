@@ -63,18 +63,21 @@ class ParallelPoster:
             for future in concurrent.futures.as_completed(index_by_future):
                 index = index_by_future[future]
                 body = bodies[index]
-                body.pop("data", None)  # data is too large for logs and error messages
+
+                # Pull out and truncate data to avoid blowing up logs and error messages
+                data = body.pop("data", None)
+                data = data[:100] if data else None
                 self.progress_bar.update(1)
                 try:
                     response = future.result()
                     if response.status_code not in [200, 409]:
                         warnings.warn(
-                            f"Posting {index} to {self._endpoint} failed with {response.status_code=} {response.text=}",
+                            f"Posting {data} to {self._endpoint} failed with {response.status_code=} {response.text=}",
                             RuntimeWarning,
                         )
                     responses[index] = response
                 except Exception as e:
-                    warnings.warn(f"Posting {index} to {self._endpoint} failed with {e}", RuntimeWarning)
+                    warnings.warn(f"Posting {data} to {self._endpoint} failed with {e}", RuntimeWarning)
 
         return responses
 
