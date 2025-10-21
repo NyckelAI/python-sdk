@@ -197,7 +197,7 @@ def get_test_credentials() -> Credentials:
         credentials = Credentials(
             client_id="python-sdk-test",
             client_secret=os.environ["NYCKEL_PYTHON_SDK_CLIENT_SECRET"],
-            server_url="https://www.nyckel-staging.com",
+            server_url="https://www.nyckel.com",
         )
     else:
         credentials = Credentials(
