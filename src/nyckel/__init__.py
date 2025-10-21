@@ -3,6 +3,7 @@ from .auth import Credentials as OAuth2Renewer  # For backwards compatibility. #
 from .auth import Credentials as User  # For backwards compatibility. # noqa: F401
 from .data_classes import NyckelId  # noqa: F401
 from .functions.classification.classification import (
+    ClassificationSampleSet,  # noqa: F401
     ClassificationAnnotation,  # noqa: F401
     ClassificationFunction,  # noqa: F401
     ClassificationLabel,  # noqa: F401
@@ -47,6 +48,7 @@ __all__ = [
     "ClassificationAnnotation",
     "ClassificationFunction",
     "ClassificationLabel",
+    "ClassificationSampleSet",
     "ClassificationPrediction",
     "ClassificationPredictionError",
     "ClassificationPredictionOrError",

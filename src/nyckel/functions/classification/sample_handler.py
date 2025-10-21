@@ -80,6 +80,10 @@ class ClassificationSampleHandler:
             body = {"data": sample.data, "externalId": sample.external_id}
             if sample.annotation:
                 body["annotation"] = {"labelName": sample.annotation.label_name}
+            sample_sets = []
+            for sample_set in sample.sample_sets or []:
+                sample_sets.append({"sampleSetId": sample_set.id})
+            body["sampleSets"] = sample_sets
             bodies.append(body)
 
         def body_transformer(body: Dict) -> Dict:

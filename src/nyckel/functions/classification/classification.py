@@ -47,6 +47,11 @@ class ClassificationAnnotation:
 
 
 @dataclass
+class ClassificationSampleSet:
+    id: Optional[NyckelId] = None
+
+
+@dataclass
 class TabularFunctionField:
     name: str
     type: str
@@ -64,6 +69,7 @@ class ImageClassificationSample:
     external_id: Optional[str] = None
     annotation: Optional[ClassificationAnnotation] = None
     prediction: Optional[ClassificationPrediction] = None
+    sample_sets: Optional[List[ClassificationSampleSet]] = None
 
 
 @dataclass
@@ -73,6 +79,7 @@ class TextClassificationSample:
     external_id: Optional[str] = None
     annotation: Optional[ClassificationAnnotation] = None
     prediction: Optional[ClassificationPrediction] = None
+    sample_sets: Optional[List[ClassificationSampleSet]] = None
 
 
 @dataclass
@@ -82,6 +89,7 @@ class TabularClassificationSample:
     external_id: Optional[str] = None
     annotation: Optional[ClassificationAnnotation] = None
     prediction: Optional[ClassificationPrediction] = None
+    sample_sets: Optional[List[ClassificationSampleSet]] = None
 
 
 ClassificationSample = Union[TextClassificationSample, ImageClassificationSample, TabularClassificationSample]

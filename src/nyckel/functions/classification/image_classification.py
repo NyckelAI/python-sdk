@@ -8,6 +8,7 @@ from nyckel import (
     ClassificationLabel,
     ClassificationPrediction,
     ClassificationPredictionOrError,
+    ClassificationSampleSet,
     Credentials,
     ImageClassificationSample,
     ImageEncoder,
@@ -170,12 +171,19 @@ class ImageClassificationFunction(ClassificationFunction):
             )
         else:
             prediction = None
+        if "sampleSets" in sample_dict:
+            sample_sets = []
+            for sample_set_dict in sample_dict["sampleSets"]:
+                sample_sets.append(ClassificationSampleSet(id=strip_nyckel_prefix(sample_set_dict["sampleSetId"])))
+        else:
+            sample_sets = None
         return ImageClassificationSample(
             id=strip_nyckel_prefix(sample_dict["id"]),
             data=sample_dict["data"],
             external_id=sample_dict["externalId"] if "externalId" in sample_dict else None,
             annotation=annotation,
             prediction=prediction,
+            sample_sets=sample_sets,
         )
 
     def _wrangle_post_samples_input(
