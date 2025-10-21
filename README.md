@@ -41,6 +41,8 @@ predictions = func.invoke(["New text"])
 
 ### Setup dev environment
 
+Create a `python3.11` venv and run:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -62,3 +64,17 @@ mkdocs build
 ### Testing
 
 Testing locally requires a local server running the API. CI will run tests against a staging environment.
+
+1. Ensure the local server is running
+2. Ensure the `nyckel` package is installed in the venv using `pip install -e .`
+3. Run `pytest` from the root directory
+
+### Deploying
+
+#### One time
+
+1. `pip install hatch`
+
+#### Each time
+
+`hatch publish`
